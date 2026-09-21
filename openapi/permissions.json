@@ -1,0 +1,314 @@
+[
+  {
+    "code": "identity.user.read",
+    "module": "identity",
+    "description": "Xem danh sách người dùng / nhân viên",
+    "deprecated": false
+  },
+  {
+    "code": "identity.user.create",
+    "module": "identity",
+    "description": "Tạo tài khoản nhân viên",
+    "deprecated": false
+  },
+  {
+    "code": "identity.user.update",
+    "module": "identity",
+    "description": "Sửa hồ sơ, đổi vai, đặt lại mật khẩu nhân viên",
+    "deprecated": false
+  },
+  {
+    "code": "identity.user.lock",
+    "module": "identity",
+    "description": "Khoá / mở khoá tài khoản",
+    "deprecated": false
+  },
+  {
+    "code": "identity.role.read",
+    "module": "identity",
+    "description": "Xem vai và bộ quyền",
+    "deprecated": false
+  },
+  {
+    "code": "identity.role.update",
+    "module": "identity",
+    "description": "Sửa preset quyền của vai",
+    "deprecated": false
+  },
+  {
+    "code": "identity.permission.assign",
+    "module": "identity",
+    "description": "Cấp / chặn quyền riêng cho từng người",
+    "deprecated": false
+  },
+  {
+    "code": "identity.audit.read",
+    "module": "identity",
+    "description": "Xem audit log và lịch sử đăng nhập",
+    "deprecated": false
+  },
+  {
+    "code": "catalog.category.read",
+    "module": "catalog",
+    "description": "Xem ngành hàng (khu quản trị)",
+    "deprecated": false
+  },
+  {
+    "code": "catalog.category.manage",
+    "module": "catalog",
+    "description": "Tạo / sửa / ẩn ngành hàng",
+    "deprecated": false
+  },
+  {
+    "code": "catalog.brand.manage",
+    "module": "catalog",
+    "description": "Tạo / sửa thương hiệu",
+    "deprecated": true
+  },
+  {
+    "code": "catalog.attribute.manage",
+    "module": "catalog",
+    "description": "Tạo / sửa bộ thuộc tính (size, màu, chất liệu)",
+    "deprecated": false
+  },
+  {
+    "code": "catalog.collection.manage",
+    "module": "catalog",
+    "description": "Tạo / sửa bộ sưu tập",
+    "deprecated": false
+  },
+  {
+    "code": "product.product.read",
+    "module": "product",
+    "description": "Xem sản phẩm (khu quản trị)",
+    "deprecated": false
+  },
+  {
+    "code": "product.product.create",
+    "module": "product",
+    "description": "Tạo sản phẩm",
+    "deprecated": false
+  },
+  {
+    "code": "product.product.update",
+    "module": "product",
+    "description": "Sửa sản phẩm, biến thể, ảnh, giá",
+    "deprecated": false
+  },
+  {
+    "code": "product.product.publish",
+    "module": "product",
+    "description": "Đăng bán / ẩn sản phẩm",
+    "deprecated": false
+  },
+  {
+    "code": "product.product.delete",
+    "module": "product",
+    "description": "Xoá mềm sản phẩm",
+    "deprecated": false
+  },
+  {
+    "code": "product.inventory.read",
+    "module": "product",
+    "description": "Xem tồn kho",
+    "deprecated": false
+  },
+  {
+    "code": "product.inventory.receive",
+    "module": "product",
+    "description": "Lập phiếu nhập kho",
+    "deprecated": false
+  },
+  {
+    "code": "product.inventory.adjust",
+    "module": "product",
+    "description": "Điều chỉnh / kiểm kê tồn kho",
+    "deprecated": false
+  },
+  {
+    "code": "order.order.read",
+    "module": "order",
+    "description": "Xem đơn hàng",
+    "deprecated": false
+  },
+  {
+    "code": "order.order.status.update",
+    "module": "order",
+    "description": "Xác nhận / đóng gói / giao / hoàn tất đơn",
+    "deprecated": false
+  },
+  {
+    "code": "order.order.cancel",
+    "module": "order",
+    "description": "Huỷ đơn thay khách",
+    "deprecated": false
+  },
+  {
+    "code": "order.return.read",
+    "module": "order",
+    "description": "Xem yêu cầu đổi trả",
+    "deprecated": false
+  },
+  {
+    "code": "order.return.process",
+    "module": "order",
+    "description": "Duyệt / từ chối / hoàn tất đổi trả",
+    "deprecated": false
+  },
+  {
+    "code": "payment.payment.read",
+    "module": "payment",
+    "description": "Xem giao dịch thanh toán",
+    "deprecated": false
+  },
+  {
+    "code": "payment.transfer.confirm",
+    "module": "payment",
+    "description": "Xác nhận chuyển khoản (đối soát)",
+    "deprecated": false
+  },
+  {
+    "code": "payment.refund.create",
+    "module": "payment",
+    "description": "Tạo yêu cầu hoàn tiền",
+    "deprecated": false
+  },
+  {
+    "code": "payment.refund.process",
+    "module": "payment",
+    "description": "Duyệt / thực hiện hoàn tiền",
+    "deprecated": false
+  },
+  {
+    "code": "payment.method.manage",
+    "module": "payment",
+    "description": "Bật / tắt phương thức thanh toán",
+    "deprecated": false
+  },
+  {
+    "code": "promotion.promotion.read",
+    "module": "promotion",
+    "description": "Xem mã giảm giá",
+    "deprecated": false
+  },
+  {
+    "code": "promotion.promotion.manage",
+    "module": "promotion",
+    "description": "Tạo / sửa / bật tắt mã giảm giá",
+    "deprecated": false
+  },
+  {
+    "code": "review.review.read",
+    "module": "review",
+    "description": "Xem đánh giá (khu quản trị)",
+    "deprecated": false
+  },
+  {
+    "code": "review.review.moderate",
+    "module": "review",
+    "description": "Duyệt / ẩn đánh giá",
+    "deprecated": false
+  },
+  {
+    "code": "review.review.reply",
+    "module": "review",
+    "description": "Trả lời đánh giá thay cửa hàng",
+    "deprecated": false
+  },
+  {
+    "code": "system.setting.read",
+    "module": "system",
+    "description": "Xem tham số vận hành",
+    "deprecated": false
+  },
+  {
+    "code": "system.setting.update",
+    "module": "system",
+    "description": "Sửa tham số vận hành",
+    "deprecated": false
+  },
+  {
+    "code": "system.banner.manage",
+    "module": "system",
+    "description": "Quản lý banner trang chủ",
+    "deprecated": false
+  },
+  {
+    "code": "system.province.manage",
+    "module": "system",
+    "description": "Quản lý tỉnh/thành + phí ship",
+    "deprecated": false
+  },
+  {
+    "code": "system.notification.send",
+    "module": "system",
+    "description": "Gửi thông báo tới khách",
+    "deprecated": false
+  },
+  {
+    "code": "reporting.dashboard.read",
+    "module": "reporting",
+    "description": "Xem dashboard tổng quan",
+    "deprecated": false
+  },
+  {
+    "code": "reporting.revenue.read",
+    "module": "reporting",
+    "description": "Xem báo cáo doanh thu",
+    "deprecated": false
+  },
+  {
+    "code": "reporting.inventory.read",
+    "module": "reporting",
+    "description": "Xem báo cáo tồn kho",
+    "deprecated": false
+  },
+  {
+    "code": "ai.knowledge.manage",
+    "module": "ai",
+    "description": "Quản lý kho tri thức chatbot",
+    "deprecated": false
+  },
+  {
+    "code": "ai.support.read",
+    "module": "ai",
+    "description": "Xem yêu cầu hỗ trợ từ chatbot",
+    "deprecated": false
+  },
+  {
+    "code": "ai.support.resolve",
+    "module": "ai",
+    "description": "Đóng yêu cầu hỗ trợ",
+    "deprecated": false
+  },
+  {
+    "code": "ai.chat.read",
+    "module": "ai",
+    "description": "Xem hội thoại chatbot (đã che PII)",
+    "deprecated": false
+  },
+  {
+    "code": "ai.insight.read",
+    "module": "ai",
+    "description": "Xem gợi ý / nhận xét AI cho vận hành",
+    "deprecated": false
+  },
+  {
+    "code": "ai.copy.create",
+    "module": "ai",
+    "description": "Dùng AI soạn mô tả / phản hồi",
+    "deprecated": false
+  },
+  {
+    "code": "ai.usage.read",
+    "module": "ai",
+    "description": "Xem chi phí & hạn mức AI",
+    "deprecated": false
+  },
+  {
+    "code": "ai.moderation.read",
+    "module": "ai",
+    "description": "Xem nhãn AI đề xuất kiểm duyệt",
+    "deprecated": false
+  }
+]
