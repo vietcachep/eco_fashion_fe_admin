@@ -11,7 +11,7 @@ export default function NewProductPage() {
     <PermissionGuard permission={PERMISSIONS.productCreate}>
       <div className="flex flex-col gap-4">
         <PageHeader title="Thêm sản phẩm" description="Tạo ở trạng thái nháp; thêm biến thể và ảnh rồi mới đăng bán" />
-        <ProductForm />
+        <ProductForm scope="platform" />
       </div>
     </PermissionGuard>
   );

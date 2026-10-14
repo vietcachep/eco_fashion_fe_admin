@@ -10,8 +10,8 @@ export default function ProductsPage() {
   return (
     <PermissionGuard permission={PERMISSIONS.productRead}>
       <div className="flex flex-col gap-4">
-        <PageHeader title="Sản phẩm" description="Sản phẩm, biến thể màu × size, ảnh, giá — nháp → đăng bán → ẩn" />
-        <ProductsTable />
+        <PageHeader title="Sản phẩm" description="Sản phẩm mọi ngành hàng: biến thể, thuộc tính, ảnh, giá — nháp → đăng bán → ẩn" />
+        <ProductsTable scope="platform" />
       </div>
     </PermissionGuard>
   );

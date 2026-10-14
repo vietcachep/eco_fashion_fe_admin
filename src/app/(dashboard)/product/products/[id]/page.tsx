@@ -9,7 +9,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const { id } = await params;
   return (
     <PermissionGuard permission={PERMISSIONS.productRead}>
-      <ProductDetailScreen id={id} />
+      <ProductDetailScreen scope="platform" id={id} />
     </PermissionGuard>
   );
 }
