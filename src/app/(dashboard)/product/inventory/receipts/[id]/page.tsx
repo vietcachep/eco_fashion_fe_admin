@@ -9,7 +9,7 @@ export default async function ReceiptDetailPage({ params }: { params: Promise<{ 
   const { id } = await params;
   return (
     <PermissionGuard permission={PERMISSIONS.inventoryRead}>
-      <ReceiptDetail id={id} />
+      <ReceiptDetail scope="platform" id={id} />
     </PermissionGuard>
   );
 }

@@ -11,7 +11,7 @@ export default function NewReceiptPage() {
     <PermissionGuard permission={PERMISSIONS.inventoryReceive}>
       <div className="flex flex-col gap-4">
         <PageHeader title="Lập phiếu nhập kho" description="Chọn biến thể, số lượng, giá vốn — lưu nháp rồi ghi sổ" />
-        <ReceiptForm />
+        <ReceiptForm scope="platform" />
       </div>
     </PermissionGuard>
   );

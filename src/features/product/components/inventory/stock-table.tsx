@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
-import { HistoryIcon, SlidersHorizontalIcon } from "lucide-react";
+import { HistoryIcon, PlusIcon, SlidersHorizontalIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/shared/data-table";
 import { ApiErrorState } from "@/components/shared/api-error-state";
@@ -11,12 +11,13 @@ import { FilterTabs } from "@/components/shared/filter-tabs";
 import { PermissionGate } from "@/components/shared/permission-gate";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { isForbiddenError } from "@/lib/api-error";
-import { PERMISSIONS, ROUTES } from "@/lib/constants";
 import { formatNumber } from "@/lib/format";
 import { useListState } from "@/hooks/use-list-state";
+import { usePermission } from "@/hooks/use-permission";
 import { useStock } from "@/features/product/hooks/use-inventory";
 import { StockMovementsDialog } from "@/features/product/components/inventory/stock-movements-dialog";
 import { AdjustStockDialog } from "@/features/product/components/inventory/adjust-stock-dialog";
+import { INVENTORY_SCOPES, variantLabel, type InventoryScope } from "@/features/product/types/inventory";
 import type { StockRowResponse } from "@/lib/api/generated/model";
 
 const TABS = [
@@ -31,14 +32,16 @@ const DEFAULTS = { low: "" };
 /*
  * Tồn kho theo biến thể: tồn / giữ cho đơn / khả dụng, cờ sắp hết. Hành động:
  * xem sổ kho (movements) và điều chỉnh (kiểm kê, hỏng, mất) — nhập hàng đi
- * đường phiếu nhập.
+ * đường phiếu nhập. `scope` chọn kho toàn sàn hay chỉ kho của shop mình.
  */
-export function StockTable() {
+export function StockTable({ scope }: { scope: InventoryScope }) {
+  const cfg = INVENTORY_SCOPES[scope];
+  const canOpenProduct = usePermission(cfg.permissions.productRead);
   const { filters, setFilter, search, setSearch, keyword, pageIndex, setPageIndex, page } = useListState(DEFAULTS);
   const [movements, setMovements] = useState<StockRowResponse | null>(null);
   const [adjust, setAdjust] = useState<StockRowResponse | null>(null);
 
-  const { data, isLoading, isError, error } = useStock({
+  const { data, isLoading, isError, error } = useStock(scope, {
     keyword,
     lowStockOnly: filters.low === "low",
     page,
@@ -49,16 +52,22 @@ export function StockTable() {
     () => [
       {
         accessorKey: "productName",
-        header: "Sản phẩm / biến thể",
+        header: `Sản phẩm / ${cfg.variantHeader.toLowerCase()}`,
         cell: ({ row }) => {
           const r = row.original;
+          const label = variantLabel(r);
           return (
-            <div className="leading-tight">
-              <Link href={`${ROUTES.product.products}/${r.productId}`} className="font-medium hover:underline">
-                {r.productName}
-              </Link>
+            <div className="min-w-44 leading-tight">
+              {canOpenProduct ? (
+                <Link href={`${cfg.routes.products}/${r.productId}`} className="font-medium hover:underline">
+                  {r.productName}
+                </Link>
+              ) : (
+                <span className="font-medium">{r.productName}</span>
+              )}
               <p className="text-xs text-muted-foreground">
-                {r.color} · {r.size} · <code className="font-mono">{r.sku}</code>
+                {label ? `${label} · ` : ""}
+                <code className="font-mono">{r.sku}</code>
               </p>
             </div>
           );
@@ -95,7 +104,7 @@ export function StockTable() {
               <HistoryIcon className="size-3.5" />
               Sổ kho
             </Button>
-            <PermissionGate permission={PERMISSIONS.inventoryAdjust}>
+            <PermissionGate permission={cfg.permissions.adjust}>
               <Button variant="outline" size="sm" className="h-8" onClick={() => setAdjust(row.original)}>
                 <SlidersHorizontalIcon className="size-3.5" />
                 Điều chỉnh
@@ -105,14 +114,22 @@ export function StockTable() {
         ),
       },
     ],
-    [],
+    [cfg, canOpenProduct],
   );
 
   if (isForbiddenError(error)) return <ApiErrorState error={error} fallback={LOAD_ERROR} />;
 
   return (
     <div className="flex flex-col gap-3">
-      <FilterTabs tabs={TABS} value={filters.low} onChange={(v) => setFilter("low", v)} />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <FilterTabs tabs={TABS} value={filters.low} onChange={(v) => setFilter("low", v)} />
+        <PermissionGate permission={cfg.permissions.receive}>
+          <Button size="sm" nativeButton={false} render={<Link href={cfg.routes.receiptNew} />}>
+            <PlusIcon className="size-4" />
+            Lập phiếu nhập
+          </Button>
+        </PermissionGate>
+      </div>
       {isError ? <ApiErrorState error={error} fallback={LOAD_ERROR} compact /> : null}
       <DataTable
         columns={columns}
@@ -129,8 +146,8 @@ export function StockTable() {
           onPageChange: setPageIndex,
         }}
       />
-      <StockMovementsDialog row={movements} onClose={() => setMovements(null)} />
-      <AdjustStockDialog row={adjust} onClose={() => setAdjust(null)} />
+      <StockMovementsDialog scope={scope} row={movements} onClose={() => setMovements(null)} />
+      <AdjustStockDialog scope={scope} row={adjust} onClose={() => setAdjust(null)} />
     </div>
   );
 }

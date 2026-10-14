@@ -13,17 +13,18 @@ import { DetailList } from "@/components/shared/detail-list";
 import { PageHeader } from "@/components/shared/page-header";
 import { PermissionGate } from "@/components/shared/permission-gate";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { PERMISSIONS, ROUTES } from "@/lib/constants";
-import { formatDateTime, formatNumber } from "@/lib/format";
+import { formatDateTime, formatNumber, formatVnd } from "@/lib/format";
 import { RECEIPT_STATUS, statusMeta } from "@/lib/labels";
 import { usePostReceipt, useReceipt } from "@/features/product/hooks/use-inventory";
+import { INVENTORY_SCOPES, type InventoryScope } from "@/features/product/types/inventory";
 
 const LOAD_ERROR = "Không tải được phiếu nhập.";
 
 /* Chi tiết phiếu nhập: dòng hàng + nút "Ghi sổ" (cộng tồn, idempotent, không hoàn tác). */
-export function ReceiptDetail({ id }: { id: string }) {
-  const { data: r, isPending, error } = useReceipt(id);
-  const post = usePostReceipt(id);
+export function ReceiptDetail({ scope, id }: { scope: InventoryScope; id: string }) {
+  const cfg = INVENTORY_SCOPES[scope];
+  const { data: r, isPending, error } = useReceipt(scope, id);
+  const post = usePostReceipt(scope, id);
   const [confirm, setConfirm] = useState(false);
 
   if (error) return <ApiErrorState error={error} fallback={LOAD_ERROR} />;
@@ -41,12 +42,12 @@ export function ReceiptDetail({ id }: { id: string }) {
     <div className="flex flex-col gap-4">
       <PageHeader title={`Phiếu nhập ${r.code}`} description={r.supplierName ? `Nhà cung cấp: ${r.supplierName}` : undefined}>
         <StatusBadge tone={status.tone}>{status.label}</StatusBadge>
-        <Button variant="outline" nativeButton={false} render={<Link href={ROUTES.product.receipts} />}>
+        <Button variant="outline" nativeButton={false} render={<Link href={cfg.routes.receipts} />}>
           <ArrowLeftIcon className="size-4" />
           Danh sách
         </Button>
         {r.status === "draft" ? (
-          <PermissionGate permission={PERMISSIONS.inventoryReceive}>
+          <PermissionGate permission={cfg.permissions.receive}>
             <Button onClick={() => setConfirm(true)} disabled={post.isPending}>
               {post.isPending ? <Loader2Icon className="size-4 animate-spin" /> : <CheckIcon className="size-4" />}
               Ghi sổ nhập kho
@@ -67,6 +68,7 @@ export function ReceiptDetail({ id }: { id: string }) {
                   <TableHead>SKU</TableHead>
                   <TableHead className="text-right">Số lượng</TableHead>
                   <TableHead className="text-right">Giá vốn</TableHead>
+                  <TableHead className="text-right">Thành tiền</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -74,7 +76,8 @@ export function ReceiptDetail({ id }: { id: string }) {
                   <TableRow key={i.variantId}>
                     <TableCell className="font-mono text-sm">{i.sku}</TableCell>
                     <TableCell className="text-right">{formatNumber(i.quantity)}</TableCell>
-                    <TableCell className="text-right">{i.unitCost.display}</TableCell>
+                    <TableCell className="text-right whitespace-nowrap">{i.unitCost.display}</TableCell>
+                    <TableCell className="text-right whitespace-nowrap">{formatVnd(i.quantity * Number(i.unitCost.amount))}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

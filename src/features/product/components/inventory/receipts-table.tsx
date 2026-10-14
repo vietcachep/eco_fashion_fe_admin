@@ -11,11 +11,11 @@ import { FilterTabs } from "@/components/shared/filter-tabs";
 import { PermissionGate } from "@/components/shared/permission-gate";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { isForbiddenError } from "@/lib/api-error";
-import { PERMISSIONS, ROUTES } from "@/lib/constants";
 import { formatDateTime, formatNumber } from "@/lib/format";
 import { RECEIPT_STATUS, statusMeta } from "@/lib/labels";
 import { useListState } from "@/hooks/use-list-state";
 import { useReceipts } from "@/features/product/hooks/use-inventory";
+import { INVENTORY_SCOPES, type InventoryScope } from "@/features/product/types/inventory";
 import type { StockReceiptResponse } from "@/lib/api/generated/model";
 
 const TABS = [
@@ -30,9 +30,10 @@ const LOAD_ERROR = "Không tải được phiếu nhập.";
 const DEFAULTS = { status: "" };
 
 /* Danh sách phiếu nhập kho: mã, NCC, số dòng, tổng vốn, trạng thái. */
-export function ReceiptsTable() {
+export function ReceiptsTable({ scope }: { scope: InventoryScope }) {
+  const cfg = INVENTORY_SCOPES[scope];
   const { filters, setFilter, pageIndex, setPageIndex, page } = useListState(DEFAULTS);
-  const { data, isLoading, isError, error } = useReceipts({ status: filters.status, page, size: PAGE_SIZE });
+  const { data, isLoading, isError, error } = useReceipts(scope, { status: filters.status, page, size: PAGE_SIZE });
 
   const columns: ColumnDef<StockReceiptResponse>[] = useMemo(
     () => [
@@ -40,7 +41,7 @@ export function ReceiptsTable() {
         accessorKey: "code",
         header: "Mã phiếu",
         cell: ({ row }) => (
-          <Link href={`${ROUTES.product.receipts}/${row.original.id}`} className="font-mono text-sm font-medium hover:underline">
+          <Link href={`${cfg.routes.receipts}/${row.original.id}`} className="font-mono text-sm font-medium hover:underline">
             {row.original.code}
           </Link>
         ),
@@ -75,7 +76,7 @@ export function ReceiptsTable() {
         header: () => <span className="sr-only">Thao tác</span>,
         cell: ({ row }) => (
           <div className="flex justify-end">
-            <Button variant="outline" size="sm" nativeButton={false} className="h-8" render={<Link href={`${ROUTES.product.receipts}/${row.original.id}`} />}>
+            <Button variant="outline" size="sm" nativeButton={false} className="h-8" render={<Link href={`${cfg.routes.receipts}/${row.original.id}`} />}>
               <EyeIcon className="size-3.5" />
               Chi tiết
             </Button>
@@ -83,7 +84,7 @@ export function ReceiptsTable() {
         ),
       },
     ],
-    [],
+    [cfg],
   );
 
   if (isForbiddenError(error)) return <ApiErrorState error={error} fallback={LOAD_ERROR} />;
@@ -92,8 +93,8 @@ export function ReceiptsTable() {
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <FilterTabs tabs={TABS} value={filters.status} onChange={(v) => setFilter("status", v)} />
-        <PermissionGate permission={PERMISSIONS.inventoryReceive}>
-          <Button nativeButton={false} render={<Link href={ROUTES.product.receiptNew} />}>
+        <PermissionGate permission={cfg.permissions.receive}>
+          <Button nativeButton={false} render={<Link href={cfg.routes.receiptNew} />}>
             <PlusIcon className="size-4" />
             Lập phiếu nhập
           </Button>

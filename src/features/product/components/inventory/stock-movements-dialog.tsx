@@ -4,22 +4,35 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ApiErrorState } from "@/components/shared/api-error-state";
+import { StatusBadge } from "@/components/shared/status-badge";
 import { formatDateTime, formatNumber } from "@/lib/format";
+import { statusMeta, STOCK_MOVEMENT_TYPE } from "@/lib/labels";
 import { useStockMovements } from "@/features/product/hooks/use-inventory";
-import type { StockRowResponse } from "@/lib/api/generated/model";
+import { variantLabel, type InventoryScope } from "@/features/product/types/inventory";
+import type { StockMovementResponse, StockRowResponse } from "@/lib/api/generated/model";
 
-const TYPE_LABEL: Record<string, string> = {
-  receipt: "Nhập kho",
-  adjust: "Điều chỉnh",
-  reserve: "Giữ cho đơn",
-  release: "Nhả giữ",
-  deduct: "Trừ khi giao",
-  return: "Trả hàng",
-};
+/* Tham chiếu của một biến động: phiếu nhập / đơn hàng / lý do điều chỉnh (note). */
+function movementRef(m: StockMovementResponse): string {
+  const parts: string[] = [];
+  if (m.refType === "stock_receipt" && m.refId) parts.push(`Phiếu nhập ${m.refId}`);
+  else if (m.refType === "order" && m.refId) parts.push(`Đơn ${m.refId}`);
+  else if (m.refType && m.refType !== "adjust") parts.push(`${m.refType} ${m.refId ?? ""}`.trim());
+  if (m.note) parts.push(m.note);
+  return parts.join(" · ");
+}
 
 /* Sổ kho của một biến thể — mọi biến động tồn (nhập, điều chỉnh, giữ/nhả/trừ theo đơn). */
-export function StockMovementsDialog({ row, onClose }: { row: StockRowResponse | null; onClose: () => void }) {
-  const { data, isPending, error } = useStockMovements(row?.variantId ?? "");
+export function StockMovementsDialog({
+  scope,
+  row,
+  onClose,
+}: {
+  scope: InventoryScope;
+  row: StockRowResponse | null;
+  onClose: () => void;
+}) {
+  const { data, isPending, error } = useStockMovements(scope, row?.variantId ?? "");
+  const label = row ? variantLabel(row) : "";
 
   return (
     <Dialog open={!!row} onOpenChange={(o) => !o && onClose()}>
@@ -27,7 +40,8 @@ export function StockMovementsDialog({ row, onClose }: { row: StockRowResponse |
         <DialogHeader>
           <DialogTitle>Sổ kho — {row?.productName}</DialogTitle>
           <DialogDescription>
-            {row?.color} · {row?.size} · <code className="font-mono">{row?.sku}</code> · tồn hiện tại {formatNumber(row?.stock)}
+            {label ? `${label} · ` : ""}
+            <code className="font-mono">{row?.sku}</code> · tồn hiện tại {formatNumber(row?.stock)}
           </DialogDescription>
         </DialogHeader>
         {error ? (
@@ -54,21 +68,23 @@ export function StockMovementsDialog({ row, onClose }: { row: StockRowResponse |
                     </TableCell>
                   </TableRow>
                 ) : null}
-                {(data ?? []).map((m) => (
-                  <TableRow key={m.id}>
-                    <TableCell className="text-xs text-muted-foreground">{formatDateTime(m.createdAt)}</TableCell>
-                    <TableCell>{TYPE_LABEL[m.type] ?? m.type}</TableCell>
-                    <TableCell className={m.quantity < 0 ? "text-right text-destructive" : "text-right text-emerald-700"}>
-                      {m.quantity > 0 ? "+" : ""}
-                      {formatNumber(m.quantity)}
-                    </TableCell>
-                    <TableCell className="text-right">{formatNumber(m.stockAfter)}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {m.refType ? `${m.refType} ${m.refId ?? ""}` : ""}
-                      {m.note ? ` ${m.note}` : ""}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {(data ?? []).map((m) => {
+                  const type = statusMeta(STOCK_MOVEMENT_TYPE, m.type);
+                  return (
+                    <TableRow key={m.id}>
+                      <TableCell className="text-xs whitespace-nowrap text-muted-foreground">{formatDateTime(m.createdAt)}</TableCell>
+                      <TableCell>
+                        <StatusBadge tone={type.tone}>{type.label}</StatusBadge>
+                      </TableCell>
+                      <TableCell className={m.quantity < 0 ? "text-right text-destructive" : "text-right text-emerald-700"}>
+                        {m.quantity > 0 ? "+" : ""}
+                        {formatNumber(m.quantity)}
+                      </TableCell>
+                      <TableCell className="text-right">{formatNumber(m.stockAfter)}</TableCell>
+                      <TableCell className="min-w-40 text-xs whitespace-normal text-muted-foreground">{movementRef(m)}</TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>

@@ -11,7 +11,7 @@ export default function StockPage() {
     <PermissionGuard permission={PERMISSIONS.inventoryRead}>
       <div className="flex flex-col gap-4">
         <PageHeader title="Tồn kho" description="Tồn theo biến thể: tồn / giữ cho đơn / khả dụng; sổ kho và điều chỉnh" />
-        <StockTable />
+        <StockTable scope="platform" />
       </div>
     </PermissionGuard>
   );
