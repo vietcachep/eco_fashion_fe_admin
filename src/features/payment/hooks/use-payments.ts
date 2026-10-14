@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import {
   adminPaymentControllerConfirm,
   adminPaymentControllerProcess,
+  adminPaymentControllerRetryFinalize,
   adminPaymentControllerSetMethod,
   useAdminPaymentControllerGet,
   useAdminPaymentControllerList,
@@ -87,6 +88,19 @@ export function useProcessRefund(id: string) {
       toast.success("Đã hoàn tiền.");
     },
     onError: (e) => toast.error(apiErrorMessage(e, "Hoàn tiền thất bại.")),
+  });
+}
+
+/* Cổng ĐÃ chi nhưng ghi sổ lỗi: chỉ ghi sổ nốt, không gọi cổng lần hai (backend idempotent). */
+export function useRetryFinalizeRefund() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => adminPaymentControllerRetryFinalize(id),
+    onSuccess: () => {
+      invalidateByPath(qc, REFUNDS_PATH, PATH, ...RELATED);
+      toast.success("Đã hoàn tất ghi sổ hoàn tiền.");
+    },
+    onError: (e) => toast.error(apiErrorMessage(e, "Ghi sổ hoàn tiền thất bại.")),
   });
 }
 

@@ -41,4 +41,8 @@ export interface RefundResponse {
   providerRef: string | null;
   processedAt: string | null;
   createdAt: string;
+  /* order = hoàn theo đơn · duplicate_payment = hoàn khoản khách trả trùng (đơn vẫn giữ trạng thái đã thanh toán). */
+  kind: string;
+  /* failed mà cổng VNPay từng được gọi không rõ kết quả — phải đối chiếu trên cổng trước khi hoàn lại. */
+  needsReconcile: boolean;
 }
