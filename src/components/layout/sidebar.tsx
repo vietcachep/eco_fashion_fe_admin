@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ChevronsLeft, ChevronsRight } from "lucide-react";
-import { ROUTES } from "@/lib/constants";
+import { firstAllowedRoute, ROUTES } from "@/lib/constants";
 import { useSidebarStore } from "@/stores/sidebar-store";
 import { cn } from "@/lib/utils";
 import {
@@ -24,13 +24,14 @@ import { useCurrentUser } from "@/features/identity/hooks/use-current-user";
  * nó, điều hướng không làm sidebar "nhảy". `self-start` là mấu chốt — thiếu nó
  * flex `stretch` kéo aside cao bằng trang và sticky không còn khoảng để bám.
  */
-export function Sidebar() {
+export function Sidebar({ scope = "platform" }: { scope?: "platform" | "vendor" }) {
   const collapsed = useSidebarStore((s) => s.collapsed);
   const toggle = useSidebarStore((s) => s.toggle);
   const { data: me, isLoading } = useCurrentUser();
 
   const displayName = me?.fullName || me?.email || "Người dùng";
   const sub = me?.roleName ?? me?.email ?? "";
+  const homeHref = me?.permissionCodes ? firstAllowedRoute(me.permissionCodes, scope) : scope === "vendor" ? ROUTES.vendor.dashboard : ROUTES.dashboard;
 
   return (
     <aside
@@ -46,8 +47,8 @@ export function Sidebar() {
           collapsed ? "justify-center px-2 pt-4 pb-3" : "px-[18px] pt-5 pb-4",
         )}
       >
-        <Link href={ROUTES.dashboard} aria-label="FITLY quản trị">
-          <SidebarBrand compact={collapsed} />
+        <Link href={homeHref} aria-label="FITLY quản trị">
+          <SidebarBrand compact={collapsed} eyebrow={scope === "vendor" ? "CỔNG NHÀ CUNG CẤP" : undefined} />
         </Link>
       </div>
 
@@ -63,7 +64,7 @@ export function Sidebar() {
 
       {/* min-h-0: không có nó flex item không co dưới nội dung nên overflow-y-auto vô hiệu. */}
       <div className="scrollbar-subtle min-h-0 flex-1 overflow-y-auto overscroll-contain">
-        <SidebarNav collapsed={collapsed} />
+        <SidebarNav collapsed={collapsed} scope={scope} />
       </div>
 
       <div

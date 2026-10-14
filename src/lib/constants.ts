@@ -8,7 +8,9 @@ import {
   Package,
   Settings,
   ShoppingBag,
+  Store,
   Users,
+  Wallet,
   Warehouse,
 } from "lucide-react";
 import type { PermissionCode } from "@/lib/permission-codes.generated";
@@ -37,6 +39,7 @@ export const ROUTES = {
     categories: "/catalog/categories",
     collections: "/catalog/collections",
     attributes: "/catalog/attributes",
+    dynamicAttributes: "/catalog/dynamic-attributes",
   },
   product: {
     products: "/product/products",
@@ -84,6 +87,38 @@ export const ROUTES = {
     usage: "/ai/usage",
     tools: "/ai/tools",
   },
+  /*
+   * Module `shop` PHÍA SÀN — nhân viên sàn duyệt/khoá/xem shop bất kỳ (quyền
+   * `supplier.*`). Route-group vẫn `(dashboard)` (PLAN-0002 §5).
+   */
+  shop: {
+    shops: "/shop/shops",
+    wallets: "/shop/wallets",
+    walletDeposits: "/shop/wallet-deposits",
+    payouts: "/shop/payouts",
+  },
+  /*
+   * Route-group MỚI, riêng cho nhà cung cấp (chủ/nhân viên shop tự quản gian
+   * hàng của mình, quyền `shop.*`) — PLAN-0002 §1/§5. Đặt tên `vendor` (khác
+   * `shop` ở trên) để khỏi trùng namespace route với module BE `shop`.
+   */
+  vendor: {
+    dashboard: "/vendor",
+    shop: "/vendor/shop",
+    shopMembers: "/vendor/shop/members",
+    products: "/vendor/products",
+    productNew: "/vendor/products/new",
+    inventory: "/vendor/inventory",
+    inventoryReceipts: "/vendor/inventory/receipts",
+    inventoryReceiptNew: "/vendor/inventory/receipts/new",
+    orders: "/vendor/orders",
+    reports: "/vendor/reports",
+    promotions: "/vendor/promotions",
+    promotionNew: "/vendor/promotions/new",
+    reviews: "/vendor/reviews",
+    wallet: "/vendor/wallet",
+    payouts: "/vendor/payouts",
+  },
 } as const;
 
 /*
@@ -106,6 +141,8 @@ export const PERMISSIONS = {
   categoryRead: "catalog.category.read",
   categoryManage: "catalog.category.manage",
   attributeManage: "catalog.attribute.manage",
+  dynamicAttributeRead: "catalog.dynamic_attribute.read",
+  dynamicAttributeManage: "catalog.dynamic_attribute.manage",
   collectionManage: "catalog.collection.manage",
   // product
   productRead: "product.product.read",
@@ -154,6 +191,37 @@ export const PERMISSIONS = {
   aiCopyCreate: "ai.copy.create",
   aiUsageRead: "ai.usage.read",
   aiModerationRead: "ai.moderation.read",
+  // sàn quản lý MỌI gian hàng (supplier.*)
+  supplierShopRead: "supplier.shop.read",
+  supplierShopApprove: "supplier.shop.approve",
+  supplierShopSuspend: "supplier.shop.suspend",
+  supplierShopReject: "supplier.shop.reject",
+  supplierShopCommission: "supplier.shop.commission",
+  supplierWalletRead: "supplier.wallet.read",
+  supplierWalletAdjust: "supplier.wallet.adjust",
+  supplierPayoutRead: "supplier.payout.read",
+  supplierPayoutProcess: "supplier.payout.process",
+  // vendor — quyền của vai (shop_owner/shop_staff) trong CHÍNH gian hàng mình; nguồn: GET /shop/session
+  shopProfileRead: "shop.profile.read",
+  shopProfileUpdate: "shop.profile.update",
+  shopProductRead: "shop.product.read",
+  shopProductManage: "shop.product.manage",
+  shopReviewRead: "shop.review.read",
+  shopReviewReply: "shop.review.reply",
+  shopStaffRead: "shop.staff.read",
+  shopStaffAdd: "shop.staff.invite", // mã quyền giữ tên cũ "invite" (thời còn mời nhân viên); nghĩa hiện tại: thêm nhân viên
+  shopStaffUpdate: "shop.staff.update",
+  shopStaffRemove: "shop.staff.remove",
+  shopOrderRead: "shop.order.read",
+  shopOrderUpdate: "shop.order.update",
+  shopInventoryRead: "shop.inventory.read",
+  shopInventoryManage: "shop.inventory.manage",
+  shopPromotionRead: "shop.promotion.read",
+  shopPromotionManage: "shop.promotion.manage",
+  shopReportRead: "shop.report.read",
+  shopWalletRead: "shop.wallet.read",
+  shopWalletDepositRequest: "shop.wallet.deposit_request",
+  shopPayoutRead: "shop.payout.read",
 } as const satisfies Record<string, PermissionCode>;
 
 /*
@@ -318,6 +386,11 @@ export const SIDEBAR_NAV: NavGroup[] = [
             href: ROUTES.catalog.attributes,
             permission: PERMISSIONS.attributeManage,
           },
+          {
+            title: "Thuộc tính động",
+            href: ROUTES.catalog.dynamicAttributes,
+            permission: PERMISSIONS.dynamicAttributeRead,
+          },
         ],
       },
       {
@@ -409,6 +482,39 @@ export const SIDEBAR_NAV: NavGroup[] = [
     ],
   },
   {
+    /* Sàn quản lý gian hàng nhà cung cấp (module BE `shop` + payment: ví quỹ COD, đối soát) — mã quyền `supplier.*`. */
+    title: "SÀN — GIAN HÀNG",
+    items: [
+      {
+        id: "shop-marketplace",
+        title: "Gian hàng",
+        icon: Store,
+        children: [
+          {
+            title: "Danh sách shop",
+            href: ROUTES.shop.shops,
+            permission: PERMISSIONS.supplierShopRead,
+          },
+          {
+            title: "Ví quỹ COD",
+            href: ROUTES.shop.wallets,
+            permission: PERMISSIONS.supplierWalletRead,
+          },
+          {
+            title: "Yêu cầu nộp quỹ",
+            href: ROUTES.shop.walletDeposits,
+            permission: PERMISSIONS.supplierWalletRead,
+          },
+          {
+            title: "Đối soát (payout)",
+            href: ROUTES.shop.payouts,
+            permission: PERMISSIONS.supplierPayoutRead,
+          },
+        ],
+      },
+    ],
+  },
+  {
     title: "HỆ THỐNG",
     items: [
       {
@@ -470,13 +576,128 @@ export const SIDEBAR_NAV: NavGroup[] = [
 ];
 
 /*
+ * Menu sidebar RIÊNG cho scope vendor (route-group `(vendor)`, PLAN-0002 §5) — song song `SIDEBAR_NAV` (scope "platform").
+ * `RoleGuard` chặn cả scope ở cửa vào (phải là thành viên gian hàng đã duyệt); phân quyền CHI TIẾT theo vai trong shop
+ * (chủ shop / nhân viên) lọc ở đây + `PermissionGuard`/`PermissionGate` từng màn. Mã `shop.*` lấy từ `GET /shop/session`
+ * (gộp vào `permissionCodes` của hồ sơ người dùng — xem features/identity/api/auth-api.ts getCurrentUser).
+ */
+export const VENDOR_NAV: NavGroup[] = [
+  {
+    title: "TỔNG QUAN",
+    items: [
+      {
+        id: "vendor-dashboard",
+        title: "Dashboard",
+        href: ROUTES.vendor.dashboard,
+        icon: LayoutDashboard,
+        permission: PERMISSIONS.shopReportRead,
+      },
+      {
+        id: "vendor-report",
+        title: "Báo cáo doanh thu",
+        href: ROUTES.vendor.reports,
+        icon: BarChart3,
+        permission: PERMISSIONS.shopReportRead,
+      },
+    ],
+  },
+  {
+    title: "GIAN HÀNG CỦA TÔI",
+    items: [
+      {
+        id: "vendor-shop",
+        title: "Gian hàng",
+        icon: Store,
+        children: [
+          { title: "Hồ sơ & tài khoản ngân hàng", href: ROUTES.vendor.shop, permission: PERMISSIONS.shopProfileRead },
+          { title: "Nhân viên shop", href: ROUTES.vendor.shopMembers, permission: PERMISSIONS.shopStaffRead },
+        ],
+      },
+      {
+        id: "vendor-product",
+        title: "Sản phẩm",
+        icon: Package,
+        href: ROUTES.vendor.products,
+        permission: PERMISSIONS.shopProductRead,
+      },
+      {
+        id: "vendor-inventory",
+        title: "Kho hàng",
+        icon: Warehouse,
+        children: [
+          { title: "Tồn kho", href: ROUTES.vendor.inventory, permission: PERMISSIONS.shopInventoryRead },
+          { title: "Phiếu nhập kho", href: ROUTES.vendor.inventoryReceipts, permission: PERMISSIONS.shopInventoryRead },
+        ],
+      },
+      {
+        id: "vendor-order",
+        title: "Đơn hàng",
+        icon: ShoppingBag,
+        href: ROUTES.vendor.orders,
+        permission: PERMISSIONS.shopOrderRead,
+      },
+    ],
+  },
+  {
+    title: "MARKETING & DỊCH VỤ",
+    items: [
+      {
+        id: "vendor-promotion",
+        title: "Mã khuyến mãi",
+        icon: Megaphone,
+        href: ROUTES.vendor.promotions,
+        permission: PERMISSIONS.shopPromotionRead,
+      },
+      {
+        id: "vendor-review",
+        title: "Đánh giá sản phẩm",
+        icon: Users,
+        href: ROUTES.vendor.reviews,
+        permission: PERMISSIONS.shopReviewRead,
+      },
+    ],
+  },
+  {
+    title: "TÀI CHÍNH",
+    items: [
+      {
+        id: "vendor-finance",
+        title: "Tài chính",
+        icon: Wallet,
+        children: [
+          { title: "Ví quỹ COD", href: ROUTES.vendor.wallet, permission: PERMISSIONS.shopWalletRead },
+          { title: "Đối soát (payout)", href: ROUTES.vendor.payouts, permission: PERMISSIONS.shopPayoutRead },
+        ],
+      },
+    ],
+  },
+];
+
+/*
  * Màn đầu tiên người dùng ĐƯỢC vào theo thứ tự sidebar — dùng sau đăng nhập.
  * Nhân viên kho không có reporting.dashboard.read mà bị đưa về /dashboard sẽ
  * gặp 403 ngay câu đầu tiên; đưa họ tới màn có quyền (Tồn kho) thì hợp lý hơn.
+ *
+ * `scope` chọn cây menu để dò ("platform" mặc định — giữ nguyên hành vi cũ
+ * cho mọi lời gọi hiện có); "vendor" dò trong `VENDOR_NAV` (không mục nào
+ * khai `permission` theo vai trong shop — dò như menu sàn).
  */
-export function firstAllowedRoute(permissionCodes: readonly string[]): string {
+/*
+ * Khu vực vào sau đăng nhập. Người CHỈ có quyền `shop.*` (chủ/nhân viên gian hàng, vai khách của sàn) vào thẳng /vendor; nhân viên sàn có
+ * quyền ngoài `shop.*` vào khu sàn dù kiêm một gian hàng (vd quản trị sàn là chủ FITLY Official) — tránh đưa quản trị sàn vào cổng vendor.
+ */
+export function landingScope(permissionCodes: readonly string[], hasActiveShop: boolean): "platform" | "vendor" {
+  const hasPlatformAccess = permissionCodes.some((c) => !c.startsWith("shop."));
+  return hasActiveShop && !hasPlatformAccess ? "vendor" : "platform";
+}
+
+export function firstAllowedRoute(
+  permissionCodes: readonly string[],
+  scope: "platform" | "vendor" = "platform",
+): string {
   const has = (code?: PermissionCode) => !code || permissionCodes.includes(code);
-  for (const group of SIDEBAR_NAV) {
+  const nav = scope === "vendor" ? VENDOR_NAV : SIDEBAR_NAV;
+  for (const group of nav) {
     for (const item of group.items) {
       if (!has(item.permission)) continue;
       if (item.href) return item.href;
@@ -484,5 +705,5 @@ export function firstAllowedRoute(permissionCodes: readonly string[]): string {
       if (child) return child.href;
     }
   }
-  return ROUTES.dashboard;
+  return scope === "vendor" ? ROUTES.vendor.dashboard : ROUTES.dashboard;
 }

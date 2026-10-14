@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
-import { SIDEBAR_NAV, type NavItem } from "@/lib/constants";
+import { SIDEBAR_NAV, VENDOR_NAV, type NavItem } from "@/lib/constants";
 import { SIDEBAR_COLORS as C } from "@/components/layout/sidebar-brand";
 import { useCurrentUser } from "@/features/identity/hooks/use-current-user";
 import { useSidebarStore } from "@/stores/sidebar-store";
@@ -44,13 +44,21 @@ function Chevron({ open }: { open: boolean }) {
 export function SidebarNav({
   collapsed = false,
   onNavigate,
+  scope = "platform",
 }: {
   collapsed?: boolean;
   onNavigate?: () => void;
+  /**
+   * Cây menu để hiện — "platform" (mặc định, giữ nguyên hành vi cũ) đọc
+   * `SIDEBAR_NAV`; "vendor" (route-group `(vendor)`, PLAN-0002 §2) đọc
+   * `VENDOR_NAV`.
+   */
+  scope?: "platform" | "vendor";
 }) {
   const pathname = usePathname();
   const setCollapsed = useSidebarStore((s) => s.setCollapsed);
   const { data: me } = useCurrentUser();
+  const nav = scope === "vendor" ? VENDOR_NAV : SIDEBAR_NAV;
 
   /*
    * Chọn mục đang mở theo quy tắc "KHỚP CỤ THỂ NHẤT THẮNG": so khớp theo ĐOẠN
@@ -60,7 +68,7 @@ export function SidebarNav({
    */
   const activeHref = useMemo(() => {
     const all: string[] = [];
-    for (const group of SIDEBAR_NAV) {
+    for (const group of nav) {
       for (const item of group.items) {
         if (item.href) all.push(item.href);
         for (const child of item.children ?? []) all.push(child.href);
@@ -71,7 +79,7 @@ export function SidebarNav({
         .filter((h) => pathname === h || pathname.startsWith(h + "/"))
         .sort((a, b) => b.length - a.length)[0] ?? null
     );
-  }, [pathname]);
+  }, [pathname, nav]);
 
   const itemActive = (item: NavItem) =>
     item.href
@@ -86,22 +94,25 @@ export function SidebarNav({
   const visibleNav = useMemo(() => {
     const perms = new Set(me?.permissionCodes ?? []);
     const allowed = (code?: string) => !code || perms.has(code);
-    return SIDEBAR_NAV.map((group) => ({
-      ...group,
-      items: group.items
-        .filter((item) => allowed(item.permission))
-        .map((item) =>
-          item.children
-            ? { ...item, children: item.children.filter((c) => allowed(c.permission)) }
-            : item,
-        )
-        .filter((item) => !item.children || item.children.length > 0),
-    })).filter((group) => group.items.length > 0);
-  }, [me]);
+    return nav
+      .map((group) => ({
+        ...group,
+        items: group.items
+          .filter((item) => allowed(item.permission))
+          .map((item) =>
+            item.children
+              ? { ...item, children: item.children.filter((c) => allowed(c.permission)) }
+              : item,
+          )
+          .filter((item) => !item.children || item.children.length > 0),
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [me, nav]);
 
   // Mặc định mở mục cha chứa route đang active.
   const [open, setOpen] = useState<string[]>(() =>
-    SIDEBAR_NAV.flatMap((g) => g.items)
+    nav
+      .flatMap((g) => g.items)
       .filter((i) => i.children && itemActive(i))
       .map((i) => i.id),
   );

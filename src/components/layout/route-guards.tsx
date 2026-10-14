@@ -4,7 +4,7 @@ import { Suspense, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2Icon } from "lucide-react";
 import { useAuthStore } from "@/stores/auth-store";
-import { firstAllowedRoute, ROUTES } from "@/lib/constants";
+import { firstAllowedRoute, landingScope, ROUTES } from "@/lib/constants";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { PermissionCode } from "@/lib/permission-codes.generated";
 import { ForbiddenScreen } from "@/components/shared/forbidden-screen";
@@ -12,6 +12,7 @@ import {
   useCurrentUser,
   useHasPermission,
 } from "@/features/identity/hooks/use-current-user";
+import { useShopMemberships } from "@/features/shop/hooks/use-shop-membership";
 
 /*
  * Route guards for the two route groups. Both wait for the silent session
@@ -110,6 +111,45 @@ export function PermissionGuard({
 }
 
 /*
+ * Chặn route-group vendor (`(vendor)/vendor/**`, PLAN-0002 §1/§3): user PHẢI là thành viên ĐANG HOẠT ĐỘNG của một gian hàng (dữ liệu từ
+ * `GET /shop/session` gộp vào hồ sơ người dùng — xem features/identity/api/auth-api.ts getCurrentUser). Nhân viên sàn lạc vào đây (không thuộc shop nào)
+ * → 403 TẠI CHỖ, GIỮ NGUYÊN URL + sidebar/header (đúng phong cách `PermissionGuard`, không redirect để khỏi vướng vòng lặp nút Back).
+ * Gian hàng CHƯA DUYỆT / BỊ KHOÁ / BỊ TỪ CHỐI: backend 403 mọi route /shop/** nên hiện màn giải thích thay vì để từng màn báo lỗi.
+ */
+const SHOP_STATUS_NOTICE: Record<string, { title: string; description: string }> = {
+  pending: {
+    title: "Gian hàng đang chờ sàn duyệt",
+    description: "Hồ sơ gian hàng của bạn đã được ghi nhận. Bạn sẽ dùng được cổng nhà cung cấp ngay khi sàn duyệt — thường trong 1–2 ngày làm việc.",
+  },
+  suspended: {
+    title: "Gian hàng đang bị tạm khoá",
+    description: "Sàn đã tạm khoá gian hàng của bạn nên các chức năng quản lý bị đóng. Vui lòng liên hệ bộ phận hỗ trợ nhà cung cấp để biết lý do và cách mở lại.",
+  },
+  rejected: {
+    title: "Gian hàng không được duyệt",
+    description: "Hồ sơ gian hàng chưa đạt yêu cầu của sàn. Vui lòng liên hệ bộ phận hỗ trợ nhà cung cấp để được hướng dẫn bổ sung.",
+  },
+};
+
+export function RoleGuard({ children, fallback }: { children: React.ReactNode; fallback?: React.ReactNode }) {
+  const { memberships, isPending } = useShopMemberships();
+  const active = memberships.find((m) => m.status === "active");
+
+  if (isPending) return <>{fallback ?? <PermissionSkeleton />}</>;
+  if (!active) {
+    return (
+      <ForbiddenScreen
+        title="Chỉ dành cho nhà cung cấp"
+        description="Tài khoản của bạn chưa thuộc gian hàng nào đang hoạt động. Liên hệ quản trị sàn để được thêm vào một gian hàng."
+      />
+    );
+  }
+  const notice = SHOP_STATUS_NOTICE[active.shopStatus];
+  if (notice) return <ForbiddenScreen title={notice.title} description={notice.description} />;
+  return <Suspense fallback={fallback ?? <PermissionSkeleton />}>{children}</Suspense>;
+}
+
+/*
  * Đã đăng nhập mà vào trang auth → đưa tới màn ĐẦU TIÊN người đó có quyền
  * (không phải luôn /dashboard: nhân viên kho không có quyền dashboard sẽ gặp
  * 403 ngay câu chào). Chờ hồ sơ /me có mã quyền rồi mới điều hướng — chỉ có
@@ -120,10 +160,13 @@ export function GuestGuard({ children }: { children: React.ReactNode }) {
   const bootstrapped = useAuthStore((s) => s.bootstrapped);
   const accessToken = useAuthStore((s) => s.accessToken);
   const { data: me } = useCurrentUser();
+  const { memberships } = useShopMemberships();
 
   useEffect(() => {
-    if (bootstrapped && accessToken && me) router.replace(firstAllowedRoute(me.permissionCodes ?? []));
-  }, [bootstrapped, accessToken, me, router]);
+    if (!bootstrapped || !accessToken || !me) return;
+    const codes = me.permissionCodes ?? [];
+    router.replace(firstAllowedRoute(codes, landingScope(codes, memberships.some((m) => m.status === "active"))));
+  }, [bootstrapped, accessToken, me, memberships, router]);
 
   return <>{children}</>;
 }

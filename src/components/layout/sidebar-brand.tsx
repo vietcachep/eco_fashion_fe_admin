@@ -8,7 +8,14 @@ import { cn } from "@/lib/utils";
  * Không dùng file ảnh: web bán hàng (fashion_frontend_user) dùng logo template
  * Vineta; khu quản trị chỉ cần nhận diện nhanh và nhẹ (Rule 1).
  */
-export function SidebarBrand({ compact = false }: { compact?: boolean }) {
+export function SidebarBrand({
+  compact = false,
+  eyebrow = "QUẢN TRỊ CỬA HÀNG",
+}: {
+  compact?: boolean;
+  /** Dòng nhỏ dưới wordmark — scope vendor truyền "CỔNG NHÀ CUNG CẤP" (PLAN-0002 §2). */
+  eyebrow?: string;
+}) {
   return (
     <div className={cn("flex items-center", compact ? "justify-center" : "gap-2.5")}>
       <BrandGlyph />
@@ -24,7 +31,7 @@ export function SidebarBrand({ compact = false }: { compact?: boolean }) {
             className="pt-1 text-[8.5px] font-semibold"
             style={{ color: SIDEBAR_COLORS.brandEyebrow, letterSpacing: ".14em" }}
           >
-            QUẢN TRỊ CỬA HÀNG
+            {eyebrow}
           </div>
         </div>
       ) : null}

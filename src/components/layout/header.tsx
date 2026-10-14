@@ -31,8 +31,8 @@ import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { ProfileDialog } from "@/features/identity/components/profile/profile-dialog";
 import { useCurrentUser } from "@/features/identity/hooks/use-current-user";
 import { useLogout } from "@/features/identity/hooks/use-logout";
-import { ROUTES } from "@/lib/constants";
-import { CHE_DO_MOCK } from "@/lib/mock/mock-admin-adapter";
+import { useActiveShopMembership } from "@/features/shop/hooks/use-shop-membership";
+import { ROUTES, firstAllowedRoute } from "@/lib/constants";
 
 /* URL web bán hàng để mở nhanh từ khu quản trị (env công khai, không hardcode). */
 const STOREFRONT_URL = process.env.NEXT_PUBLIC_STOREFRONT_URL || "";
@@ -42,14 +42,30 @@ const STOREFRONT_URL = process.env.NEXT_PUBLIC_STOREFRONT_URL || "";
  * Trái: nút menu mobile (Sheet chứa SidebarNav). Phải: link mở web bán hàng +
  * menu tài khoản (hồ sơ, đổi mật khẩu, đăng xuất).
  */
-export function Header() {
+export function Header({ scope = "platform" }: { scope?: "platform" | "vendor" }) {
   const [open, setOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const logoutMutation = useLogout();
   const { data: me, isLoading } = useCurrentUser();
+  const activeShop = useActiveShopMembership();
 
   const displayName = me?.fullName || me?.email || "Người dùng";
   const email = me?.email ?? "";
+  const homeHref = me?.permissionCodes ? firstAllowedRoute(me.permissionCodes, scope) : scope === "vendor" ? ROUTES.vendor.dashboard : ROUTES.dashboard;
+  /*
+   * Menu chuyển khu vực (PLAN-0002 §7/§10 — 1 tài khoản CÓ THỂ vừa là nhân
+   * viên sàn vừa là chủ/nhân viên shop, hiếm nhưng có thể xảy ra với tài
+   * khoản test/demo): chỉ hiện link sang `/vendor` khi user THẬT SỰ có một
+   * shop membership đang hoạt động — tránh chỉ tay vào cửa chắc chắn 403.
+   * Chiều ngược lại (vendor → sàn) không cần điều kiện: PermissionGuard ở
+   * `(dashboard)` tự chặn nếu thiếu quyền `supplier.*`, đúng cách hiện có.
+   */
+  const switchScope =
+    scope === "vendor"
+      ? { href: ROUTES.dashboard, label: "Về khu quản trị sàn" }
+      : activeShop
+        ? { href: ROUTES.vendor.dashboard, label: "Chuyển sang Nhà cung cấp" }
+        : null;
 
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -65,25 +81,19 @@ export function Header() {
               style={{ borderBottom: `1px solid ${SIDEBAR_COLORS.footerBorder}` }}
             >
               <SheetTitle>
-                <Link href={ROUTES.dashboard} onClick={() => setOpen(false)}>
-                  <SidebarBrand />
+                <Link href={homeHref} onClick={() => setOpen(false)}>
+                  <SidebarBrand eyebrow={scope === "vendor" ? "CỔNG NHÀ CUNG CẤP" : undefined} />
                 </Link>
               </SheetTitle>
             </SheetHeader>
             <div className="scrollbar-subtle min-h-0 flex-1 overflow-y-auto overscroll-contain">
-              <SidebarNav onNavigate={() => setOpen(false)} />
+              <SidebarNav onNavigate={() => setOpen(false)} scope={scope} />
             </div>
           </SheetContent>
         </Sheet>
       </div>
 
       <div className="flex flex-1 items-center justify-end gap-2">
-        {CHE_DO_MOCK ? (
-          <span className="hidden items-center rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-600 sm:inline-flex dark:text-amber-400">
-            Dữ liệu mẫu
-          </span>
-        ) : null}
-
         {STOREFRONT_URL ? (
           <Button
             variant="ghost"
@@ -138,6 +148,9 @@ export function Header() {
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => setProfileOpen(true)}>Hồ sơ cá nhân</DropdownMenuItem>
             <DropdownMenuItem render={<Link href={ROUTES.changePassword} />}>Đổi mật khẩu</DropdownMenuItem>
+            {switchScope ? (
+              <DropdownMenuItem render={<Link href={switchScope.href} />}>{switchScope.label}</DropdownMenuItem>
+            ) : null}
             <DropdownMenuSeparator />
             <DropdownMenuItem
               variant="destructive"
