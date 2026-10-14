@@ -11,6 +11,9 @@ export const categorySchema = z.object({
   parentId: z.string(),
   sortOrder: z.number().int().min(0).max(9999),
   isActive: z.boolean(),
+  /* dynamic = dùng Mẫu thuộc tính của ngành; legacy_fashion = bộ thời trang cố định (giới tính/màu/size). */
+  attributeMode: z.enum(["legacy_fashion", "dynamic"]),
 });
 
 export type CategoryInput = z.infer<typeof categorySchema>;
+export type CategoryAttributeMode = CategoryInput["attributeMode"];

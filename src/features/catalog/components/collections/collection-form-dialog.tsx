@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,7 @@ export function CollectionFormDialog({
     isActive: true,
   };
   const form = useForm<CollectionInput>({ resolver: zodResolver(collectionSchema), defaultValues: empty });
+  const isActive = useWatch({ control: form.control, name: "isActive" });
   const errors = form.formState.errors;
 
   useEffect(() => {
@@ -163,8 +164,8 @@ export function CollectionFormDialog({
               <Field>
                 <FieldLabel>Hiển thị</FieldLabel>
                 <label className="flex h-8 items-center gap-2 text-sm">
-                  <Switch checked={form.watch("isActive")} onCheckedChange={(v) => form.setValue("isActive", v)} />
-                  {form.watch("isActive") ? "Đang hiện" : "Đang ẩn"}
+                  <Switch checked={isActive} onCheckedChange={(v) => form.setValue("isActive", v)} />
+                  {isActive ? "Đang hiện" : "Đang ẩn"}
                 </label>
               </Field>
             </div>

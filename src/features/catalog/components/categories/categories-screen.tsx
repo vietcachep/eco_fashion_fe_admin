@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronRightIcon, ImageIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import { ChevronRightIcon, ImageIcon, ListChecksIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,6 +12,7 @@ import { PermissionGate } from "@/components/shared/permission-gate";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { PERMISSIONS } from "@/lib/constants";
 import { formatNumber } from "@/lib/format";
+import { ATTRIBUTE_MODE, statusMeta } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import { usePermission } from "@/hooks/use-permission";
 import {
@@ -20,6 +21,7 @@ import {
   useUploadCategoryImage,
 } from "@/features/catalog/hooks/use-categories";
 import { CategoryFormDialog } from "@/features/catalog/components/categories/category-form-dialog";
+import { CategoryTemplateDialog } from "@/features/catalog/components/categories/category-template-dialog";
 import type { CategoryAdminResponse } from "@/lib/api/generated/model";
 
 const LOAD_ERROR = "Không tải được ngành hàng.";
@@ -47,9 +49,13 @@ export function buildTree(list: CategoryAdminResponse[]): CategoryNode[] {
 }
 
 /*
- * Ngành hàng dạng cây: mỗi hàng có ảnh, tên, slug, số sản phẩm, trạng thái và
+ * Ngành hàng dạng cây: mỗi hàng có ảnh, tên, slug, số sản phẩm, chế độ thuộc tính, trạng thái và
  * nút Sửa / Thêm con / Xoá (khoá theo catalog.category.manage). Ảnh đổi ngay
  * khi chọn file (PUT /image). Xoá hỏi xác nhận.
+ *
+ * "Mẫu thuộc tính" (PLAN-0016) chỉ có ở ngành LÁ có chế độ `dynamic`: ngành `legacy_fashion` dùng bộ
+ * giới tính/màu/size cố định nên không có mẫu (backend PUT trả 409 CATALOG_CATEGORY_NOT_DYNAMIC), còn
+ * ngành cha không gán mẫu — sản phẩm đăng ở ngành lá nên mẫu gán ở ngành con.
  */
 export function CategoriesScreen() {
   const { data, isPending, error } = useAdminCategories();
@@ -58,6 +64,7 @@ export function CategoriesScreen() {
   const upload = useUploadCategoryImage();
   const [form, setForm] = useState<{ open: boolean; edit?: CategoryAdminResponse; parentId?: string }>({ open: false });
   const [toDelete, setToDelete] = useState<CategoryAdminResponse | null>(null);
+  const [templateFor, setTemplateFor] = useState<CategoryAdminResponse | null>(null);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
   const tree = useMemo(() => buildTree(data ?? []), [data]);
@@ -87,6 +94,9 @@ export function CategoriesScreen() {
 
   const renderNode = (n: CategoryNode, depth: number) => {
     const open = !collapsed.has(n.id);
+    const isLeaf = n.children.length === 0;
+    const mode = statusMeta(ATTRIBUTE_MODE, n.attributeMode);
+    const hasTemplate = isLeaf && n.attributeMode === "dynamic";
     return (
       <div key={n.id}>
         <div
@@ -119,10 +129,35 @@ export function CategoriesScreen() {
             <p className="truncate text-sm font-medium">{n.name}</p>
             <p className="truncate text-xs text-muted-foreground">
               /{n.slug} · {formatNumber(n.productCount)} sản phẩm
+              {isLeaf ? <span className="sm:hidden"> · {mode.label}</span> : null}
               {n.description ? ` · ${n.description}` : ""}
             </p>
           </div>
+          {isLeaf ? (
+            <span
+              className="hidden sm:inline-flex"
+              title={
+                hasTemplate
+                  ? "Ngành dùng Mẫu thuộc tính riêng — bấm nút Mẫu thuộc tính để chỉnh"
+                  : "Thời trang cũ: dùng bộ giới tính / chất liệu / màu / size cố định, không có Mẫu thuộc tính"
+              }
+            >
+              <StatusBadge tone={mode.tone}>{mode.label}</StatusBadge>
+            </span>
+          ) : null}
           <StatusBadge tone={n.isActive ? "success" : "neutral"}>{n.isActive ? "Hiện" : "Ẩn"}</StatusBadge>
+          {hasTemplate ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8"
+              title={canManage ? "Mẫu thuộc tính" : "Xem mẫu thuộc tính"}
+              aria-label="Mẫu thuộc tính"
+              onClick={() => setTemplateFor(n)}
+            >
+              <ListChecksIcon className="size-4" />
+            </Button>
+          ) : null}
           <PermissionGate permission={PERMISSIONS.categoryManage}>
             <div className="flex shrink-0 items-center gap-1">
               <Button variant="ghost" size="icon" className="size-8" title="Thêm ngành con" onClick={() => setForm({ open: true, parentId: n.id })}>
@@ -144,7 +179,12 @@ export function CategoriesScreen() {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex justify-end">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <p className="max-w-3xl text-xs text-muted-foreground">
+          <b>Thuộc tính động</b>: ngành lá có nút <ListChecksIcon className="inline size-3.5 align-text-bottom" /> Mẫu thuộc tính để chọn
+          thuộc tính, trục biến thể cho sản phẩm. <b>Thời trang cũ</b> dùng bộ giới tính / chất liệu / màu / size cố định nên không có
+          mẫu. Ngành cha không gán mẫu — gán ở từng ngành con.
+        </p>
         <PermissionGate permission={PERMISSIONS.categoryManage}>
           <Button onClick={() => setForm({ open: true })}>
             <PlusIcon className="size-4" />
@@ -175,6 +215,7 @@ export function CategoriesScreen() {
         parentId={form.parentId}
         all={data ?? []}
       />
+      {templateFor ? <CategoryTemplateDialog key={templateFor.id} category={templateFor} onClose={() => setTemplateFor(null)} /> : null}
       <ConfirmDialog
         open={!!toDelete}
         onOpenChange={(o) => !o && setToDelete(null)}

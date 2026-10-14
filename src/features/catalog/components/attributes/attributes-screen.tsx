@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2Icon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -143,6 +143,8 @@ function ValueFormDialog({
   });
   const errors = form.formState.errors;
   const isColor = attr.kind === "color";
+  const hexValue = useWatch({ control: form.control, name: "hex" });
+  const isActive = useWatch({ control: form.control, name: "isActive" });
 
   useEffect(() => {
     if (!open) return;
@@ -200,7 +202,7 @@ function ValueFormDialog({
                       type="color"
                       aria-label="Chọn màu"
                       className="size-8 cursor-pointer rounded border p-0"
-                      value={/^#[0-9a-fA-F]{6}$/.test(form.watch("hex")) ? form.watch("hex") : "#000000"}
+                      value={/^#[0-9a-fA-F]{6}$/.test(hexValue) ? hexValue : "#000000"}
                       onChange={(e) => form.setValue("hex", e.target.value)}
                     />
                     <Input id="av-hex" placeholder="#000000" aria-invalid={!!errors.hex} {...form.register("hex")} />
@@ -219,8 +221,8 @@ function ValueFormDialog({
               </Field>
             </div>
             <label className="flex items-center gap-2 text-sm">
-              <Switch checked={form.watch("isActive")} onCheckedChange={(v) => form.setValue("isActive", v)} />
-              {form.watch("isActive") ? "Đang dùng" : "Đã ẩn"}
+              <Switch checked={isActive} onCheckedChange={(v) => form.setValue("isActive", v)} />
+              {isActive ? "Đang dùng" : "Đã ẩn"}
             </label>
           </FieldGroup>
         </form>
