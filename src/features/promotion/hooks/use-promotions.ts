@@ -16,12 +16,16 @@ import { invalidateByPath } from "@/lib/query-invalidate";
 import { asPage } from "@/types/common";
 import type { PromotionAdminResponse, PromotionUsageRow } from "@/features/promotion/types/promotion";
 
-/* Mã khuyến mãi (%, số tiền, freeship) + lượt dùng theo đơn. */
+/*
+ * Mã khuyến mãi phía SÀN (%, số tiền, freeship) + lượt dùng theo đơn. Sàn tạo
+ * mã scope=platform; vẫn xem / tắt được mã scope=shop của từng gian hàng.
+ */
 const PATH = "/api/v1/admin/promotions";
 
-export function useAdminPromotions(params: { keyword?: string; active?: boolean; page: number; size: number }) {
+/* `scope` lọc mã sàn / mã gian hàng — chỉ cổng sàn dùng được (vendor đi qua /shop/promotions). */
+export function useAdminPromotions(params: { keyword?: string; active?: boolean; scope?: "platform" | "shop"; page: number; size: number }) {
   return useAdminPromotionControllerList(
-    { q: params.keyword || undefined, active: params.active, page: params.page, size: params.size },
+    { q: params.keyword || undefined, active: params.active, scope: params.scope, page: params.page, size: params.size },
     {
       query: {
         select: (r) => asPage<PromotionAdminResponse>(r),
