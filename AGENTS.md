@@ -8,8 +8,10 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Project Context
 
-Đây là **web quản trị** của cửa hàng thời trang **FITLY** (EcoFashion) — MỘT cửa hàng, KHÔNG phải sàn.
-Backend ở repo riêng `D:\Fullstack\eco_fashion\eco_backend` (NestJS 12 + Prisma 7, modular monolith,
+Đây là **web quản trị** của sàn thương mại điện tử **FITLY** (EcoFashion) — đa gian hàng (PLAN-0014), đa
+ngành hàng (PLAN-0016: thời trang là ngành ĐẦU TIÊN, không phải duy nhất — điện tử/gia dụng/mỹ phẩm...
+dùng bộ thuộc tính riêng theo category). Route `(vendor)` là cổng nhà cung cấp tự quản shop của mình; route
+`(dashboard)` là cổng nhân viên sàn. Backend ở repo riêng `D:\Fullstack\eco_fashion\eco_backend` (NestJS 12 + Prisma 7, modular monolith,
 11 module: identity · catalog · product · cart · order · payment · promotion · review · system ·
 reporting · ai). Đọc `eco_backend/AGENTS.md` và `docs/06_FE_CONTRACT.md` của backend trước khi đụng tới
 API. Web bán hàng cho khách là repo `fashion_frontend_user` (không nằm đây).
@@ -175,6 +177,7 @@ Việc lớn (module mới, đổi shell/auth/API layer, màn báo cáo, xuyên 
 
 ## Done Definition
 
+- CI tự động: `.github/workflows/ci.yml` chạy `npm run verify` (lint + typecheck + build) cho mọi push lên `main` và mọi PR (client API/mã quyền sinh sẵn được commit nên CI không cần backend). Đẩy workflow lên GitHub cần token có quyền `workflow`.
 - `npm run verify` (lint + typecheck + build) xanh.
 - Rule 0–4 tôn trọng; không import chéo feature; không hardcode URL/route/mã quyền.
 - API qua Orval + axios chung; danh sách phân trang server; skeleton khớp layout; 3 lớp quyền đủ.
