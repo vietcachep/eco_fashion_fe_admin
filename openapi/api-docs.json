@@ -804,6 +804,31 @@
         ]
       }
     },
+    "/api/v1/auth/register-otp": {
+      "post": {
+        "operationId": "AuthController_sendRegisterOtp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterOtpRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Gửi mã OTP xác nhận đăng ký tài khoản qua email",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/api/v1/auth/register": {
       "post": {
         "operationId": "AuthController_register",
@@ -830,7 +855,7 @@
             }
           }
         },
-        "summary": "Khách đăng ký tài khoản (đăng nhập luôn sau khi tạo)",
+        "summary": "Khách đăng ký tài khoản bằng OTP (đăng nhập luôn sau khi tạo)",
         "tags": [
           "auth"
         ]
@@ -1199,6 +1224,60 @@
           }
         ],
         "summary": "Đổi ảnh đại diện (JPG/PNG/WEBP ≤ 5MB)",
+        "tags": [
+          "users"
+        ]
+      },
+      "delete": {
+        "operationId": "MeController_deleteAvatar",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xoá ảnh đại diện (khôi phục về ảnh chữ cái đầu mặc định)",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/api/v1/users/me/avatar/default": {
+      "get": {
+        "operationId": "MeController_defaultAvatar",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xem/tải ảnh đại diện SVG mặc định theo chữ cái đầu",
         "tags": [
           "users"
         ]
@@ -2135,6 +2214,554 @@
         ]
       }
     },
+    "/api/v1/admin/shops": {
+      "get": {
+        "operationId": "AdminShopController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "approved",
+                "suspended",
+                "rejected"
+              ]
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo mã / tên / slug",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách gian hàng (lọc trạng thái, tìm mã/tên/slug) — kèm tên/email chủ shop",
+        "tags": [
+          "admin-shops"
+        ]
+      }
+    },
+    "/api/v1/admin/shops/{id}": {
+      "get": {
+        "operationId": "AdminShopController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminShopResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Chi tiết một gian hàng (admin xem full số tài khoản + tên/email chủ shop)",
+        "tags": [
+          "admin-shops"
+        ]
+      }
+    },
+    "/api/v1/admin/shops/{id}/approve": {
+      "patch": {
+        "operationId": "AdminShopController_approve",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminShopSummaryResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Duyệt gian hàng đang chờ (pending → approved) hoặc mở khoá lại (suspended → approved)",
+        "tags": [
+          "admin-shops"
+        ]
+      }
+    },
+    "/api/v1/admin/shops/{id}/suspend": {
+      "patch": {
+        "operationId": "AdminShopController_suspend",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SuspendShopRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminShopSummaryResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Khoá gian hàng vi phạm (approved → suspended)",
+        "tags": [
+          "admin-shops"
+        ]
+      }
+    },
+    "/api/v1/admin/shops/{id}/reject": {
+      "patch": {
+        "operationId": "AdminShopController_reject",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectShopRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminShopSummaryResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Từ chối gian hàng đăng ký (pending → rejected)",
+        "tags": [
+          "admin-shops"
+        ]
+      }
+    },
+    "/api/v1/admin/shops/{id}/commission": {
+      "patch": {
+        "operationId": "AdminShopController_updateCommission",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCommissionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminShopSummaryResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Sửa % hoa hồng của một gian hàng (không hồi tố đơn cũ)",
+        "tags": [
+          "admin-shops"
+        ]
+      }
+    },
+    "/api/v1/shop/session": {
+      "get": {
+        "operationId": "ShopController_session",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopSessionResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Phiên vendor: gian hàng + vai + mã quyền shop.* của tôi",
+        "tags": [
+          "shops"
+        ]
+      }
+    },
+    "/api/v1/shop/me": {
+      "get": {
+        "operationId": "ShopController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Hồ sơ gian hàng của tôi",
+        "tags": [
+          "shops"
+        ]
+      },
+      "patch": {
+        "operationId": "ShopController_updateMe",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateShopProfileRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Sửa hồ sơ gian hàng của tôi (không đổi được mã/slug/trạng thái/hoa hồng — sàn quản)",
+        "tags": [
+          "shops"
+        ]
+      }
+    },
+    "/api/v1/shop/members": {
+      "get": {
+        "operationId": "ShopMemberController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách nhân viên gian hàng của tôi",
+        "tags": [
+          "shops"
+        ]
+      },
+      "post": {
+        "operationId": "ShopMemberController_add",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddShopMemberRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddShopMemberResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Thêm nhân viên: chủ shop TẠO TÀI KHOẢN {email, fullName, password, roleCode} cho nhân viên (có hiệu lực ngay, không mời/không chờ chấp nhận). Email của nhân viên TỪNG làm ở shop này (đã gỡ) ⇒ khôi phục tài khoản cũ, mật khẩu KHÔNG đổi (`restored: true`). 409 IDENTITY_EMAIL_EXISTS khi email đã có tài khoản khác; 409 SHOP_MEMBER_UNAVAILABLE khi không khôi phục được; 409 SHOP_MEMBER_LIMIT_REACHED khi shop đã đủ 50 thành viên; 400 IDENTITY_PASSWORD_WEAK khi mật khẩu không đạt luật.",
+        "tags": [
+          "shops"
+        ]
+      }
+    },
+    "/api/v1/shop/members/leave": {
+      "post": {
+        "operationId": "ShopMemberController_leave",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "data = null"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tôi tự rời gian hàng hiện tại (chủ cuối cùng không rời được — 409 SHOP_LAST_OWNER); dùng được cả khi gian hàng chưa duyệt/đã khoá",
+        "tags": [
+          "shops"
+        ]
+      }
+    },
+    "/api/v1/shop/members/{id}": {
+      "patch": {
+        "operationId": "ShopMemberController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateShopMemberRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopMemberResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Đổi vai một nhân viên (không hạ được người chủ cuối cùng)",
+        "tags": [
+          "shops"
+        ]
+      },
+      "delete": {
+        "operationId": "ShopMemberController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "data = null"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Gỡ một nhân viên khỏi gian hàng (không gỡ được người chủ cuối cùng)",
+        "tags": [
+          "shops"
+        ]
+      }
+    },
     "/api/v1/categories": {
       "get": {
         "operationId": "CategoryController_list",
@@ -2378,6 +3005,86 @@
           }
         ],
         "summary": "Đổi ảnh ngành hàng (Cloudinary)",
+        "tags": [
+          "admin-catalog"
+        ]
+      }
+    },
+    "/api/v1/admin/categories/{categoryId}/attributes": {
+      "get": {
+        "operationId": "AdminCategoryAttributeController_getTemplate",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryAttributeTemplate"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xem mẫu thuộc tính của ngành hàng (PLAN-0016)",
+        "tags": [
+          "admin-catalog"
+        ]
+      },
+      "put": {
+        "operationId": "AdminCategoryAttributeController_setTemplate",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetCategoryAttributeTemplateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryAttributeTemplate"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Set mẫu thuộc tính cho ngành hàng (replace toàn bộ, max 2 variant axis)",
         "tags": [
           "admin-catalog"
         ]
@@ -2731,6 +3438,309 @@
         ]
       }
     },
+    "/api/v1/admin/dynamic-attributes": {
+      "get": {
+        "operationId": "AdminDynamicAttributeController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DynamicAttributeResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách thuộc tính động (PLAN-0016)",
+        "tags": [
+          "admin-catalog"
+        ]
+      },
+      "post": {
+        "operationId": "AdminDynamicAttributeController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDynamicAttributeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DynamicAttributeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo thuộc tính động mới",
+        "tags": [
+          "admin-catalog"
+        ]
+      }
+    },
+    "/api/v1/admin/dynamic-attributes/{id}": {
+      "get": {
+        "operationId": "AdminDynamicAttributeController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DynamicAttributeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Chi tiết thuộc tính động",
+        "tags": [
+          "admin-catalog"
+        ]
+      }
+    },
+    "/api/v1/admin/dynamic-attributes/{id}/values": {
+      "post": {
+        "operationId": "AdminDynamicAttributeController_addValue",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDynamicAttributeValueRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DynamicAttributeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Thêm giá trị cho thuộc tính",
+        "tags": [
+          "admin-catalog"
+        ]
+      }
+    },
+    "/api/v1/admin/dynamic-attributes/{id}/values/{valueId}": {
+      "put": {
+        "operationId": "AdminDynamicAttributeController_updateValue",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "valueId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDynamicAttributeValueRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DynamicAttributeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Sửa giá trị thuộc tính",
+        "tags": [
+          "admin-catalog"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminDynamicAttributeController_deleteValue",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "valueId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xoá giá trị thuộc tính",
+        "tags": [
+          "admin-catalog"
+        ]
+      }
+    },
+    "/api/v1/shop/catalog/categories/leaves": {
+      "get": {
+        "operationId": "ShopCatalogController_leaves",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ShopLeafCategoryResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ngành hàng LÁ đang bật (kèm ngành cha) để chọn khi tạo sản phẩm",
+        "tags": [
+          "shops"
+        ]
+      }
+    },
+    "/api/v1/shop/catalog/categories/{slug}/attribute-template": {
+      "get": {
+        "operationId": "ShopCatalogController_attributeTemplate",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "dien-thoai",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopCategoryTemplateResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mẫu thuộc tính của ngành (thuộc tính sản phẩm + trục biến thể + giá trị chọn) để dựng form",
+        "tags": [
+          "shops"
+        ]
+      }
+    },
     "/api/v1/products": {
       "get": {
         "operationId": "ProductController_list",
@@ -2771,6 +3781,16 @@
             "in": "query",
             "schema": {
               "example": "ao-thun",
+              "type": "string"
+            }
+          },
+          {
+            "name": "shop",
+            "required": false,
+            "in": "query",
+            "description": "Slug gian hàng — chỉ hàng của shop đó (shop chưa duyệt/đã khoá ⇒ danh sách rỗng)",
+            "schema": {
+              "example": "techzone",
               "type": "string"
             }
           },
@@ -3046,6 +4066,90 @@
         ]
       }
     },
+    "/api/v1/shops": {
+      "get": {
+        "operationId": "ShopStorefrontController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 48,
+              "default": 12,
+              "type": "number"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo tên gian hàng",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Danh sách gian hàng đang hoạt động (điểm đánh giá cao trước) — tìm theo tên, phân trang",
+        "tags": [
+          "shops"
+        ]
+      }
+    },
+    "/api/v1/shops/{slug}": {
+      "get": {
+        "operationId": "ShopStorefrontController_detail",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopStorefrontResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Trang gian hàng: hồ sơ công khai + điểm đánh giá + số sản phẩm (404 nếu chưa duyệt/đã khoá)",
+        "tags": [
+          "shops"
+        ]
+      }
+    },
     "/api/v1/admin/products": {
       "get": {
         "operationId": "AdminProductController_list",
@@ -3086,6 +4190,16 @@
             "in": "query",
             "schema": {
               "example": "ao-thun",
+              "type": "string"
+            }
+          },
+          {
+            "name": "shop",
+            "required": false,
+            "in": "query",
+            "description": "Slug gian hàng — chỉ hàng của shop đó (shop chưa duyệt/đã khoá ⇒ danh sách rỗng)",
+            "schema": {
+              "example": "techzone",
               "type": "string"
             }
           },
@@ -3391,7 +4505,53 @@
             "bearer": []
           }
         ],
-        "summary": "Thay toàn bộ biến thể màu × size (mã màu/size phải có trong catalog)",
+        "summary": "Thay toàn bộ biến thể (khớp biến thể cũ theo màu×size / tổ hợp trục → giữ id & tồn kho; thiếu = xoá mềm; mã màu/size phải có trong catalog)",
+        "tags": [
+          "admin-products"
+        ]
+      }
+    },
+    "/api/v1/admin/products/{id}/attributes": {
+      "put": {
+        "operationId": "AdminProductController_attributes",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveAttributesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductAdminResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Thay toàn bộ thuộc tính cấp sản phẩm (ngành dynamic) — kiểm theo mẫu thuộc tính của ngành",
         "tags": [
           "admin-products"
         ]
@@ -3427,7 +4587,7 @@
             "bearer": []
           }
         ],
-        "summary": "Đăng bán (cần ≥1 biến thể và ≥1 ảnh)",
+        "summary": "Đăng bán (cần ≥1 biến thể, ≥1 ảnh và đủ thuộc tính bắt buộc của ngành)",
         "tags": [
           "admin-products"
         ]
@@ -3466,6 +4626,485 @@
         "summary": "Ẩn khỏi web bán hàng",
         "tags": [
           "admin-products"
+        ]
+      }
+    },
+    "/api/v1/shop/products": {
+      "get": {
+        "operationId": "ShopProductController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 48,
+              "default": 12,
+              "type": "number"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Từ khoá (không dấu cũng được)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "ao-thun",
+              "type": "string"
+            }
+          },
+          {
+            "name": "shop",
+            "required": false,
+            "in": "query",
+            "description": "Slug gian hàng — chỉ hàng của shop đó (shop chưa duyệt/đã khoá ⇒ danh sách rỗng)",
+            "schema": {
+              "example": "techzone",
+              "type": "string"
+            }
+          },
+          {
+            "name": "gender",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "nam",
+                "nu",
+                "unisex"
+              ]
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "M",
+              "type": "string"
+            }
+          },
+          {
+            "name": "color",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "den",
+              "type": "string"
+            }
+          },
+          {
+            "name": "minPrice",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 100000,
+              "type": "string"
+            }
+          },
+          {
+            "name": "maxPrice",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 500000,
+              "type": "string"
+            }
+          },
+          {
+            "name": "sale",
+            "required": false,
+            "in": "query",
+            "description": "true = chỉ hàng đang giảm giá",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "tag",
+            "required": false,
+            "in": "query",
+            "description": "Tag (bộ sưu tập dùng)",
+            "schema": {
+              "example": "new",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "featured",
+              "type": "string",
+              "enum": [
+                "featured",
+                "newest",
+                "bestselling",
+                "priceAsc",
+                "priceDesc"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "active",
+                "hidden"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách sản phẩm của gian hàng mình (mọi trạng thái)",
+        "tags": [
+          "shops"
+        ]
+      },
+      "post": {
+        "operationId": "ShopProductController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateShopProductRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductAdminResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo sản phẩm mới cho gian hàng của tôi (trạng thái nháp)",
+        "tags": [
+          "shops"
+        ]
+      }
+    },
+    "/api/v1/shop/products/{id}": {
+      "get": {
+        "operationId": "ShopProductController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductAdminResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "shops"
+        ]
+      },
+      "patch": {
+        "operationId": "ShopProductController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateShopProductRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductAdminResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Sửa thông tin / giá / ngành hàng sản phẩm của gian hàng mình",
+        "tags": [
+          "shops"
+        ]
+      },
+      "delete": {
+        "operationId": "ShopProductController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xoá mềm sản phẩm của gian hàng mình",
+        "tags": [
+          "shops"
+        ]
+      }
+    },
+    "/api/v1/shop/products/{id}/variants": {
+      "put": {
+        "operationId": "ShopProductController_variants",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveVariantsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductAdminResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Thay toàn bộ biến thể (khớp biến thể cũ theo màu×size / tổ hợp trục → giữ id & tồn kho; thiếu = xoá mềm)",
+        "tags": [
+          "shops"
+        ]
+      }
+    },
+    "/api/v1/shop/products/{id}/attributes": {
+      "put": {
+        "operationId": "ShopProductController_attributes",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveAttributesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductAdminResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Thay toàn bộ thuộc tính cấp sản phẩm (ngành dynamic) — kiểm theo mẫu thuộc tính của ngành",
+        "tags": [
+          "shops"
+        ]
+      }
+    },
+    "/api/v1/shop/products/{id}/publish": {
+      "post": {
+        "operationId": "ShopProductController_publish",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductAdminResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Đăng bán sản phẩm (cần ≥1 biến thể, ≥1 ảnh và đủ thuộc tính bắt buộc của ngành)",
+        "tags": [
+          "shops"
+        ]
+      }
+    },
+    "/api/v1/shop/products/{id}/hide": {
+      "post": {
+        "operationId": "ShopProductController_hide",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductAdminResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ẩn sản phẩm khỏi web bán hàng",
+        "tags": [
+          "shops"
         ]
       }
     },
@@ -3670,6 +5309,211 @@
         "summary": "Sắp xếp lại ảnh (ảnh đầu = ảnh chính)",
         "tags": [
           "admin-products"
+        ]
+      }
+    },
+    "/api/v1/shop/products/{id}/images": {
+      "post": {
+        "operationId": "ShopProductImageController_upload",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "colorCode": {
+                    "type": "string",
+                    "example": "den"
+                  },
+                  "alt": {
+                    "type": "string"
+                  },
+                  "isPrimary": {
+                    "type": "string",
+                    "example": "true"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductAdminResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Thêm ảnh (JPG/PNG/WEBP/GIF ≤ 5MB, kiểm nội dung thật của file; tối đa 12 ảnh)",
+        "tags": [
+          "shops"
+        ]
+      }
+    },
+    "/api/v1/shop/products/{id}/images/{imageId}": {
+      "patch": {
+        "operationId": "ShopProductImageController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "imageId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateImageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductAdminResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Đổi màu gắn / alt / đặt ảnh chính (không bỏ được cờ ảnh chính của ảnh chính hiện tại — chọn ảnh khác làm chính)",
+        "tags": [
+          "shops"
+        ]
+      },
+      "delete": {
+        "operationId": "ShopProductImageController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "imageId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductAdminResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xoá ảnh (409 PRODUCT_IMAGE_REQUIRED nếu là ảnh cuối của sản phẩm đang bán)",
+        "tags": [
+          "shops"
+        ]
+      }
+    },
+    "/api/v1/shop/products/{id}/images/order": {
+      "put": {
+        "operationId": "ShopProductImageController_reorder",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderImagesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductAdminResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Sắp xếp lại ảnh (ảnh đầu = ảnh chính)",
+        "tags": [
+          "shops"
         ]
       }
     },
@@ -4000,6 +5844,333 @@
         ]
       }
     },
+    "/api/v1/shop/inventory/stock": {
+      "get": {
+        "operationId": "ShopInventoryController_stock",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo tên sản phẩm / SKU",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lowStockOnly",
+            "required": false,
+            "in": "query",
+            "description": "true = chỉ hàng sắp hết",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Bảng tồn biến thể của gian hàng (lọc sắp hết)",
+        "tags": [
+          "shops"
+        ]
+      }
+    },
+    "/api/v1/shop/inventory/stock/{variantId}/movements": {
+      "get": {
+        "operationId": "ShopInventoryController_movements",
+        "parameters": [
+          {
+            "name": "variantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StockMovementResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Sổ kho của một biến thể (50 dòng gần nhất)",
+        "tags": [
+          "shops"
+        ]
+      }
+    },
+    "/api/v1/shop/inventory/receipts": {
+      "get": {
+        "operationId": "ShopInventoryController_receipts",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "posted",
+                "cancelled"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "shops"
+        ]
+      },
+      "post": {
+        "operationId": "ShopInventoryController_createReceipt",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReceiptRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockReceiptResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lập phiếu nhập (nháp, chưa cộng tồn)",
+        "tags": [
+          "shops"
+        ]
+      }
+    },
+    "/api/v1/shop/inventory/receipts/{id}": {
+      "get": {
+        "operationId": "ShopInventoryController_receipt",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockReceiptResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "shops"
+        ]
+      }
+    },
+    "/api/v1/shop/inventory/receipts/{id}/post": {
+      "post": {
+        "operationId": "ShopInventoryController_postReceipt",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Gửi lại cùng key → không cộng tồn 2 lần",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockReceiptResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Duyệt phiếu → cộng tồn kho + ghi sổ",
+        "tags": [
+          "shops"
+        ]
+      }
+    },
+    "/api/v1/shop/inventory/adjust": {
+      "post": {
+        "operationId": "ShopInventoryController_adjust",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdjustStockRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockRowResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Điều chỉnh tồn (kiểm kê / hư hỏng) — có lý do, ghi sổ",
+        "tags": [
+          "shops"
+        ]
+      }
+    },
     "/api/v1/cart": {
       "get": {
         "operationId": "CartController_get",
@@ -4317,7 +6488,7 @@
             "bearer": []
           }
         ],
-        "summary": "Mã đang chạy + giảm thật cho giỏ (eligible / còn thiếu bao nhiêu)",
+        "summary": "Mã đang chạy (sàn + shop có trong giỏ) + giảm thật cho giỏ (eligible / còn thiếu bao nhiêu)",
         "tags": [
           "promotions"
         ]
@@ -4362,6 +6533,28 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "scope",
+            "required": false,
+            "in": "query",
+            "description": "Chỉ dành cho sàn: lọc mã sàn / mã gian hàng",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "platform",
+                "shop"
+              ]
+            }
+          },
+          {
+            "name": "shopId",
+            "required": false,
+            "in": "query",
+            "description": "Chỉ dành cho sàn: mã của một gian hàng",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -4546,6 +6739,231 @@
         ]
       }
     },
+    "/api/v1/shop/promotions": {
+      "get": {
+        "operationId": "ShopPromotionController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "active",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mã giảm giá của gian hàng mình",
+        "tags": [
+          "shop-promotions"
+        ]
+      },
+      "post": {
+        "operationId": "ShopPromotionController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePromotionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "shop-promotions"
+        ]
+      }
+    },
+    "/api/v1/shop/promotions/{id}": {
+      "get": {
+        "operationId": "ShopPromotionController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "shop-promotions"
+        ]
+      },
+      "patch": {
+        "operationId": "ShopPromotionController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromotionForm"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "shop-promotions"
+        ]
+      },
+      "delete": {
+        "operationId": "ShopPromotionController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "shop-promotions"
+        ]
+      }
+    },
+    "/api/v1/shop/promotions/{id}/usages": {
+      "get": {
+        "operationId": "ShopPromotionController_usages",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lượt dùng của mã (ẩn danh khách)",
+        "tags": [
+          "shop-promotions"
+        ]
+      }
+    },
     "/api/v1/payment-methods": {
       "get": {
         "operationId": "PaymentPublicController_methods",
@@ -4555,7 +6973,7 @@
             "description": ""
           }
         },
-        "summary": "Phương thức thanh toán đang bật (cod · bank_transfer · vnpay)",
+        "summary": "Phương thức thanh toán đang bật (cod · bank_transfer · vnpay · payos — payos chỉ hiện khi có khoá)",
         "tags": [
           "payments"
         ]
@@ -4586,6 +7004,74 @@
           }
         },
         "summary": "IPN VNPay (server-to-server) — trả {RspCode, Message}",
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/api/v1/payments/payos/webhook": {
+      "post": {
+        "operationId": "PaymentPublicController_payosWebhook",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Webhook PayOS (server-to-server) — xác minh chữ ký, ghi nhận thanh toán (idempotent)",
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/api/v1/payments/payos/return": {
+      "get": {
+        "operationId": "PaymentPublicController_payosReturn",
+        "parameters": [
+          {
+            "name": "orderCode",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "FE trang kết quả PayOS gọi với `orderCode` (PayOS) — hỏi lại PayOS rồi ghi nhận thanh toán (idempotent, giống webhook)",
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/api/v1/payments/payos/retry/{orderCode}": {
+      "post": {
+        "operationId": "PaymentController_retryPayos",
+        "parameters": [
+          {
+            "name": "orderCode",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Khách thanh toán lại đơn PayOS (link hết hạn / đã huỷ) — trả link mới",
         "tags": [
           "payments"
         ]
@@ -4891,9 +7377,861 @@
             "bearer": []
           }
         ],
-        "summary": "Thực hiện hoàn tiền: VNPay API (gateway) hoặc ghi nhận đã chuyển tay (providerRef)",
+        "summary": "Thực hiện hoàn tiền: VNPay API (gateway) hoặc ghi nhận đã chuyển tay (providerRef). Refund `processing` quá 10 phút chưa có providerRef được chiếm lại; đã có providerRef chỉ ghi sổ (không gọi cổng).",
         "tags": [
           "admin-payments"
+        ]
+      }
+    },
+    "/api/v1/admin/refunds/{id}/retry-finalize": {
+      "post": {
+        "operationId": "AdminPaymentController_retryFinalize",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Hoàn tất GHI SỔ cho refund mà cổng ĐÃ chi (processing + providerRef) nhưng ghi sổ lỗi. KHÔNG gọi cổng; idempotent (chỉ ghi sổ một lần).",
+        "tags": [
+          "admin-payments"
+        ]
+      }
+    },
+    "/api/v1/shop/wallet": {
+      "get": {
+        "operationId": "ShopWalletController_summary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopWalletResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ví quỹ COD: số dư, COD bật/tắt, yêu cầu nộp quỹ đang chờ",
+        "tags": [
+          "shop-wallet"
+        ]
+      }
+    },
+    "/api/v1/shop/wallet/transactions": {
+      "get": {
+        "operationId": "ShopWalletController_transactions",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Sổ cái ví (mới nhất trước)",
+        "tags": [
+          "shop-wallet"
+        ]
+      }
+    },
+    "/api/v1/shop/wallet/deposit-requests": {
+      "get": {
+        "operationId": "ShopWalletController_deposits",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "approved",
+                "rejected"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lịch sử yêu cầu nộp quỹ của shop",
+        "tags": [
+          "shop-wallet"
+        ]
+      },
+      "post": {
+        "operationId": "ShopWalletController_createDeposit",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDepositRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DepositRequestResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xin nộp thêm quỹ (một yêu cầu chờ duyệt mỗi lúc)",
+        "tags": [
+          "shop-wallet"
+        ]
+      }
+    },
+    "/api/v1/admin/wallets": {
+      "get": {
+        "operationId": "AdminWalletController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "lowOnly",
+            "required": false,
+            "in": "query",
+            "description": "Chỉ ví đang ≤ 0 (COD bị khoá)",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách ví quỹ COD các shop (lowOnly = ví ≤ 0, COD đang khoá)",
+        "tags": [
+          "admin-wallet"
+        ]
+      }
+    },
+    "/api/v1/admin/shops/{id}/wallet": {
+      "get": {
+        "operationId": "AdminWalletController_shopWallet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopWalletResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ví quỹ COD của một gian hàng",
+        "tags": [
+          "admin-wallet"
+        ]
+      }
+    },
+    "/api/v1/admin/shops/{id}/wallet/transactions": {
+      "get": {
+        "operationId": "AdminWalletController_shopTransactions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Sổ cái ví của một gian hàng",
+        "tags": [
+          "admin-wallet"
+        ]
+      }
+    },
+    "/api/v1/admin/shops/{id}/wallet/adjust": {
+      "post": {
+        "operationId": "AdminWalletController_adjust",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdjustWalletDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Điều chỉnh ví (dương = cộng, âm = trừ) — bắt buộc ghi chú",
+        "tags": [
+          "admin-wallet"
+        ]
+      }
+    },
+    "/api/v1/admin/wallet-deposits": {
+      "get": {
+        "operationId": "AdminWalletController_deposits",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "approved",
+                "rejected"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Yêu cầu nộp quỹ (lọc theo trạng thái)",
+        "tags": [
+          "admin-wallet"
+        ]
+      }
+    },
+    "/api/v1/admin/wallet-deposits/{id}/approve": {
+      "post": {
+        "operationId": "AdminWalletController_approve",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveDepositDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Duyệt nộp quỹ: cộng ví, mở lại COD khi ví > 0",
+        "tags": [
+          "admin-wallet"
+        ]
+      }
+    },
+    "/api/v1/admin/wallet-deposits/{id}/reject": {
+      "post": {
+        "operationId": "AdminWalletController_reject",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectDepositDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Từ chối nộp quỹ (bắt buộc lý do)",
+        "tags": [
+          "admin-wallet"
+        ]
+      }
+    },
+    "/api/v1/admin/payouts/payos-balance": {
+      "get": {
+        "operationId": "ShopPayoutController_payosBalance",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayosBalanceResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Số dư tài khoản chi PayOS (chỉ đọc)",
+        "tags": [
+          "payouts"
+        ]
+      }
+    },
+    "/api/v1/admin/payouts/run": {
+      "post": {
+        "operationId": "ShopPayoutController_run",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunPayoutRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ShopPayoutResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Chạy kỳ đối soát toàn sàn (idempotent — chạy lại cùng kỳ không tạo trùng)",
+        "tags": [
+          "payouts"
+        ]
+      }
+    },
+    "/api/v1/admin/payouts": {
+      "get": {
+        "operationId": "ShopPayoutController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "processing",
+                "paid",
+                "failed",
+                "carried",
+                "settled"
+              ]
+            }
+          },
+          {
+            "name": "shopId",
+            "required": false,
+            "in": "query",
+            "description": "Lọc theo gian hàng (chỉ dành cho sàn)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách kỳ đối soát (lọc status/shop)",
+        "tags": [
+          "payouts"
+        ]
+      }
+    },
+    "/api/v1/admin/payouts/{id}": {
+      "get": {
+        "operationId": "ShopPayoutController_detail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopPayoutDetailResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Chi tiết kỳ đối soát + dòng",
+        "tags": [
+          "payouts"
+        ]
+      }
+    },
+    "/api/v1/admin/payouts/{id}/retry": {
+      "post": {
+        "operationId": "ShopPayoutController_retry",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopPayoutResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Gửi lại lệnh chi PayOS (kỳ failed, hoặc pending khi đã có khoá payout)",
+        "tags": [
+          "payouts"
+        ]
+      }
+    },
+    "/api/v1/admin/payouts/{id}/mark-paid": {
+      "post": {
+        "operationId": "ShopPayoutController_markPaid",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkPaidRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopPayoutResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Kế toán đánh dấu đã chi (chuyển tay / đối chiếu processing)",
+        "tags": [
+          "payouts"
+        ]
+      }
+    },
+    "/api/v1/shop/payouts": {
+      "get": {
+        "operationId": "ShopPayoutController_listMine",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "processing",
+                "paid",
+                "failed",
+                "carried",
+                "settled"
+              ]
+            }
+          },
+          {
+            "name": "shopId",
+            "required": false,
+            "in": "query",
+            "description": "Lọc theo gian hàng (chỉ dành cho sàn)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Kỳ đối soát của shop",
+        "tags": [
+          "payouts"
+        ]
+      }
+    },
+    "/api/v1/shop/payouts/{id}": {
+      "get": {
+        "operationId": "ShopPayoutController_detailMine",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopPayoutDetailResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Chi tiết kỳ đối soát của shop (kỳ shop khác → 404)",
+        "tags": [
+          "payouts"
         ]
       }
     },
@@ -4908,6 +8246,18 @@
             "schema": {
               "example": "FREESHIP",
               "type": "string"
+            }
+          },
+          {
+            "name": "voucherCodes",
+            "required": false,
+            "in": "query",
+            "description": "Nhiều mã cách nhau dấu phẩy: tối đa 1 mã sàn + 1 mã gian hàng cho mỗi shop trong giỏ",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           },
           {
@@ -4989,7 +8339,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/OrderResponse"
+                  "$ref": "#/components/schemas/OrderGroupResponse"
                 }
               }
             }
@@ -5000,7 +8350,7 @@
             "bearer": []
           }
         ],
-        "summary": "Đặt hàng từ giỏ (dòng đã tick). Không gửi tiền; không gửi số thẻ (card → VNPay redirect)",
+        "summary": "Đặt hàng từ giỏ (dòng đã tick) — trả đơn CHA kèm đơn con theo shop (PLAN-0014 bước 7). Không gửi tiền; không gửi số thẻ (card → VNPay redirect)",
         "tags": [
           "orders"
         ]
@@ -5074,7 +8424,91 @@
             "bearer": []
           }
         ],
-        "summary": "Đơn của tôi — tóm tắt; `full=true` trả OrderResponse đầy đủ",
+        "summary": "Đơn của tôi — tóm tắt; `full=true` trả OrderResponse đầy đủ (đơn CON, không gộp nhóm)",
+        "tags": [
+          "orders"
+        ]
+      }
+    },
+    "/api/v1/orders/groups": {
+      "get": {
+        "operationId": "OrderController_mineGroups",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Đơn của tôi theo nhóm (đơn cha + đơn con từng shop) — PLAN-0014 bước 7",
+        "tags": [
+          "orders"
+        ]
+      }
+    },
+    "/api/v1/orders/groups/{code}": {
+      "get": {
+        "operationId": "OrderController_detailGroup",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderGroupResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "tags": [
           "orders"
         ]
@@ -5615,6 +9049,269 @@
         ]
       }
     },
+    "/api/v1/shop/orders": {
+      "get": {
+        "operationId": "ShopOrderController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Lọc theo trạng thái",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "confirmed",
+                "packing",
+                "shipping",
+                "delivered",
+                "completed",
+                "cancelled",
+                "returned"
+              ]
+            }
+          },
+          {
+            "name": "paymentStatus",
+            "required": false,
+            "in": "query",
+            "description": "Lọc theo trạng thái thanh toán",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "unpaid",
+                "processing",
+                "paid",
+                "refunded",
+                "partially_refunded"
+              ]
+            }
+          },
+          {
+            "name": "paymentMethodCode",
+            "required": false,
+            "in": "query",
+            "description": "Lọc theo phương thức thanh toán",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "cod",
+                "bank_transfer",
+                "vnpay",
+                "payos"
+              ]
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Tìm kiếm theo mã đơn, tên / SĐT người nhận",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách đơn hàng của gian hàng mình (tìm kiếm, lọc trạng thái, phân trang)",
+        "tags": [
+          "shop-orders"
+        ]
+      }
+    },
+    "/api/v1/shop/orders/summary": {
+      "get": {
+        "operationId": "ShopOrderController_summary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopOrderSummaryResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Thống kê số lượng đơn theo trạng thái (pending, confirmed, packing, shipping, delivered, completed, cancelled)",
+        "tags": [
+          "shop-orders"
+        ]
+      }
+    },
+    "/api/v1/shop/orders/{code}": {
+      "get": {
+        "operationId": "ShopOrderController_get",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Chi tiết đơn của gian hàng mình (không kèm thông tin thanh toán của khách)",
+        "tags": [
+          "shop-orders"
+        ]
+      }
+    },
+    "/api/v1/shop/orders/{code}/status": {
+      "put": {
+        "operationId": "ShopOrderController_updateStatus",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShopUpdateOrderStatusRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật trạng thái đơn (vendor chỉ được: pending→confirmed→packing→shipping→delivered)",
+        "tags": [
+          "shop-orders"
+        ]
+      }
+    },
+    "/api/v1/shop/orders/{code}/cancel": {
+      "post": {
+        "operationId": "ShopOrderController_cancel",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShopCancelOrderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Vendor huỷ đơn (chỉ khi pending/confirmed — đơn đang đóng gói trở đi không huỷ được, 409 ORDER_CANNOT_CANCEL)",
+        "tags": [
+          "shop-orders"
+        ]
+      }
+    },
     "/api/v1/products/{slug}/reviews": {
       "get": {
         "operationId": "ReviewController_list",
@@ -5983,9 +9680,104 @@
             "bearer": []
           }
         ],
-        "summary": "Trả lời thay cửa hàng (một trả lời / đánh giá, gọi lại = sửa)",
+        "summary": "Nhân viên sàn trả lời thay cửa hàng (một trả lời / đánh giá, gọi lại = sửa); hiện công khai dưới tên \"Sàn FITLY\", không lộ họ tên nhân viên",
         "tags": [
           "admin-reviews"
+        ]
+      }
+    },
+    "/api/v1/shop/reviews": {
+      "get": {
+        "operationId": "ShopReviewController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách đánh giá (đã duyệt) của sản phẩm thuộc gian hàng mình — content là ShopReviewResponse[]",
+        "tags": [
+          "shops"
+        ]
+      }
+    },
+    "/api/v1/shop/reviews/{id}/reply": {
+      "post": {
+        "operationId": "ShopReviewController_reply",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShopReviewReplyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopReviewResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Trả lời một đánh giá đã duyệt của gian hàng mình (hiển thị công khai dưới tên gian hàng)",
+        "tags": [
+          "shops"
         ]
       }
     },
@@ -6199,6 +9991,203 @@
         "summary": "Tính lại daily_sales cho khoảng ngày (tối đa 400 ngày)",
         "tags": [
           "admin-reports"
+        ]
+      }
+    },
+    "/api/v1/shop/reports/dashboard": {
+      "get": {
+        "operationId": "ShopReportingController_dashboard",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopDashboardResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tổng quan: hôm nay, tháng này, việc đang chờ, 7 ngày, top 5, trạng thái đơn (của gian hàng mình)",
+        "tags": [
+          "shop-reports"
+        ]
+      }
+    },
+    "/api/v1/shop/reports/revenue": {
+      "get": {
+        "operationId": "ShopReportingController_revenue",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Mặc định: đầu tháng hiện tại",
+            "schema": {
+              "example": "2026-09-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "Mặc định: hôm nay",
+            "schema": {
+              "example": "2026-09-30",
+              "type": "string"
+            }
+          },
+          {
+            "name": "granularity",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "day",
+              "type": "string",
+              "enum": [
+                "day",
+                "month"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopRevenueResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Doanh thu của gian hàng mình theo ngày / tháng (tối đa 400 ngày hoặc 60 tháng)",
+        "tags": [
+          "shop-reports"
+        ]
+      }
+    },
+    "/api/v1/shop/reports/top-products": {
+      "get": {
+        "operationId": "ShopReportingController_top",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Mặc định: đầu tháng hiện tại",
+            "schema": {
+              "example": "2026-09-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "Mặc định: hôm nay",
+            "schema": {
+              "example": "2026-09-30",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ShopTopProductResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Sản phẩm bán chạy nhất của gian hàng mình trong kỳ (tối đa 400 ngày)",
+        "tags": [
+          "shop-reports"
+        ]
+      }
+    },
+    "/api/v1/shop/reports/low-stock": {
+      "get": {
+        "operationId": "ShopReportingController_lowStock",
+        "parameters": [
+          {
+            "name": "threshold",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 5,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 100,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ShopLowStockResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Biến thể sắp hết của gian hàng mình (khả dụng ≤ ngưỡng)",
+        "tags": [
+          "shop-reports"
         ]
       }
     },
@@ -6528,6 +10517,62 @@
             "bearer": []
           }
         ],
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/api/v1/ai/image-search": {
+      "post": {
+        "operationId": "AiController_search",
+        "parameters": [
+          {
+            "name": "X-Guest-Key",
+            "in": "header",
+            "description": "Khách vãng lai: khoá 8–64 ký tự FE tự sinh và lưu localStorage; bỏ trống lần đầu → BE cấp trong response",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": [
+                  "image"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImageSearchResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upload ảnh sản phẩm → phân tích bằng vision + tìm sản phẩm tương tự (không có khoá OpenAI → available=false; không thấy gì → items rỗng + message)",
         "tags": [
           "ai"
         ]
@@ -7871,7 +11916,7 @@
   },
   "info": {
     "title": "EcoFashion API",
-    "description": "Backend cửa hàng thời trang — web bán hàng + web quản trị. Mọi response theo envelope ApiResponse.",
+    "description": "Backend sàn thương mại điện tử đa ngành hàng — web bán hàng + web quản trị. Mọi response theo envelope ApiResponse.",
     "version": "0.1.0",
     "contact": {}
   },
@@ -8081,6 +12126,18 @@
           "content"
         ]
       },
+      "RegisterOtpRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "khach@ecofashion.vn"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
       "RegisterRequest": {
         "type": "object",
         "properties": {
@@ -8099,12 +12156,18 @@
           "phone": {
             "type": "string",
             "example": "0901234567"
+          },
+          "otp": {
+            "type": "string",
+            "example": "123456",
+            "description": "Mã xác nhận OTP 6 số nhận từ email"
           }
         },
         "required": [
           "email",
           "password",
-          "fullName"
+          "fullName",
+          "otp"
         ]
       },
       "AuthUserResponse": {
@@ -8843,6 +12906,586 @@
           "overrides"
         ]
       },
+      "AdminShopResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "example": "SHOP-000123"
+          },
+          "slug": {
+            "type": "string",
+            "example": "fitly-boutique"
+          },
+          "name": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "bannerUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "example": "approved"
+          },
+          "statusLabel": {
+            "type": "string",
+            "example": "Đã duyệt"
+          },
+          "commissionRate": {
+            "type": "string",
+            "example": "10.00",
+            "description": "% hoa hồng sàn thu"
+          },
+          "codEnabled": {
+            "type": "boolean"
+          },
+          "ratingAvg": {
+            "type": "string",
+            "nullable": true,
+            "example": "4.80"
+          },
+          "totalProducts": {
+            "type": "number"
+          },
+          "ownerUserId": {
+            "type": "string"
+          },
+          "bankCode": {
+            "type": "string",
+            "nullable": true,
+            "example": "970436",
+            "description": "Mã BIN ngân hàng"
+          },
+          "bankAccountName": {
+            "type": "string",
+            "nullable": true,
+            "example": "NGUYEN VAN A",
+            "description": "Tên chủ tài khoản"
+          },
+          "bankAccountNumberMasked": {
+            "type": "string",
+            "nullable": true,
+            "example": "••••6789",
+            "description": "Số tài khoản (che giấu, chỉ 4 chữ số cuối)"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "ownerName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Nguyễn Văn A",
+            "description": "Họ tên chủ shop (null nếu tài khoản chủ không còn)"
+          },
+          "ownerEmail": {
+            "type": "string",
+            "nullable": true,
+            "example": "chu.shop@fitly.vn",
+            "description": "Email chủ shop (null nếu tài khoản chủ không còn)"
+          },
+          "bankAccountNumber": {
+            "type": "string",
+            "nullable": true,
+            "example": "123456789012",
+            "description": "Số tài khoản đầy đủ (chỉ admin xem)"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "slug",
+          "name",
+          "status",
+          "statusLabel",
+          "commissionRate",
+          "codEnabled",
+          "totalProducts",
+          "ownerUserId",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "AdminShopSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "example": "SHOP-000123"
+          },
+          "slug": {
+            "type": "string",
+            "example": "fitly-boutique"
+          },
+          "name": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "bannerUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "example": "approved"
+          },
+          "statusLabel": {
+            "type": "string",
+            "example": "Đã duyệt"
+          },
+          "commissionRate": {
+            "type": "string",
+            "example": "10.00",
+            "description": "% hoa hồng sàn thu"
+          },
+          "codEnabled": {
+            "type": "boolean"
+          },
+          "ratingAvg": {
+            "type": "string",
+            "nullable": true,
+            "example": "4.80"
+          },
+          "totalProducts": {
+            "type": "number"
+          },
+          "ownerUserId": {
+            "type": "string"
+          },
+          "bankCode": {
+            "type": "string",
+            "nullable": true,
+            "example": "970436",
+            "description": "Mã BIN ngân hàng"
+          },
+          "bankAccountName": {
+            "type": "string",
+            "nullable": true,
+            "example": "NGUYEN VAN A",
+            "description": "Tên chủ tài khoản"
+          },
+          "bankAccountNumberMasked": {
+            "type": "string",
+            "nullable": true,
+            "example": "••••6789",
+            "description": "Số tài khoản (che giấu, chỉ 4 chữ số cuối)"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "ownerName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Nguyễn Văn A",
+            "description": "Họ tên chủ shop (null nếu tài khoản chủ không còn)"
+          },
+          "ownerEmail": {
+            "type": "string",
+            "nullable": true,
+            "example": "chu.shop@fitly.vn",
+            "description": "Email chủ shop (null nếu tài khoản chủ không còn)"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "slug",
+          "name",
+          "status",
+          "statusLabel",
+          "commissionRate",
+          "codEnabled",
+          "totalProducts",
+          "ownerUserId",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "SuspendShopRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "example": "Bán hàng giả, khách phản ánh nhiều lần"
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "RejectShopRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "example": "Hồ sơ pháp lý không hợp lệ"
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "UpdateCommissionRequest": {
+        "type": "object",
+        "properties": {
+          "commissionRate": {
+            "type": "number",
+            "example": 8.5,
+            "minimum": 0,
+            "maximum": 100,
+            "description": "% hoa hồng sàn thu, không hồi tố đơn cũ"
+          }
+        },
+        "required": [
+          "commissionRate"
+        ]
+      },
+      "ShopResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "example": "SHOP-000123"
+          },
+          "slug": {
+            "type": "string",
+            "example": "fitly-boutique"
+          },
+          "name": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "bannerUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "example": "approved"
+          },
+          "statusLabel": {
+            "type": "string",
+            "example": "Đã duyệt"
+          },
+          "commissionRate": {
+            "type": "string",
+            "example": "10.00",
+            "description": "% hoa hồng sàn thu"
+          },
+          "codEnabled": {
+            "type": "boolean"
+          },
+          "ratingAvg": {
+            "type": "string",
+            "nullable": true,
+            "example": "4.80"
+          },
+          "totalProducts": {
+            "type": "number"
+          },
+          "ownerUserId": {
+            "type": "string"
+          },
+          "bankCode": {
+            "type": "string",
+            "nullable": true,
+            "example": "970436",
+            "description": "Mã BIN ngân hàng"
+          },
+          "bankAccountName": {
+            "type": "string",
+            "nullable": true,
+            "example": "NGUYEN VAN A",
+            "description": "Tên chủ tài khoản"
+          },
+          "bankAccountNumberMasked": {
+            "type": "string",
+            "nullable": true,
+            "example": "••••6789",
+            "description": "Số tài khoản (che giấu, chỉ 4 chữ số cuối)"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "slug",
+          "name",
+          "status",
+          "statusLabel",
+          "commissionRate",
+          "codEnabled",
+          "totalProducts",
+          "ownerUserId",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ShopSessionResponse": {
+        "type": "object",
+        "properties": {
+          "shop": {
+            "$ref": "#/components/schemas/ShopResponse"
+          },
+          "roleCode": {
+            "type": "string",
+            "example": "shop_owner"
+          },
+          "roleName": {
+            "type": "string",
+            "example": "Chủ gian hàng"
+          },
+          "permissions": {
+            "example": [
+              "shop.product.read",
+              "shop.order.read"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "shop",
+          "roleCode",
+          "roleName",
+          "permissions"
+        ]
+      },
+      "UpdateShopProfileRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "FITLY Boutique"
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "bannerUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "bankCode": {
+            "type": "string",
+            "example": "970436",
+            "description": "Mã BIN ngân hàng (6 chữ số)"
+          },
+          "bankAccountNumber": {
+            "type": "string",
+            "example": "123456789012",
+            "description": "Số tài khoản (6-20 chữ số)"
+          },
+          "bankAccountName": {
+            "type": "string",
+            "example": "NGUYEN VAN A",
+            "description": "Tên chủ tài khoản (2-120 ký tự)"
+          }
+        }
+      },
+      "AddShopMemberRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "nhanvien@gmail.com",
+            "description": "Email đăng nhập của nhân viên — phải CHƯA có tài khoản"
+          },
+          "fullName": {
+            "type": "string",
+            "example": "Nguyễn Văn Kho"
+          },
+          "password": {
+            "type": "string",
+            "description": "Mật khẩu ban đầu (8–64 ký tự, có chữ và số) — chủ shop gửi cho nhân viên, nhân viên nên đổi sau lần đăng nhập đầu"
+          },
+          "roleCode": {
+            "type": "string",
+            "enum": [
+              "shop_owner",
+              "shop_staff"
+            ]
+          }
+        },
+        "required": [
+          "email",
+          "fullName",
+          "password",
+          "roleCode"
+        ]
+      },
+      "AddShopMemberResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Id thành viên (ShopMember) — dùng cho PATCH/DELETE /shop/members/:id"
+          },
+          "email": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "roleId": {
+            "type": "string"
+          },
+          "roleCode": {
+            "type": "string",
+            "example": "shop_owner"
+          },
+          "roleName": {
+            "type": "string",
+            "example": "Chủ gian hàng"
+          },
+          "status": {
+            "type": "string",
+            "example": "active"
+          },
+          "isSelf": {
+            "type": "boolean",
+            "description": "true nếu dòng này chính là người đang gọi API (để hiện \"Bạn\"/nút rời gian hàng)"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "restored": {
+            "type": "boolean",
+            "description": "true = nhân viên TỪNG làm ở shop này (đã bị gỡ) nên tài khoản cũ được khôi phục — mật khẩu KHÔNG đổi (họ dùng mật khẩu cũ, không phải mật khẩu vừa nhập). false = tài khoản mới tạo với mật khẩu vừa nhập."
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "fullName",
+          "roleId",
+          "roleCode",
+          "roleName",
+          "status",
+          "isSelf",
+          "createdAt",
+          "updatedAt",
+          "restored"
+        ]
+      },
+      "UpdateShopMemberRequest": {
+        "type": "object",
+        "properties": {
+          "roleCode": {
+            "type": "string",
+            "enum": [
+              "shop_owner",
+              "shop_staff"
+            ]
+          }
+        },
+        "required": [
+          "roleCode"
+        ]
+      },
+      "ShopMemberResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Id thành viên (ShopMember) — dùng cho PATCH/DELETE /shop/members/:id"
+          },
+          "email": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "roleId": {
+            "type": "string"
+          },
+          "roleCode": {
+            "type": "string",
+            "example": "shop_owner"
+          },
+          "roleName": {
+            "type": "string",
+            "example": "Chủ gian hàng"
+          },
+          "status": {
+            "type": "string",
+            "example": "active"
+          },
+          "isSelf": {
+            "type": "boolean",
+            "description": "true nếu dòng này chính là người đang gọi API (để hiện \"Bạn\"/nút rời gian hàng)"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "fullName",
+          "roleId",
+          "roleCode",
+          "roleName",
+          "status",
+          "isSelf",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
       "CategoryResponse": {
         "type": "object",
         "properties": {
@@ -8864,13 +13507,22 @@
           "productCount": {
             "type": "number",
             "example": 6
+          },
+          "parentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "attributeMode": {
+            "type": "string",
+            "example": "legacy_fashion"
           }
         },
         "required": [
           "id",
           "slug",
           "name",
-          "productCount"
+          "productCount",
+          "attributeMode"
         ]
       },
       "CategoryAdminResponse": {
@@ -8895,11 +13547,15 @@
             "type": "number",
             "example": 6
           },
-          "description": {
+          "parentId": {
             "type": "string",
             "nullable": true
           },
-          "parentId": {
+          "attributeMode": {
+            "type": "string",
+            "example": "legacy_fashion"
+          },
+          "description": {
             "type": "string",
             "nullable": true
           },
@@ -8921,6 +13577,7 @@
           "slug",
           "name",
           "productCount",
+          "attributeMode",
           "sortOrder",
           "isActive",
           "createdAt",
@@ -8953,6 +13610,15 @@
           "isActive": {
             "type": "boolean",
             "default": true
+          },
+          "attributeMode": {
+            "type": "string",
+            "enum": [
+              "dynamic",
+              "legacy_fashion"
+            ],
+            "default": "dynamic",
+            "description": "dynamic = ngành mới dùng bộ thuộc tính riêng (CategoryAttribute); legacy_fashion = thời trang dùng gender/màu/size như cũ. Bỏ trống → dynamic"
           }
         },
         "required": [
@@ -8981,8 +13647,164 @@
           },
           "isActive": {
             "type": "boolean"
+          },
+          "attributeMode": {
+            "type": "string",
+            "enum": [
+              "dynamic",
+              "legacy_fashion"
+            ],
+            "description": "Đổi chế độ thuộc tính — chỉ khi ngành CHƯA có sản phẩm, nếu không 409 CATALOG_CATEGORY_MODE_LOCKED"
           }
         }
+      },
+      "AttributeValueDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string",
+            "example": "Đỏ"
+          },
+          "extra": {
+            "type": "string",
+            "nullable": true,
+            "example": {
+              "hex": "#ff0000"
+            }
+          },
+          "sortOrder": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "value",
+          "sortOrder"
+        ]
+      },
+      "AttributeDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "example": "color2"
+          },
+          "name": {
+            "type": "string",
+            "example": "Màu sắc"
+          },
+          "inputType": {
+            "type": "string",
+            "example": "select",
+            "enum": [
+              "select",
+              "text",
+              "number"
+            ]
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttributeValueDetail"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "inputType",
+          "values"
+        ]
+      },
+      "CategoryAttributeDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "attributeId": {
+            "type": "string"
+          },
+          "attribute": {
+            "$ref": "#/components/schemas/AttributeDetail"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "isVariantAxis": {
+            "type": "boolean"
+          },
+          "sortOrder": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "attributeId",
+          "attribute",
+          "required",
+          "isVariantAxis",
+          "sortOrder"
+        ]
+      },
+      "CategoryAttributeTemplate": {
+        "type": "object",
+        "properties": {
+          "attributes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CategoryAttributeDetail"
+            }
+          }
+        },
+        "required": [
+          "attributes"
+        ]
+      },
+      "SetCategoryAttributeTemplateItemRequest": {
+        "type": "object",
+        "properties": {
+          "attributeId": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean",
+            "default": false
+          },
+          "isVariantAxis": {
+            "type": "boolean",
+            "default": false
+          },
+          "sortOrder": {
+            "type": "number",
+            "default": 0
+          }
+        },
+        "required": [
+          "attributeId"
+        ]
+      },
+      "SetCategoryAttributeTemplateRequest": {
+        "type": "object",
+        "properties": {
+          "attributes": {
+            "description": "Mảng thuộc tính cho category — tối đa 2 dòng isVariantAxis=true",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SetCategoryAttributeTemplateItemRequest"
+            }
+          }
+        },
+        "required": [
+          "attributes"
+        ]
       },
       "CollectionQuery": {
         "type": "object",
@@ -9271,6 +14093,309 @@
           "name"
         ]
       },
+      "DynamicAttributeValueResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string",
+            "example": "Đỏ"
+          },
+          "extra": {
+            "type": "object",
+            "additionalProperties": true,
+            "nullable": true,
+            "example": {
+              "hex": "#ff0000"
+            }
+          },
+          "sortOrder": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "value",
+          "sortOrder"
+        ]
+      },
+      "DynamicAttributeResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "example": "color2"
+          },
+          "name": {
+            "type": "string",
+            "example": "Màu sắc"
+          },
+          "inputType": {
+            "type": "string",
+            "example": "select",
+            "enum": [
+              "select",
+              "text",
+              "number"
+            ]
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DynamicAttributeValueResponse"
+            }
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "inputType",
+          "values",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateDynamicAttributeRequest": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "color2"
+          },
+          "name": {
+            "type": "string",
+            "example": "Màu sắc"
+          },
+          "inputType": {
+            "type": "string",
+            "default": "select",
+            "enum": [
+              "select",
+              "text",
+              "number"
+            ],
+            "description": "select = chọn từ giá trị có sẵn (làm được trục biến thể); text | number = nhập tay"
+          }
+        },
+        "required": [
+          "code",
+          "name"
+        ]
+      },
+      "CreateDynamicAttributeValueRequest": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "example": "Đỏ"
+          },
+          "extra": {
+            "type": "object",
+            "additionalProperties": true,
+            "nullable": true,
+            "example": {
+              "hex": "#ff0000"
+            },
+            "description": "Dữ liệu phụ của giá trị (vd màu: {hex}); null = xoá"
+          },
+          "sortOrder": {
+            "type": "number",
+            "default": 0
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "UpdateDynamicAttributeValueRequest": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "example": "Xanh"
+          },
+          "extra": {
+            "type": "object",
+            "additionalProperties": true,
+            "nullable": true,
+            "example": {
+              "hex": "#0000ff"
+            },
+            "description": "Dữ liệu phụ của giá trị (vd màu: {hex}); null = xoá"
+          },
+          "sortOrder": {
+            "type": "number"
+          }
+        }
+      },
+      "ShopLeafCategoryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string",
+            "example": "dien-thoai"
+          },
+          "name": {
+            "type": "string",
+            "example": "Điện thoại"
+          },
+          "parentName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Điện tử",
+            "description": "Tên ngành cha trực tiếp; null nếu là ngành gốc"
+          },
+          "path": {
+            "type": "string",
+            "example": "Điện tử › Điện thoại",
+            "description": "Đường dẫn đầy đủ từ ngành gốc — để vendor phân biệt ngành lá trùng tên"
+          },
+          "attributeMode": {
+            "type": "string",
+            "enum": [
+              "dynamic",
+              "legacy_fashion"
+            ],
+            "example": "dynamic",
+            "description": "legacy_fashion = form thời trang cũ (gender/màu/size); dynamic = dựng form theo attribute-template"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "path",
+          "attributeMode"
+        ]
+      },
+      "ShopTemplateValueResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string",
+            "example": "128GB"
+          },
+          "hex": {
+            "type": "string",
+            "nullable": true,
+            "example": "#1c1c1c",
+            "description": "Mã màu nếu thuộc tính là màu (extra.hex), ngược lại null"
+          }
+        },
+        "required": [
+          "id",
+          "value"
+        ]
+      },
+      "ShopTemplateAttributeResponse": {
+        "type": "object",
+        "properties": {
+          "attributeId": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "example": "color2"
+          },
+          "name": {
+            "type": "string",
+            "example": "Màu sắc"
+          },
+          "inputType": {
+            "type": "string",
+            "enum": [
+              "select",
+              "text",
+              "number"
+            ],
+            "example": "select",
+            "description": "select = chọn từ values; text | number = nhập tay"
+          },
+          "required": {
+            "type": "boolean",
+            "description": "Bắt buộc phải có khi đăng bán"
+          },
+          "isVariantAxis": {
+            "type": "boolean",
+            "description": "true = trục biến thể (mỗi biến thể chọn đúng một giá trị); false = thuộc tính cấp sản phẩm"
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "values": {
+            "description": "Chỉ có với inputType=select (rỗng với text/number)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShopTemplateValueResponse"
+            }
+          }
+        },
+        "required": [
+          "attributeId",
+          "code",
+          "name",
+          "inputType",
+          "required",
+          "isVariantAxis",
+          "sortOrder",
+          "values"
+        ]
+      },
+      "ShopCategoryTemplateResponse": {
+        "type": "object",
+        "properties": {
+          "categoryId": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string",
+            "example": "dien-thoai"
+          },
+          "name": {
+            "type": "string",
+            "example": "Điện thoại"
+          },
+          "attributeMode": {
+            "type": "string",
+            "enum": [
+              "dynamic",
+              "legacy_fashion"
+            ],
+            "example": "dynamic"
+          },
+          "attributes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShopTemplateAttributeResponse"
+            }
+          }
+        },
+        "required": [
+          "categoryId",
+          "slug",
+          "name",
+          "attributeMode",
+          "attributes"
+        ]
+      },
       "ColorOptionResponse": {
         "type": "object",
         "properties": {
@@ -9365,6 +14490,36 @@
           "priceRange"
         ]
       },
+      "ProductShopSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string",
+            "example": "fitly-official"
+          },
+          "name": {
+            "type": "string",
+            "example": "FITLY Official"
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "ratingAvg": {
+            "type": "string",
+            "nullable": true,
+            "example": 4.7
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name"
+        ]
+      },
       "ProductCardResponse": {
         "type": "object",
         "properties": {
@@ -9382,6 +14537,15 @@
           "categorySlug": {
             "type": "string",
             "example": "ao-thun"
+          },
+          "shop": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProductShopSummaryResponse"
+              }
+            ]
           },
           "gender": {
             "type": "string",
@@ -9501,6 +14665,31 @@
           "isPrimary"
         ]
       },
+      "VariantOptionResponse": {
+        "type": "object",
+        "properties": {
+          "attributeId": {
+            "type": "string"
+          },
+          "attributeValueId": {
+            "type": "string"
+          },
+          "displayValue": {
+            "type": "string",
+            "description": "Tên hiển thị snapshot"
+          },
+          "attributeName": {
+            "type": "string",
+            "example": "Dung lượng",
+            "description": "Tên trục biến thể (vd \"Màu sắc\"); thiếu khi thuộc tính đã bị xoá khỏi danh mục"
+          }
+        },
+        "required": [
+          "attributeId",
+          "attributeValueId",
+          "displayValue"
+        ]
+      },
       "ProductVariantResponse": {
         "type": "object",
         "properties": {
@@ -9509,15 +14698,21 @@
           },
           "color": {
             "type": "string",
-            "example": "Đen"
+            "example": "Đen",
+            "nullable": true,
+            "description": "null cho category dynamic"
           },
           "colorCode": {
             "type": "string",
-            "example": "den"
+            "example": "den",
+            "nullable": true,
+            "description": "null cho category dynamic"
           },
           "size": {
             "type": "string",
-            "example": "M"
+            "example": "M",
+            "nullable": true,
+            "description": "null cho category dynamic"
           },
           "sku": {
             "type": "string",
@@ -9529,16 +14724,50 @@
           },
           "price": {
             "$ref": "#/components/schemas/MoneyResponse"
+          },
+          "options": {
+            "description": "Trục biến thể (category dynamic)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VariantOptionResponse"
+            }
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Chỉ có ở API quản trị/vendor (công khai chỉ trả biến thể đang bán): false = đang tắt, không bán"
           }
         },
         "required": [
           "id",
-          "color",
-          "colorCode",
-          "size",
           "sku",
           "stock",
           "price"
+        ]
+      },
+      "ProductAttributeValueResponse": {
+        "type": "object",
+        "properties": {
+          "attributeId": {
+            "type": "string"
+          },
+          "attributeName": {
+            "type": "string",
+            "description": "Tên thuộc tính"
+          },
+          "attributeValueId": {
+            "type": "string",
+            "nullable": true,
+            "description": "ID giá trị (null nếu nhập tay)"
+          },
+          "value": {
+            "type": "string",
+            "nullable": true,
+            "description": "Tên giá trị hoặc giá trị nhập tay"
+          }
+        },
+        "required": [
+          "attributeId",
+          "attributeName"
         ]
       },
       "ProductDetailResponse": {
@@ -9558,6 +14787,15 @@
           "categorySlug": {
             "type": "string",
             "example": "ao-thun"
+          },
+          "shop": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProductShopSummaryResponse"
+              }
+            ]
           },
           "gender": {
             "type": "string",
@@ -9656,6 +14894,13 @@
             "type": "array",
             "items": {
               "type": "string"
+            }
+          },
+          "attributeValues": {
+            "description": "Thuộc tính cấp sản phẩm (category dynamic)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductAttributeValueResponse"
             }
           }
         },
@@ -9678,6 +14923,53 @@
           "care"
         ]
       },
+      "ShopStorefrontResponse": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "example": "techzone"
+          },
+          "name": {
+            "type": "string",
+            "example": "TechZone Việt Nam"
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "bannerUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "ratingAvg": {
+            "type": "string",
+            "nullable": true,
+            "example": 4.7,
+            "description": "Điểm đánh giá trung bình của shop (null = chưa có đánh giá)"
+          },
+          "reviewCount": {
+            "type": "number",
+            "example": 128,
+            "description": "Tổng lượt đánh giá của các sản phẩm đang bán"
+          },
+          "productCount": {
+            "type": "number",
+            "example": 56,
+            "description": "Số sản phẩm đang bán"
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "reviewCount",
+          "productCount"
+        ]
+      },
       "ProductAdminResponse": {
         "type": "object",
         "properties": {
@@ -9695,6 +14987,15 @@
           "categorySlug": {
             "type": "string",
             "example": "ao-thun"
+          },
+          "shop": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProductShopSummaryResponse"
+              }
+            ]
           },
           "gender": {
             "type": "string",
@@ -9793,6 +15094,13 @@
             "type": "array",
             "items": {
               "type": "string"
+            }
+          },
+          "attributeValues": {
+            "description": "Thuộc tính cấp sản phẩm (category dynamic)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductAttributeValueResponse"
             }
           },
           "status": {
@@ -9861,35 +15169,75 @@
           "updatedAt"
         ]
       },
+      "VariantOptionInput": {
+        "type": "object",
+        "properties": {
+          "attributeId": {
+            "type": "string"
+          },
+          "attributeValueId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "attributeId",
+          "attributeValueId"
+        ]
+      },
       "VariantInput": {
         "type": "object",
         "properties": {
           "colorCode": {
             "type": "string",
-            "example": "den"
+            "example": "den",
+            "description": "Bắt buộc cho category legacy_fashion; null cho dynamic"
           },
           "sizeCode": {
             "type": "string",
-            "example": "M"
+            "example": "M",
+            "description": "Bắt buộc cho category legacy_fashion; null cho dynamic"
+          },
+          "options": {
+            "description": "Bắt buộc cho category dynamic (tối đa 2); null cho legacy",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VariantOptionInput"
+            }
           },
           "sku": {
             "type": "string",
             "example": "AOTHUN-DE-M",
-            "description": "Bỏ trống → sinh từ slug + màu + size"
+            "description": "Mã SKU, unique TRONG gian hàng (hai shop được trùng). Tự chuẩn hoá IN HOA. Bỏ trống → biến thể đã có giữ SKU cũ; biến thể mới sinh từ slug + màu + size (legacy) hoặc slug + giá trị các trục (dynamic), trùng thì thêm hậu tố -2, -3…"
           },
           "price": {
             "type": "string",
             "nullable": true,
-            "description": "Giá riêng (VND); null = theo giá sản phẩm"
+            "description": "Giá riêng (VND, phải > 0); bỏ trống/null = theo giá sản phẩm"
           },
           "isActive": {
             "type": "boolean",
             "default": true
           }
+        }
+      },
+      "AttributeValueInput": {
+        "type": "object",
+        "properties": {
+          "attributeId": {
+            "type": "string",
+            "description": "Thuộc tính thuộc mẫu của ngành hàng, KHÔNG phải trục biến thể; không được lặp trong danh sách"
+          },
+          "attributeValueId": {
+            "type": "string",
+            "description": "Giá trị có sẵn (thuộc tính kiểu select) — phải thuộc đúng attributeId"
+          },
+          "customValue": {
+            "type": "string",
+            "description": "Giá trị nhập tay (thuộc tính kiểu text/number), không rỗng"
+          }
         },
         "required": [
-          "colorCode",
-          "sizeCode"
+          "attributeId"
         ]
       },
       "CreateProductRequest": {
@@ -9913,7 +15261,7 @@
               "nu",
               "unisex"
             ],
-            "example": "nam"
+            "description": "Bắt buộc cho category legacy_fashion; null cho dynamic"
           },
           "basePrice": {
             "type": "string",
@@ -9933,9 +15281,11 @@
           },
           "material": {
             "type": "string",
-            "example": "100% cotton"
+            "example": "100% cotton",
+            "description": "Bắt buộc cho category legacy_fashion; null cho dynamic"
           },
           "care": {
+            "description": "Bắt buộc cho category legacy_fashion; null cho dynamic",
             "type": "array",
             "items": {
               "type": "string"
@@ -9957,17 +15307,23 @@
             "type": "boolean"
           },
           "variants": {
-            "description": "Có thể tạo kèm biến thể",
+            "description": "Có thể tạo kèm biến thể (giá riêng nếu có phải > 0)",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/VariantInput"
+            }
+          },
+          "attributeValues": {
+            "description": "Thuộc tính cấp sản phẩm (ngành dynamic): đúng mẫu của ngành, không lặp, đúng kiểu. Các thuộc tính required=true có thể bổ sung sau nhưng PHẢI đủ trước khi đăng bán. Sửa về sau qua PUT …/attributes",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttributeValueInput"
             }
           }
         },
         "required": [
           "name",
           "categoryId",
-          "gender",
           "basePrice"
         ]
       },
@@ -10008,9 +15364,11 @@
           },
           "material": {
             "type": "string",
-            "nullable": true
+            "nullable": true,
+            "description": "Bắt buộc cho category legacy_fashion"
           },
           "care": {
+            "description": "Bắt buộc cho category legacy_fashion",
             "type": "array",
             "items": {
               "type": "string"
@@ -10034,7 +15392,7 @@
         "type": "object",
         "properties": {
           "variants": {
-            "description": "Thay TOÀN BỘ danh sách biến thể (thiếu = xoá mềm; tồn kho biến thể cũ giữ nguyên)",
+            "description": "Thay TOÀN BỘ danh sách biến thể. Biến thể khớp theo tổ hợp trục (ngành dynamic: attributeId+attributeValueId) hoặc màu×size (thời trang) được CẬP NHẬT tại chỗ — giữ nguyên id, tồn kho, hàng đang giữ. Tổ hợp mới = biến thể mới (tồn 0). Biến thể thiếu trong danh sách = xoá mềm, nhưng 409 PRODUCT_VARIANT_IN_USE nếu đang giữ hàng cho đơn hoặc nằm trong phiếu nhập nháp. Giá riêng (nếu có) phải > 0.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/VariantInput"
@@ -10044,6 +15402,142 @@
         "required": [
           "variants"
         ]
+      },
+      "SaveAttributesRequest": {
+        "type": "object",
+        "properties": {
+          "attributeValues": {
+            "description": "Thay TOÀN BỘ giá trị thuộc tính cấp sản phẩm; kiểm theo mẫu thuộc tính của ngành hàng (không ngoài mẫu, không lặp, đúng kiểu select/text/number)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttributeValueInput"
+            }
+          }
+        },
+        "required": [
+          "attributeValues"
+        ]
+      },
+      "CreateShopProductRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Áo thun cotton nam basic"
+          },
+          "slug": {
+            "type": "string",
+            "example": "ao-thun-cotton-nam-basic"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "nam",
+              "nu",
+              "unisex"
+            ],
+            "description": "Bắt buộc cho category legacy_fashion; null cho dynamic"
+          },
+          "basePrice": {
+            "type": "string",
+            "example": "159000",
+            "description": "VND"
+          },
+          "listPrice": {
+            "type": "string",
+            "example": "199000",
+            "nullable": true
+          },
+          "shortDescription": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "material": {
+            "type": "string",
+            "example": "100% cotton",
+            "description": "Bắt buộc cho category legacy_fashion; null cho dynamic"
+          },
+          "care": {
+            "description": "Bắt buộc cho category legacy_fashion; null cho dynamic",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "variants": {
+            "description": "Có thể tạo kèm biến thể (giá riêng nếu có phải > 0)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VariantInput"
+            }
+          },
+          "attributeValues": {
+            "description": "Thuộc tính cấp sản phẩm (ngành dynamic): đúng mẫu của ngành, không lặp, đúng kiểu. Các thuộc tính required=true có thể bổ sung sau nhưng PHẢI đủ trước khi đăng bán. Sửa về sau qua PUT …/attributes",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttributeValueInput"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "categoryId",
+          "basePrice"
+        ]
+      },
+      "UpdateShopProductRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "nam",
+              "nu",
+              "unisex"
+            ]
+          },
+          "basePrice": {
+            "type": "string"
+          },
+          "listPrice": {
+            "type": "string",
+            "nullable": true
+          },
+          "shortDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "material": {
+            "type": "string",
+            "nullable": true,
+            "description": "Bắt buộc cho category legacy_fashion"
+          },
+          "care": {
+            "description": "Bắt buộc cho category legacy_fashion",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
       },
       "UpdateImageRequest": {
         "type": "object",
@@ -10057,7 +15551,8 @@
             "nullable": true
           },
           "isPrimary": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "true = đặt làm ảnh chính (ảnh chính cũ tự bỏ cờ). false trên ảnh chính hiện tại bị từ chối — chọn ảnh khác làm chính"
           }
         }
       },
@@ -10065,7 +15560,7 @@
         "type": "object",
         "properties": {
           "imageIds": {
-            "description": "Id ảnh theo thứ tự mới; ảnh đầu = ảnh chính",
+            "description": "Id ảnh theo thứ tự mới (không trùng, đúng và đủ mọi ảnh); ảnh đầu = ảnh chính",
             "type": "array",
             "items": {
               "type": "string"
@@ -10196,12 +15691,15 @@
           },
           "quantity": {
             "type": "number",
-            "example": 50
+            "example": 50,
+            "minimum": 1,
+            "maximum": 100000,
+            "description": "Số lượng nhập — số nguyên 1–100.000"
           },
           "unitCost": {
             "type": "string",
             "example": "80000",
-            "description": "Giá vốn VND"
+            "description": "Giá vốn VND — số nguyên không âm, tối đa 12 chữ số"
           }
         },
         "required": [
@@ -10239,11 +15737,14 @@
           "delta": {
             "type": "number",
             "example": -2,
-            "description": "Số lượng cộng/trừ (kiểm kê, hư hỏng)"
+            "minimum": -100000,
+            "maximum": 100000,
+            "description": "Số lượng cộng/trừ (kiểm kê, hư hỏng) — số nguyên khác 0, |delta| ≤ 100.000"
           },
           "reason": {
             "type": "string",
-            "example": "Kiểm kê cuối tháng — thiếu 2"
+            "example": "Kiểm kê cuối tháng — thiếu 2",
+            "description": "Lý do điều chỉnh (3–255 ký tự) — ghi vào sổ kho + audit"
           }
         },
         "required": [
@@ -10570,12 +16071,474 @@
         "properties": {
           "providerRef": {
             "type": "string",
-            "description": "Mã tham chiếu chuyển khoản (bắt buộc khi hoàn tay)"
+            "description": "Mã tham chiếu chuyển khoản (bắt buộc khi hoàn tay). Với refund VNPay `failed` chưa rõ kết quả (needsReconcile): mã giao dịch hoàn trên cổng — ghi sổ, KHÔNG gọi cổng."
           },
           "note": {
             "type": "string"
+          },
+          "confirmGatewayNotRefunded": {
+            "type": "boolean",
+            "description": "Chỉ dùng cho refund VNPay `failed` chưa rõ kết quả (needsReconcile): đã đối chiếu trên cổng và xác nhận CHƯA hoàn ⇒ cho phép gọi lại cổng."
           }
         }
+      },
+      "PendingDepositResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "example": "500000"
+          }
+        },
+        "required": [
+          "id",
+          "amount"
+        ]
+      },
+      "ShopWalletResponse": {
+        "type": "object",
+        "properties": {
+          "shopId": {
+            "type": "string"
+          },
+          "balance": {
+            "type": "string",
+            "example": "1000000",
+            "description": "Số dư quỹ COD (VND); ≤ 0 ⇒ COD bị khoá"
+          },
+          "codEnabled": {
+            "type": "boolean",
+            "description": "COD của shop đang bật?"
+          },
+          "pendingDeposit": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PendingDepositResponse"
+              }
+            ]
+          }
+        },
+        "required": [
+          "shopId",
+          "balance",
+          "codEnabled",
+          "pendingDeposit"
+        ]
+      },
+      "CreateDepositRequestDto": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "example": 500000,
+            "description": "Số tiền muốn nộp (VND)"
+          },
+          "proofUrl": {
+            "type": "string",
+            "description": "Ảnh chứng từ chuyển khoản (URL)"
+          },
+          "note": {
+            "type": "string",
+            "example": "Nộp quỹ để mở lại COD"
+          }
+        },
+        "required": [
+          "amount"
+        ]
+      },
+      "DepositRequestResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "shopId": {
+            "type": "string"
+          },
+          "shopName": {
+            "type": "string",
+            "nullable": true
+          },
+          "amount": {
+            "type": "string",
+            "example": "500000"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "approved",
+              "rejected"
+            ]
+          },
+          "proofUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "note": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "shopId",
+          "shopName",
+          "amount",
+          "status",
+          "proofUrl",
+          "note",
+          "createdAt"
+        ]
+      },
+      "AdjustWalletDto": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "example": 100000,
+            "description": "Số tiền điều chỉnh: dương = cộng, âm = trừ (VND, khác 0)"
+          },
+          "note": {
+            "type": "string",
+            "example": "Điều chỉnh do khiếu nại hoàn tiền #123",
+            "description": "Lý do (≥ 5 ký tự) — vào sổ cái và nhật ký"
+          }
+        },
+        "required": [
+          "amount",
+          "note"
+        ]
+      },
+      "ApproveDepositDto": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "example": "Đã đối chiếu sao kê"
+          }
+        }
+      },
+      "RejectDepositDto": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "example": "Chứng từ không khớp số tiền"
+          }
+        },
+        "required": [
+          "note"
+        ]
+      },
+      "PayosBalanceResponse": {
+        "type": "object",
+        "properties": {
+          "configured": {
+            "type": "boolean",
+            "description": "Đã cấu hình khoá PayOS payout chưa"
+          },
+          "balance": {
+            "type": "string",
+            "example": "50000000",
+            "nullable": true,
+            "description": "Số dư tài khoản chi (VND); null nếu chưa cấu hình hoặc tra cứu lỗi"
+          }
+        },
+        "required": [
+          "configured",
+          "balance"
+        ]
+      },
+      "RunPayoutRequest": {
+        "type": "object",
+        "properties": {
+          "periodStart": {
+            "type": "string",
+            "example": "2026-09-01T00:00:00Z",
+            "description": "Đầu kỳ đối soát"
+          },
+          "periodEnd": {
+            "type": "string",
+            "example": "2026-09-30T23:59:59Z",
+            "description": "Cuối kỳ đối soát (không muộn hơn hiện tại; đơn tính theo hạn đổi trả tới mốc này)"
+          }
+        },
+        "required": [
+          "periodStart",
+          "periodEnd"
+        ]
+      },
+      "ShopPayoutResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "example": "PAY-260901-260930-1A2B3C4D"
+          },
+          "shopId": {
+            "type": "string"
+          },
+          "shopName": {
+            "type": "string",
+            "description": "Tên gian hàng — để màn đối soát không phải tra thêm danh sách shop (kế toán không có quyền đọc shop)"
+          },
+          "periodStart": {
+            "type": "string"
+          },
+          "periodEnd": {
+            "type": "string"
+          },
+          "grossRevenue": {
+            "type": "string",
+            "example": "10000000",
+            "description": "Tổng tiền hàng các đơn đã qua hạn đổi trả (VND)"
+          },
+          "commission": {
+            "type": "string",
+            "example": "1000000",
+            "description": "Hoa hồng sàn ròng (đã trừ phần hoàn lại trên hàng bị hoàn) (VND)"
+          },
+          "refundAmount": {
+            "type": "string",
+            "example": "500000",
+            "description": "Hoàn tiền cho khách đã trừ vào kỳ (VND)"
+          },
+          "carriedDebt": {
+            "type": "string",
+            "example": "0",
+            "description": "Nợ mang sang từ kỳ trước (VND)"
+          },
+          "netPayout": {
+            "type": "string",
+            "example": "8500000",
+            "description": "Thực chi = gross − commission − refund − carriedDebt; âm = nợ mang sang kỳ sau"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "processing",
+              "paid",
+              "failed",
+              "carried",
+              "settled"
+            ],
+            "description": "carried = net âm (không chi), settled = net 0"
+          },
+          "providerRef": {
+            "type": "string",
+            "nullable": true
+          },
+          "failReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "paidAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "Lần cập nhật gần nhất — kỳ `processing` quá 10 phút không đổi là treo (được phép gửi lại)"
+          },
+          "bankAccountMasked": {
+            "type": "string",
+            "description": "TK nhận đã che số (4 số cuối) — chỉ để đối chiếu",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "shopId",
+          "periodStart",
+          "periodEnd",
+          "grossRevenue",
+          "commission",
+          "refundAmount",
+          "carriedDebt",
+          "netPayout",
+          "status",
+          "providerRef",
+          "failReason",
+          "paidAt",
+          "createdAt",
+          "updatedAt",
+          "bankAccountMasked"
+        ]
+      },
+      "ShopPayoutLineResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "orderCode": {
+            "type": "string",
+            "description": "sale: mã đơn · refund: mã dòng hoàn tiền (RF-…)"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "sale",
+              "refund"
+            ]
+          },
+          "gross": {
+            "type": "string",
+            "example": "5000000",
+            "description": "Tiền hàng (sale) hoặc tiền hoàn (refund) (VND)"
+          },
+          "commission": {
+            "type": "string",
+            "example": "500000",
+            "description": "Hoa hồng của dòng (với refund: hoa hồng hoàn lại cho shop)"
+          }
+        },
+        "required": [
+          "id",
+          "orderCode",
+          "kind",
+          "gross",
+          "commission"
+        ]
+      },
+      "ShopPayoutDetailResponse": {
+        "type": "object",
+        "properties": {
+          "payout": {
+            "$ref": "#/components/schemas/ShopPayoutResponse"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShopPayoutLineResponse"
+            }
+          }
+        },
+        "required": [
+          "payout",
+          "lines"
+        ]
+      },
+      "MarkPaidRequest": {
+        "type": "object",
+        "properties": {
+          "providerRef": {
+            "type": "string",
+            "example": "FT26093012345",
+            "description": "Mã giao dịch / chứng từ chuyển khoản"
+          },
+          "note": {
+            "type": "string",
+            "example": "Chuyển tay qua Vietcombank 30/09"
+          }
+        },
+        "required": [
+          "providerRef"
+        ]
+      },
+      "CheckoutShopGroupResponse": {
+        "type": "object",
+        "properties": {
+          "shopId": {
+            "type": "string"
+          },
+          "shopName": {
+            "type": "string"
+          },
+          "itemCount": {
+            "type": "number"
+          },
+          "subtotal": {
+            "$ref": "#/components/schemas/MoneyResponse"
+          },
+          "shippingFee": {
+            "$ref": "#/components/schemas/MoneyResponse"
+          },
+          "discount": {
+            "description": "Tổng giảm của đơn con này (voucher shop + phần voucher sàn phân bổ)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyResponse"
+              }
+            ]
+          },
+          "total": {
+            "description": "Khách phải trả cho đơn con này",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyResponse"
+              }
+            ]
+          }
+        },
+        "required": [
+          "shopId",
+          "shopName",
+          "itemCount",
+          "subtotal",
+          "shippingFee",
+          "discount",
+          "total"
+        ]
+      },
+      "CheckoutVoucherResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "platform",
+              "shop"
+            ],
+            "description": "platform = mã của sàn · shop = mã của gian hàng"
+          },
+          "shopId": {
+            "type": "string",
+            "nullable": true
+          },
+          "shopName": {
+            "type": "string",
+            "nullable": true
+          },
+          "ok": {
+            "type": "boolean",
+            "description": "Mã được nhận (true) hay bị từ chối (false)"
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "description": "Lý do từ chối (tiếng Việt)"
+          },
+          "discount": {
+            "$ref": "#/components/schemas/MoneyResponse"
+          }
+        },
+        "required": [
+          "code",
+          "scope",
+          "ok",
+          "discount"
+        ]
       },
       "CheckoutSummaryResponse": {
         "type": "object",
@@ -10614,6 +16577,18 @@
             "items": {
               "type": "string"
             }
+          },
+          "shopGroups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CheckoutShopGroupResponse"
+            }
+          },
+          "vouchers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CheckoutVoucherResponse"
+            }
           }
         },
         "required": [
@@ -10622,7 +16597,9 @@
           "discount",
           "total",
           "itemCount",
-          "warnings"
+          "warnings",
+          "shopGroups",
+          "vouchers"
         ]
       },
       "CheckoutAddressInput": {
@@ -10681,6 +16658,7 @@
               "cod",
               "bank_transfer",
               "vnpay",
+              "payos",
               "card"
             ],
             "example": "cod",
@@ -10697,6 +16675,16 @@
             "type": "string",
             "example": "FREESHIP",
             "nullable": true
+          },
+          "voucherCodes": {
+            "example": [
+              "SHOPA10"
+            ],
+            "description": "Mã bổ sung (gộp với voucherCode): tối đa 1 mã sàn + 1 mã gian hàng cho mỗi shop trong giỏ",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
@@ -10851,6 +16839,15 @@
             "type": "string",
             "example": "unpaid"
           },
+          "shopId": {
+            "type": "string"
+          },
+          "shopSlug": {
+            "type": "string"
+          },
+          "shopName": {
+            "type": "string"
+          },
           "cardBrand": {
             "type": "string",
             "nullable": true
@@ -10894,6 +16891,7 @@
           "promotion": {
             "type": "object",
             "nullable": true,
+            "description": "Voucher SÀN (sàn chịu chi phí)",
             "properties": {
               "code": {
                 "type": "string"
@@ -10905,6 +16903,27 @@
             },
             "required": [
               "code"
+            ]
+          },
+          "shopPromotion": {
+            "type": "string",
+            "nullable": true,
+            "description": "Voucher GIAN HÀNG (shop chịu chi phí)"
+          },
+          "shopDiscount": {
+            "description": "Phần giảm do shop chịu",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyResponse"
+              }
+            ]
+          },
+          "platformDiscount": {
+            "description": "Phần giảm do sàn chịu (sàn hoàn lại cho shop)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyResponse"
+              }
             ]
           },
           "total": {
@@ -10961,6 +16980,8 @@
           "statusLabel",
           "paymentMethodCode",
           "paymentStatus",
+          "shopId",
+          "shopName",
           "recipientName",
           "recipientPhone",
           "shippingAddress",
@@ -10968,10 +16989,63 @@
           "subtotal",
           "shippingFee",
           "discount",
+          "shopDiscount",
+          "platformDiscount",
           "total",
           "history",
           "canCancel",
           "canReturn",
+          "createdAt"
+        ]
+      },
+      "OrderGroupResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "DHN2609150001"
+          },
+          "recipientName": {
+            "type": "string"
+          },
+          "recipientPhone": {
+            "type": "string"
+          },
+          "shippingAddress": {
+            "type": "string"
+          },
+          "subtotal": {
+            "$ref": "#/components/schemas/MoneyResponse"
+          },
+          "shippingFee": {
+            "$ref": "#/components/schemas/MoneyResponse"
+          },
+          "discount": {
+            "$ref": "#/components/schemas/MoneyResponse"
+          },
+          "total": {
+            "$ref": "#/components/schemas/MoneyResponse"
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderResponse"
+            }
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "recipientName",
+          "recipientPhone",
+          "shippingAddress",
+          "subtotal",
+          "shippingFee",
+          "discount",
+          "total",
+          "orders",
           "createdAt"
         ]
       },
@@ -11213,6 +17287,93 @@
           "decision"
         ]
       },
+      "ShopOrderSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "pending": {
+            "type": "number",
+            "example": 5
+          },
+          "confirmed": {
+            "type": "number",
+            "example": 3
+          },
+          "packing": {
+            "type": "number",
+            "example": 2
+          },
+          "shipping": {
+            "type": "number",
+            "example": 1
+          },
+          "delivered": {
+            "type": "number",
+            "example": 10
+          },
+          "completed": {
+            "type": "number",
+            "example": 50
+          },
+          "cancelled": {
+            "type": "number",
+            "example": 2
+          },
+          "returned": {
+            "type": "number",
+            "example": 0
+          }
+        },
+        "required": [
+          "pending",
+          "confirmed",
+          "packing",
+          "shipping",
+          "delivered",
+          "completed",
+          "cancelled",
+          "returned"
+        ]
+      },
+      "ShopUpdateOrderStatusRequest": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "confirmed",
+              "packing",
+              "shipping",
+              "delivered"
+            ],
+            "description": "Trạng thái tiếp theo cho phép"
+          },
+          "trackingUrl": {
+            "type": "string",
+            "example": "https://tracking.ghn.vn/?order=GHN123",
+            "description": "URL theo dõi vận chuyển (chỉ https)"
+          },
+          "note": {
+            "type": "string",
+            "description": "Ghi chú"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "ShopCancelOrderRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "example": "Sản phẩm hết hàng",
+            "description": "Lý do huỷ đơn"
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
       "MediaInput": {
         "type": "object",
         "properties": {
@@ -11304,6 +17465,111 @@
           "content"
         ]
       },
+      "ShopReviewReplyRequest": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "description": "Nội dung trả lời (hiển thị công khai dưới tên gian hàng)"
+          }
+        },
+        "required": [
+          "content"
+        ]
+      },
+      "ShopReviewReplyResponse": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "Nội dung trả lời"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "ISO-8601"
+          }
+        },
+        "required": [
+          "content",
+          "createdAt"
+        ]
+      },
+      "ShopReviewResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "productId": {
+            "type": "string"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "productSlug": {
+            "type": "string"
+          },
+          "rating": {
+            "type": "number",
+            "example": 5,
+            "minimum": 1,
+            "maximum": 5
+          },
+          "content": {
+            "type": "string"
+          },
+          "authorDisplay": {
+            "type": "string",
+            "example": "Nguyễn V. A.",
+            "description": "Tên khách đã che — chỉ giữ họ, viết tắt phần còn lại"
+          },
+          "variantLabel": {
+            "type": "string",
+            "nullable": true,
+            "example": "Đen / M"
+          },
+          "images": {
+            "description": "URL ảnh khách đính kèm",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "helpfulCount": {
+            "type": "number",
+            "example": 0
+          },
+          "reply": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ShopReviewReplyResponse"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "ISO-8601"
+          }
+        },
+        "required": [
+          "id",
+          "productId",
+          "productName",
+          "productSlug",
+          "rating",
+          "content",
+          "authorDisplay",
+          "variantLabel",
+          "images",
+          "helpfulCount",
+          "reply",
+          "createdAt"
+        ]
+      },
       "RecomputeRequest": {
         "type": "object",
         "properties": {
@@ -11319,6 +17585,378 @@
         "required": [
           "from",
           "to"
+        ]
+      },
+      "ShopDailyPointResponse": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "string",
+            "example": "2026-09-15",
+            "description": "yyyy-mm-dd theo giờ Việt Nam"
+          },
+          "orderCount": {
+            "type": "number"
+          },
+          "paidCount": {
+            "type": "number"
+          },
+          "cancelledCount": {
+            "type": "number"
+          },
+          "revenue": {
+            "$ref": "#/components/schemas/MoneyResponse"
+          },
+          "discount": {
+            "$ref": "#/components/schemas/MoneyResponse"
+          },
+          "shippingFee": {
+            "$ref": "#/components/schemas/MoneyResponse"
+          },
+          "itemsSold": {
+            "type": "number"
+          },
+          "newCustomers": {
+            "type": "number"
+          },
+          "refunded": {
+            "$ref": "#/components/schemas/MoneyResponse"
+          }
+        },
+        "required": [
+          "day",
+          "orderCount",
+          "paidCount",
+          "cancelledCount",
+          "revenue",
+          "discount",
+          "shippingFee",
+          "itemsSold",
+          "newCustomers",
+          "refunded"
+        ]
+      },
+      "ShopMonthSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "revenue": {
+            "$ref": "#/components/schemas/MoneyResponse"
+          },
+          "orderCount": {
+            "type": "number"
+          },
+          "paidCount": {
+            "type": "number"
+          },
+          "itemsSold": {
+            "type": "number"
+          },
+          "newCustomers": {
+            "type": "number"
+          },
+          "refunded": {
+            "$ref": "#/components/schemas/MoneyResponse"
+          }
+        },
+        "required": [
+          "revenue",
+          "orderCount",
+          "paidCount",
+          "itemsSold",
+          "newCustomers",
+          "refunded"
+        ]
+      },
+      "ShopPendingResponse": {
+        "type": "object",
+        "properties": {
+          "awaitingConfirm": {
+            "type": "number"
+          },
+          "packing": {
+            "type": "number"
+          },
+          "shipping": {
+            "type": "number"
+          },
+          "lowStock": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "awaitingConfirm",
+          "packing",
+          "shipping",
+          "lowStock"
+        ]
+      },
+      "ShopTopProductResponse": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Số lượng bán ròng (đã trừ hàng khách trả và đã hoàn tiền)"
+          },
+          "revenue": {
+            "description": "Doanh thu ròng của dòng hàng (đã trừ giảm giá của shop và hàng đã trả)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyResponse"
+              }
+            ]
+          },
+          "orderCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "productId",
+          "slug",
+          "name",
+          "imageUrl",
+          "quantity",
+          "revenue",
+          "orderCount"
+        ]
+      },
+      "ShopOrderStatusCountResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "pending"
+          },
+          "count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "status",
+          "count"
+        ]
+      },
+      "ShopDashboardResponse": {
+        "type": "object",
+        "properties": {
+          "today": {
+            "$ref": "#/components/schemas/ShopDailyPointResponse"
+          },
+          "month": {
+            "$ref": "#/components/schemas/ShopMonthSummaryResponse"
+          },
+          "pending": {
+            "$ref": "#/components/schemas/ShopPendingResponse"
+          },
+          "last7Days": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShopDailyPointResponse"
+            }
+          },
+          "topProducts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShopTopProductResponse"
+            }
+          },
+          "orderStatus": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShopOrderStatusCountResponse"
+            }
+          },
+          "generatedAt": {
+            "type": "string",
+            "example": "2026-09-15T03:00:00.000Z"
+          }
+        },
+        "required": [
+          "today",
+          "month",
+          "pending",
+          "last7Days",
+          "topProducts",
+          "orderStatus",
+          "generatedAt"
+        ]
+      },
+      "ShopRevenuePointResponse": {
+        "type": "object",
+        "properties": {
+          "period": {
+            "type": "string",
+            "example": "2026-09-15",
+            "description": "yyyy-mm-dd (day) hoặc yyyy-mm (month)"
+          },
+          "revenue": {
+            "$ref": "#/components/schemas/MoneyResponse"
+          },
+          "orderCount": {
+            "type": "number"
+          },
+          "paidCount": {
+            "type": "number"
+          },
+          "cancelledCount": {
+            "type": "number"
+          },
+          "itemsSold": {
+            "type": "number"
+          },
+          "discount": {
+            "$ref": "#/components/schemas/MoneyResponse"
+          },
+          "refunded": {
+            "$ref": "#/components/schemas/MoneyResponse"
+          }
+        },
+        "required": [
+          "period",
+          "revenue",
+          "orderCount",
+          "paidCount",
+          "cancelledCount",
+          "itemsSold",
+          "discount",
+          "refunded"
+        ]
+      },
+      "ShopRevenueTotalResponse": {
+        "type": "object",
+        "properties": {
+          "revenue": {
+            "$ref": "#/components/schemas/MoneyResponse"
+          },
+          "orderCount": {
+            "type": "number"
+          },
+          "paidCount": {
+            "type": "number"
+          },
+          "cancelledCount": {
+            "type": "number"
+          },
+          "itemsSold": {
+            "type": "number"
+          },
+          "discount": {
+            "$ref": "#/components/schemas/MoneyResponse"
+          },
+          "refunded": {
+            "$ref": "#/components/schemas/MoneyResponse"
+          }
+        },
+        "required": [
+          "revenue",
+          "orderCount",
+          "paidCount",
+          "cancelledCount",
+          "itemsSold",
+          "discount",
+          "refunded"
+        ]
+      },
+      "ShopRevenueResponse": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "example": "2026-09-01"
+          },
+          "to": {
+            "type": "string",
+            "example": "2026-09-30"
+          },
+          "granularity": {
+            "type": "string",
+            "enum": [
+              "day",
+              "month"
+            ]
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShopRevenuePointResponse"
+            }
+          },
+          "total": {
+            "$ref": "#/components/schemas/ShopRevenueTotalResponse"
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "granularity",
+          "points",
+          "total"
+        ]
+      },
+      "ShopLowStockResponse": {
+        "type": "object",
+        "properties": {
+          "variantId": {
+            "type": "string"
+          },
+          "productId": {
+            "type": "string"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "colorName": {
+            "type": "string",
+            "description": "Rỗng với sản phẩm ngành hàng mới (dynamic) — xem variantLabel"
+          },
+          "sizeCode": {
+            "type": "string",
+            "description": "Rỗng với sản phẩm ngành hàng mới (dynamic) — xem variantLabel"
+          },
+          "stock": {
+            "type": "number"
+          },
+          "reserved": {
+            "type": "number"
+          },
+          "available": {
+            "type": "number"
+          },
+          "variantLabel": {
+            "type": "string",
+            "example": "128GB / Đen",
+            "description": "Mô tả biến thể: các tuỳ chọn ghép bằng \" / \" (dynamic) hoặc \"màu / size\" (thời trang)"
+          }
+        },
+        "required": [
+          "variantId",
+          "productId",
+          "productName",
+          "slug",
+          "sku",
+          "colorName",
+          "sizeCode",
+          "stock",
+          "reserved",
+          "available"
         ]
       },
       "ChatRequestV2": {
@@ -11358,6 +17996,50 @@
         },
         "required": [
           "summary"
+        ]
+      },
+      "ImageSearchResponse": {
+        "type": "object",
+        "properties": {
+          "available": {
+            "type": "boolean",
+            "description": "false khi chưa cấu hình khoá OpenAI — FE ẩn tính năng"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Mô tả ngắn ảnh do vision sinh (≤ 500 ký tự)"
+          },
+          "keywords": {
+            "example": [
+              "áo thun",
+              "màu trắng"
+            ],
+            "description": "Từ khoá vision rút ra từ ảnh: loại sản phẩm trước, màu/chất liệu sau (≤ 6); chỉ loại sản phẩm được dùng để tìm",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "description": "Thẻ sản phẩm (cùng dạng ProductCardResponse của GET /products), tối đa 12 (có thể ít hơn — chỉ sản phẩm liên quan), khớp loại sản phẩm trước rồi gợi ý cùng ngành"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true,
+            "example": "Không tìm thấy sản phẩm giống ảnh",
+            "description": "Giải thích khi không có kết quả khớp / chỉ có gợi ý theo ngành / rất ít kết quả khớp / vision lỗi"
+          }
+        },
+        "required": [
+          "available",
+          "keywords",
+          "items"
         ]
       },
       "CompareRequest": {

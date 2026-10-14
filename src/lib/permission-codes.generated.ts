@@ -3,7 +3,7 @@
  * Nguồn: openapi/permissions.json (catalog quyền của backend eco_backend).
  * Sinh lại: npm run perms:sync
  *
- * 52 mã quyền dạng module.resource.action. Dùng để ràng buộc kiểu
+ * 83 mã quyền dạng module.resource.action. Dùng để ràng buộc kiểu
  * cho PERMISSIONS trong lib/constants.ts và props của PermissionGuard / PermissionGate.
  */
 
@@ -21,6 +21,8 @@ export const PERMISSION_CODES = [
   "catalog.category.manage",
   "catalog.category.read",
   "catalog.collection.manage",
+  "catalog.dynamic_attribute.manage",
+  "catalog.dynamic_attribute.read",
   "identity.audit.read",
   "identity.permission.assign",
   "identity.role.read",
@@ -55,6 +57,35 @@ export const PERMISSION_CODES = [
   "review.review.moderate",
   "review.review.read",
   "review.review.reply",
+  "shop.inventory.manage",
+  "shop.inventory.read",
+  "shop.order.read",
+  "shop.order.update",
+  "shop.payout.read",
+  "shop.product.manage",
+  "shop.product.read",
+  "shop.profile.read",
+  "shop.profile.update",
+  "shop.promotion.manage",
+  "shop.promotion.read",
+  "shop.report.read",
+  "shop.review.read",
+  "shop.review.reply",
+  "shop.staff.invite",
+  "shop.staff.read",
+  "shop.staff.remove",
+  "shop.staff.update",
+  "shop.wallet.deposit_request",
+  "shop.wallet.read",
+  "supplier.payout.process",
+  "supplier.payout.read",
+  "supplier.shop.approve",
+  "supplier.shop.commission",
+  "supplier.shop.read",
+  "supplier.shop.reject",
+  "supplier.shop.suspend",
+  "supplier.wallet.adjust",
+  "supplier.wallet.read",
   "system.banner.manage",
   "system.notification.send",
   "system.province.manage",

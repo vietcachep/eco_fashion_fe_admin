@@ -72,6 +72,18 @@
     "deprecated": false
   },
   {
+    "code": "catalog.dynamic_attribute.read",
+    "module": "catalog",
+    "description": "Xem thuộc tính động cho ngành hàng (PLAN-0016)",
+    "deprecated": false
+  },
+  {
+    "code": "catalog.dynamic_attribute.manage",
+    "module": "catalog",
+    "description": "Tạo / sửa thuộc tính động cho ngành hàng (PLAN-0016)",
+    "deprecated": false
+  },
+  {
     "code": "catalog.collection.manage",
     "module": "catalog",
     "description": "Tạo / sửa bộ sưu tập",
@@ -309,6 +321,180 @@
     "code": "ai.moderation.read",
     "module": "ai",
     "description": "Xem nhãn AI đề xuất kiểm duyệt",
+    "deprecated": false
+  },
+  {
+    "code": "supplier.shop.read",
+    "module": "supplier",
+    "description": "Xem danh sách / chi tiết mọi gian hàng",
+    "deprecated": false
+  },
+  {
+    "code": "supplier.shop.approve",
+    "module": "supplier",
+    "description": "Duyệt gian hàng mới đăng ký",
+    "deprecated": false
+  },
+  {
+    "code": "supplier.shop.suspend",
+    "module": "supplier",
+    "description": "Khoá gian hàng vi phạm",
+    "deprecated": false
+  },
+  {
+    "code": "supplier.shop.reject",
+    "module": "supplier",
+    "description": "Từ chối gian hàng đăng ký",
+    "deprecated": false
+  },
+  {
+    "code": "supplier.shop.commission",
+    "module": "supplier",
+    "description": "Sửa % hoa hồng của một gian hàng",
+    "deprecated": false
+  },
+  {
+    "code": "shop.profile.read",
+    "module": "shop",
+    "description": "Xem hồ sơ gian hàng của mình",
+    "deprecated": false
+  },
+  {
+    "code": "shop.profile.update",
+    "module": "shop",
+    "description": "Sửa hồ sơ gian hàng của mình",
+    "deprecated": false
+  },
+  {
+    "code": "shop.product.read",
+    "module": "shop",
+    "description": "Xem sản phẩm của gian hàng mình",
+    "deprecated": false
+  },
+  {
+    "code": "shop.product.manage",
+    "module": "shop",
+    "description": "Thêm / sửa sản phẩm của gian hàng mình",
+    "deprecated": false
+  },
+  {
+    "code": "shop.review.read",
+    "module": "shop",
+    "description": "Xem đánh giá sản phẩm của gian hàng mình",
+    "deprecated": false
+  },
+  {
+    "code": "shop.review.reply",
+    "module": "shop",
+    "description": "Trả lời đánh giá sản phẩm của gian hàng mình",
+    "deprecated": false
+  },
+  {
+    "code": "shop.staff.read",
+    "module": "shop",
+    "description": "Xem nhân viên gian hàng của mình",
+    "deprecated": false
+  },
+  {
+    "code": "shop.staff.invite",
+    "module": "shop",
+    "description": "Thêm nhân viên vào gian hàng của mình (tạo tài khoản nhân viên)",
+    "deprecated": false
+  },
+  {
+    "code": "shop.staff.update",
+    "module": "shop",
+    "description": "Đổi vai nhân viên gian hàng của mình",
+    "deprecated": false
+  },
+  {
+    "code": "shop.staff.remove",
+    "module": "shop",
+    "description": "Gỡ nhân viên khỏi gian hàng của mình",
+    "deprecated": false
+  },
+  {
+    "code": "shop.order.read",
+    "module": "shop",
+    "description": "Xem đơn hàng của gian hàng mình",
+    "deprecated": false
+  },
+  {
+    "code": "shop.order.update",
+    "module": "shop",
+    "description": "Xác nhận / đóng gói / giao / huỷ đơn của gian hàng mình",
+    "deprecated": false
+  },
+  {
+    "code": "shop.inventory.read",
+    "module": "shop",
+    "description": "Xem tồn kho sản phẩm của gian hàng mình",
+    "deprecated": false
+  },
+  {
+    "code": "shop.inventory.manage",
+    "module": "shop",
+    "description": "Nhập kho / điều chỉnh tồn sản phẩm của gian hàng mình",
+    "deprecated": false
+  },
+  {
+    "code": "shop.promotion.read",
+    "module": "shop",
+    "description": "Xem mã giảm giá của gian hàng mình",
+    "deprecated": false
+  },
+  {
+    "code": "shop.promotion.manage",
+    "module": "shop",
+    "description": "Tạo / sửa / bật tắt mã giảm giá của gian hàng mình",
+    "deprecated": false
+  },
+  {
+    "code": "shop.report.read",
+    "module": "shop",
+    "description": "Xem báo cáo doanh thu / đơn / tồn của gian hàng mình",
+    "deprecated": false
+  },
+  {
+    "code": "shop.wallet.read",
+    "module": "shop",
+    "description": "Xem ví quỹ COD của gian hàng mình",
+    "deprecated": false
+  },
+  {
+    "code": "shop.wallet.deposit_request",
+    "module": "shop",
+    "description": "Gửi yêu cầu nộp thêm quỹ vào ví COD",
+    "deprecated": false
+  },
+  {
+    "code": "shop.payout.read",
+    "module": "shop",
+    "description": "Xem các kỳ đối soát / chi trả của gian hàng mình",
+    "deprecated": false
+  },
+  {
+    "code": "supplier.wallet.read",
+    "module": "supplier",
+    "description": "Xem ví quỹ COD và yêu cầu nộp quỹ của mọi gian hàng",
+    "deprecated": false
+  },
+  {
+    "code": "supplier.wallet.adjust",
+    "module": "supplier",
+    "description": "Điều chỉnh ví / duyệt nộp quỹ của gian hàng",
+    "deprecated": false
+  },
+  {
+    "code": "supplier.payout.read",
+    "module": "supplier",
+    "description": "Xem các kỳ đối soát / chi trả của mọi gian hàng",
+    "deprecated": false
+  },
+  {
+    "code": "supplier.payout.process",
+    "module": "supplier",
+    "description": "Chạy kỳ đối soát và chi trả cho gian hàng",
     "deprecated": false
   }
 ]
