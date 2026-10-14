@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
-import { EyeIcon, EyeOffIcon, Loader2Icon, MessageSquareReplyIcon, SparklesIcon, StarIcon } from "lucide-react";
+import { EyeIcon, EyeOffIcon, Loader2Icon, MessageSquareReplyIcon, SparklesIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,10 +27,10 @@ import { isForbiddenError } from "@/lib/api-error";
 import { PERMISSIONS, ROUTES } from "@/lib/constants";
 import { formatDateTime } from "@/lib/format";
 import { REVIEW_STATUS, statusMeta } from "@/lib/labels";
-import { cn } from "@/lib/utils";
 import { useListState } from "@/hooks/use-list-state";
 import { useAdminReviews, useModerateReview, useReplyReview } from "@/features/review/hooks/use-reviews";
 import { useDraftReviewReply } from "@/features/review/hooks/use-review-ai";
+import { ReviewStars } from "@/features/review/components/common/review-stars";
 import type { ReviewAdminResponse } from "@/features/review/types/review";
 
 const TABS = [
@@ -43,16 +43,6 @@ const TABS = [
 const PAGE_SIZE = 12;
 const LOAD_ERROR = "Không tải được đánh giá.";
 const DEFAULTS = { status: "", rating: "" };
-
-function Stars({ n }: { n: number }) {
-  return (
-    <span className="inline-flex" aria-label={`${n} sao`}>
-      {Array.from({ length: 5 }).map((_, i) => (
-        <StarIcon key={i} className={cn("size-3.5", i < n ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30")} />
-      ))}
-    </span>
-  );
-}
 
 /*
  * Đánh giá của khách: lọc trạng thái / số sao, tìm nội dung. Hành động: ẩn /
@@ -85,7 +75,7 @@ export function ReviewsTable() {
               <div className="min-w-0">
                 <p className="flex flex-wrap items-center gap-2 text-sm">
                   <span className="font-medium">{r.author}</span>
-                  <Stars n={r.rating} />
+                  <ReviewStars rating={r.rating} />
                   <span className="text-xs text-muted-foreground">{formatDateTime(r.createdAt)}</span>
                 </p>
                 <p className="text-sm">{r.content}</p>
@@ -269,7 +259,7 @@ function ReplyReviewBody({ review, onClose }: { review: ReviewAdminResponse; onC
       <DialogHeader>
         <DialogTitle>Trả lời thay cửa hàng</DialogTitle>
         <DialogDescription>
-          {review.author} · <Stars n={review.rating} /> · {review.productName}
+          {review.author} · <ReviewStars rating={review.rating} /> · {review.productName}
         </DialogDescription>
       </DialogHeader>
       <p className="rounded-md bg-muted px-3 py-2 text-sm">{review.content}</p>
