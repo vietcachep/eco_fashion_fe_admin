@@ -9,6 +9,7 @@ import {
   NOT_STAFF_CODE,
 } from "@/features/identity/api/auth-api";
 import { CURRENT_USER_QUERY_KEY } from "@/features/identity/hooks/use-current-user";
+import { landingScope } from "@/lib/constants";
 import { useAuthStore } from "@/stores/auth-store";
 import type { LoginInput } from "@/features/identity/schemas/login-schema";
 
@@ -28,13 +29,17 @@ export function useLogin() {
     mutationFn: async (input: LoginInput) => {
       const pair = await login(input);
       useAuthStore.getState().setTokens(pair.accessToken, pair.refreshToken);
-      // Trả mã quyền để form chọn màn đầu tiên người này được vào; /me lỗi tạm
+      // Trả mã quyền + scope để form chọn màn đầu tiên người này được vào; /me lỗi tạm
       // thời thì vẫn đăng nhập được (về dashboard, shell sẽ refetch).
+      // scope="vendor": tài khoản có gian hàng ĐANG HOẠT ĐỘNG (shop_owner/shop_staff) — đưa
+      // vào /vendor/** thay vì /dashboard (nhân viên sàn), tránh 403 ngay câu chào (PLAN-0002).
       try {
         const me = await queryClient.fetchQuery({ queryKey: CURRENT_USER_QUERY_KEY, queryFn: getCurrentUser });
-        return me.permissionCodes ?? [];
+        const codes = me.permissionCodes ?? [];
+        const hasActiveShop = (me.shopMemberships ?? []).some((m) => m.status === "active");
+        return { codes, scope: landingScope(codes, hasActiveShop) };
       } catch {
-        return [];
+        return { codes: [], scope: "platform" as const };
       }
     },
     onError: (error) => {

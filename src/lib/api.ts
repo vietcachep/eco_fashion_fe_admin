@@ -1,7 +1,6 @@
 import axios, { type InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "@/stores/auth-store";
 import { ROUTES } from "@/lib/constants";
-import { shouldMockEndpoint, mockAdapter } from "@/lib/mock/mock-admin-adapter";
 
 /*
  * Axios instance DUY NHẤT của app (AGENTS.md API Rule). Mọi lời gọi HTTP — kể
@@ -47,11 +46,6 @@ api.interceptors.request.use((config) => {
   // Upload multipart: để axios tự đặt boundary, đừng ép application/json.
   if (typeof FormData !== "undefined" && config.data instanceof FormData) {
     delete config.headers["Content-Type"];
-  }
-
-  // Chế độ Mock cho các màn hình ngoài luồng đăng nhập & phân quyền
-  if (shouldMockEndpoint(config.url)) {
-    config.adapter = mockAdapter;
   }
 
   return config;

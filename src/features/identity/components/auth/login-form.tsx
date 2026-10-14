@@ -14,6 +14,20 @@ import { useLogin } from "@/features/identity/hooks/use-login";
 import { loginSchema, type LoginInput } from "@/features/identity/schemas/login-schema";
 
 /*
+ * Tài khoản DEMO của dữ liệu seed backend (scripts/seed/identity.seed.ts) — chỉ hiện ở môi trường phát triển để chọn nhanh một vai.
+ * Production KHÔNG bao giờ in mật khẩu mẫu ra giao diện.
+ */
+const SHOW_DEMO_ACCOUNTS = process.env.NODE_ENV !== "production";
+const DEMO_ACCOUNTS = [
+  { label: "Admin", email: "admin@ecofashion.vn", pass: "Admin123456!" },
+  { label: "Quản lý", email: "manager@ecofashion.vn", pass: "NhanVien123!" },
+  { label: "Bán hàng", email: "sales@ecofashion.vn", pass: "NhanVien123!" },
+  { label: "Kho", email: "warehouse@ecofashion.vn", pass: "NhanVien123!" },
+  { label: "Kế toán", email: "accountant@ecofashion.vn", pass: "NhanVien123!" },
+  { label: "Marketing", email: "marketing@ecofashion.vn", pass: "NhanVien123!" },
+] as const;
+
+/*
  * Form đăng nhập: React Hook Form + Zod (State Rule). Form thuần — bố cục /
  * thương hiệu trang nằm ở (auth)/login/page.tsx. Submit đi qua mutation
  * useLogin; component không đụng token.
@@ -30,8 +44,9 @@ export function LoginForm() {
 
   return (
     <form
+      method="post" // không bao giờ gửi kiểu GET: bấm trước khi trang hydrate sẽ làm lộ email/mật khẩu trên URL
       onSubmit={form.handleSubmit((input) =>
-        loginMutation.mutate(input, { onSuccess: (codes) => router.push(firstAllowedRoute(codes)) }),
+        loginMutation.mutate(input, { onSuccess: ({ codes, scope }) => router.push(firstAllowedRoute(codes, scope)) }),
       )}
       noValidate
     >
@@ -89,36 +104,32 @@ export function LoginForm() {
           <ArrowRightIcon className="size-4 transition-transform group-hover/submit:translate-x-0.5" />
         </Button>
 
-        <div className="pt-2">
-          <div className="relative flex items-center justify-center">
-            <span className="h-px w-full bg-border" />
-            <span className="absolute bg-card px-2 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
-              Thử nghiệm nhanh theo vai trò
-            </span>
-          </div>
+        {SHOW_DEMO_ACCOUNTS ? (
+          <div className="pt-2">
+            <div className="relative flex items-center justify-center">
+              <span className="h-px w-full bg-border" />
+              <span className="absolute bg-card px-2 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+                Thử nghiệm nhanh theo vai trò
+              </span>
+            </div>
 
-          <div className="mt-3 flex flex-wrap gap-1.5 justify-center">
-            {[
-              { label: "Admin", email: "admin@ecofashion.vn", pass: "Admin123456!" },
-              { label: "Kho", email: "kho@ecofashion.vn", pass: "Kho123456!" },
-              { label: "Bán hàng", email: "banhang@ecofashion.vn", pass: "Banhang123456!" },
-              { label: "Kế toán", email: "ketoan@ecofashion.vn", pass: "Ketoan123456!" },
-              { label: "Marketing", email: "marketing@ecofashion.vn", pass: "Marketing123456!" },
-            ].map((acc) => (
-              <button
-                key={acc.email}
-                type="button"
-                onClick={() => {
-                  form.setValue("email", acc.email);
-                  form.setValue("password", acc.pass);
-                }}
-                className="rounded-lg border border-border/80 bg-muted/40 px-2 py-1 text-[11px] font-medium text-muted-foreground transition hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
-              >
-                {acc.label}
-              </button>
-            ))}
+            <div className="mt-3 flex flex-wrap gap-1.5 justify-center">
+              {DEMO_ACCOUNTS.map((acc) => (
+                <button
+                  key={acc.email}
+                  type="button"
+                  onClick={() => {
+                    form.setValue("email", acc.email);
+                    form.setValue("password", acc.pass);
+                  }}
+                  className="rounded-lg border border-border/80 bg-muted/40 px-2 py-1 text-[11px] font-medium text-muted-foreground transition hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
+                >
+                  {acc.label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        ) : null}
       </FieldGroup>
     </form>
   );

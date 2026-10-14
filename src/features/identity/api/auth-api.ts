@@ -10,11 +10,13 @@ import {
   meControllerAvatar,
   meControllerUpdate,
 } from "@/lib/api/generated/users/users";
+import { shopControllerSession } from "@/lib/api/generated/shops/shops";
 import type {
-  CurrentUserResponse,
+  ShopSessionResponse,
   TokenPairResponse,
   UserProfileResponse,
 } from "@/lib/api/generated/model";
+import type { CurrentUserWithShop } from "@/features/shop/types/shop";
 import { apiErrorCode, apiErrorMessage } from "@/lib/api-error";
 import { CUSTOMER_ROLE } from "@/lib/constants";
 import { useAuthStore } from "@/stores/auth-store";
@@ -23,7 +25,6 @@ import type { ChangePasswordInput } from "@/features/identity/schemas/change-pas
 import type { ForgotPasswordInput } from "@/features/identity/schemas/forgot-password-schema";
 import type { ResetPasswordInput } from "@/features/identity/schemas/reset-password-schema";
 import type { ProfileInput } from "@/features/identity/schemas/profile-schema";
-import { DEMO_ACCOUNTS, getDemoCurrentUser, getDemoTokenPair } from "@/lib/mock/mock-auth";
 
 /*
  * API xác thực của feature identity — nơi DUY NHẤT nói chuyện với các endpoint
@@ -76,9 +77,20 @@ function deviceName(): string | undefined {
 }
 
 /*
- * Đăng nhập. Backend trả cặp token + hồ sơ rút gọn trong body. Tài khoản vai
- * `customer` bị chặn NGAY tại đây (không lưu token) — khu quản trị chỉ dành
- * cho nhân viên; backend vẫn là nơi enforce quyền thật trên từng endpoint.
+ * Phiên vendor (GET /shop/session): chủ/nhân viên gian hàng đăng nhập bằng tài khoản vai `customer` (vai của họ nằm trong ShopMember, không phải User.roleId)
+ * nên /auth/me KHÔNG trả quyền `shop.*`. Trả null khi không phải thành viên (403 SHOP_NOT_MEMBER) hoặc lỗi — nhân viên sàn đa phần cũng rơi vào đây.
+ */
+async function fetchShopSession(accessToken?: string): Promise<ShopSessionResponse | null> {
+  try {
+    return await shopControllerSession(accessToken ? { headers: { Authorization: `Bearer ${accessToken}` } } : undefined);
+  } catch {
+    return null;
+  }
+}
+
+/*
+ * Đăng nhập. Backend trả cặp token + hồ sơ rút gọn trong body. Tài khoản vai `customer` chỉ được vào khi là THÀNH VIÊN một gian hàng (chủ/nhân viên shop —
+ * cổng vendor); khách thường bị chặn NGAY tại đây (không lưu token). Backend vẫn là nơi enforce quyền thật trên từng endpoint.
  */
 export async function login(input: LoginInput): Promise<TokenPairResponse> {
   let pair: TokenPairResponse;
@@ -89,16 +101,12 @@ export async function login(input: LoginInput): Promise<TokenPairResponse> {
       deviceName: deviceName(),
     });
   } catch (error) {
-    // Dự phòng ngoại tuyến nếu backend chưa khởi động
-    if (DEMO_ACCOUNTS[input.email.toLowerCase()]) {
-      return getDemoTokenPair(input.email);
-    }
     throw new AuthError(
       apiErrorMessage(error, "Đăng nhập thất bại. Vui lòng thử lại."),
       apiErrorCode(error),
     );
   }
-  if (pair.user?.roleCode === CUSTOMER_ROLE) {
+  if (pair.user?.roleCode === CUSTOMER_ROLE && !(await fetchShopSession(pair.accessToken))) {
     throw new AuthError(
       "Tài khoản khách hàng không có quyền vào khu quản trị.",
       NOT_STAFF_CODE,
@@ -107,21 +115,33 @@ export async function login(input: LoginInput): Promise<TokenPairResponse> {
   return pair;
 }
 
-/* Hồ sơ người đang đăng nhập + mã quyền hiệu lực (GET /auth/me). */
-export async function getCurrentUser(): Promise<CurrentUserResponse> {
-  const { accessToken } = useAuthStore.getState();
-  if (accessToken?.startsWith("mock-")) {
-    return getDemoCurrentUser(accessToken);
-  }
-  try {
-    return await authControllerMe();
-  } catch (error) {
-    // Nếu backend mất kết nối, dùng hồ sơ tài khoản mẫu tương ứng
-    if (accessToken) {
-      return getDemoCurrentUser(accessToken);
-    }
-    throw error;
-  }
+/*
+ * Hồ sơ người đang đăng nhập + mã quyền hiệu lực. Gộp `GET /auth/me` (quyền của vai nhân viên sàn) với `GET /shop/session` (quyền `shop.*` của vai trong
+ * gian hàng) thành MỘT hồ sơ: sidebar/guard/PermissionGate chỉ cần hỏi `permissionCodes` — mã `shop.*` và `supplier.*` không bao giờ trùng nhau.
+ * `shopMemberships` mang cả trạng thái gian hàng để RoleGuard hiện đúng màn "đang chờ duyệt / đã bị khoá".
+ */
+export async function getCurrentUser(): Promise<CurrentUserWithShop> {
+  const [me, session] = await Promise.all([authControllerMe(), fetchShopSession()]);
+  if (!session) return { ...me, shopMemberships: [] };
+  const live = session.shop.status === "approved";
+  // Người CHỈ là khách trên sàn nhưng làm chủ/nhân viên gian hàng: nhãn vai hiển thị là vai trong shop ("Chủ gian hàng", "Nhân viên gian hàng"),
+  // không phải "Khách hàng" của tài khoản toàn sàn. Nhân viên sàn kiêm shop giữ nguyên vai sàn.
+  const shopRoleLabel = me.roleCode === CUSTOMER_ROLE ? session.roleName : undefined;
+  return {
+    ...me,
+    ...(shopRoleLabel ? { roleName: shopRoleLabel } : {}),
+    // Quyền shop chỉ hiệu lực khi gian hàng đang HOẠT ĐỘNG (backend cũng 403 mọi route /shop/** khi shop chưa duyệt/bị khoá).
+    permissionCodes: [...new Set([...(me.permissionCodes ?? []), ...(live ? session.permissions : [])])],
+    shopMemberships: [
+      {
+        shopId: session.shop.id,
+        shopName: session.shop.name,
+        role: session.roleCode as "shop_owner" | "shop_staff",
+        status: "active",
+        shopStatus: session.shop.status as "pending" | "approved" | "suspended" | "rejected",
+      },
+    ],
+  };
 }
 
 /*
