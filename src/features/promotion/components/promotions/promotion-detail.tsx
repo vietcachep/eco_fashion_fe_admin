@@ -20,7 +20,8 @@ import { PERMISSIONS, ROUTES } from "@/lib/constants";
 import { formatDateTime, formatNumber } from "@/lib/format";
 import { APPLIES_TO_LABEL, PROMO_TYPE_LABEL } from "@/lib/labels";
 import { useAdminPromotion, usePromotionUsages, useRemovePromotion } from "@/features/promotion/hooks/use-promotions";
-import { describeDiscount } from "@/features/promotion/components/promotions/promotions-table";
+import { describeDiscount, PromotionPhaseBadge, PromotionScopeBadge } from "@/features/promotion/components/common/promotion-display";
+import { usePromotionShopNames } from "@/features/promotion/hooks/use-promotion-shop-names";
 import { PromotionForm } from "@/features/promotion/components/promotions/promotion-form";
 import type { PromotionUsageRow } from "@/features/promotion/types/promotion";
 
@@ -36,6 +37,7 @@ export function PromotionDetail({ id }: { id: string }) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [pageIndex, setPageIndex] = useState(0);
   const usages = usePromotionUsages(id, { page: pageIndex + 1, size: PAGE_SIZE });
+  const shopNames = usePromotionShopNames().data;
 
   const columns: ColumnDef<PromotionUsageRow>[] = useMemo(
     () => [
@@ -83,12 +85,11 @@ export function PromotionDetail({ id }: { id: string }) {
     );
   }
 
-  const expired = new Date(p.endAt) < new Date();
-
   return (
     <div className="flex flex-col gap-4">
       <PageHeader title={p.code} description={p.name ?? undefined}>
-        {!p.isActive ? <StatusBadge tone="neutral">Đang tắt</StatusBadge> : expired ? <StatusBadge tone="warning">Hết hạn</StatusBadge> : <StatusBadge tone="success">Đang chạy</StatusBadge>}
+        <PromotionScopeBadge promotion={p} shopName={p.shopId ? shopNames?.get(p.shopId) : null} />
+        <PromotionPhaseBadge promotion={p} />
         <Button variant="outline" nativeButton={false} render={<Link href={ROUTES.promotion.promotions} />}>
           <ArrowLeftIcon className="size-4" />
           Danh sách

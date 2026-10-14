@@ -10,7 +10,7 @@ export default function PromotionsPage() {
   return (
     <PermissionGuard permission={PERMISSIONS.promotionRead}>
       <div className="flex flex-col gap-4">
-        <PageHeader title="Mã khuyến mãi" description="Giảm %, giảm số tiền, miễn phí vận chuyển — theo ngành / sản phẩm, có hạn mức lượt dùng" />
+        <PageHeader title="Mã khuyến mãi" description="Mã sàn (sàn chịu giảm giá, áp cả giỏ) và mã do từng gian hàng tự tạo — giảm %, số tiền, miễn phí vận chuyển, có hạn mức lượt dùng" />
         <PromotionsTable />
       </div>
     </PermissionGuard>

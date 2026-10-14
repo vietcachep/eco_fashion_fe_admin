@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,27 @@ import type { PromotionAdminResponse } from "@/features/promotion/types/promotio
 
 const num = (v: number | undefined) => (v !== undefined && !Number.isNaN(v) ? v : undefined);
 
+/* Giá trị form tạo mới. Mốc thời gian mặc định dùng Date.now nên tính ở đây (module), không trong thân render. */
+function blankDefaults(): PromotionInput {
+  return {
+    code: "",
+    name: "",
+    description: "",
+    type: "percentage",
+    value: 10,
+    maxDiscount: undefined,
+    minOrderAmount: undefined,
+    usageLimit: undefined,
+    usageLimitPerUser: undefined,
+    appliesTo: "all",
+    targets: "",
+    startsAt: toLocalInput(new Date().toISOString()),
+    endsAt: toLocalInput(new Date(Date.now() + 30 * 86_400_000).toISOString()),
+    isActive: true,
+    isPublic: true,
+  };
+}
+
 /*
  * Form tạo / sửa mã khuyến mãi. Mã không sửa được sau khi tạo (khách đã dùng).
  * Phạm vi: toàn đơn / ngành hàng (slug) / sản phẩm (id) — mỗi dòng một mục.
@@ -31,9 +53,8 @@ export function PromotionForm({ promotion, initial }: { promotion?: PromotionAdm
   const update = useUpdatePromotion(promotion?.id ?? "");
   const pending = create.isPending || update.isPending;
 
-  const form = useForm<PromotionInput>({
-    resolver: zodResolver(promotionSchema),
-    defaultValues: promotion
+  const [defaultValues] = useState<PromotionInput>(() =>
+    promotion
       ? {
           code: promotion.code,
           name: promotion.name ?? "",
@@ -51,28 +72,14 @@ export function PromotionForm({ promotion, initial }: { promotion?: PromotionAdm
           isActive: promotion.isActive,
           isPublic: promotion.isPublic,
         }
-      : {
-          code: "",
-          name: "",
-          description: "",
-          type: "percentage",
-          value: 10,
-          maxDiscount: undefined,
-          minOrderAmount: undefined,
-          usageLimit: undefined,
-          usageLimitPerUser: undefined,
-          appliesTo: "all",
-          targets: "",
-          startsAt: toLocalInput(new Date().toISOString()),
-          endsAt: toLocalInput(new Date(Date.now() + 30 * 86_400_000).toISOString()),
-          isActive: true,
-          isPublic: true,
-          ...initial,
-        },
-  });
+      : { ...blankDefaults(), ...initial },
+  );
+  const form = useForm<PromotionInput>({ resolver: zodResolver(promotionSchema), defaultValues });
   const errors = form.formState.errors;
-  const type = form.watch("type");
-  const appliesTo = form.watch("appliesTo");
+  const type = useWatch({ control: form.control, name: "type" });
+  const appliesTo = useWatch({ control: form.control, name: "appliesTo" });
+  const isActive = useWatch({ control: form.control, name: "isActive" });
+  const isPublic = useWatch({ control: form.control, name: "isPublic" });
 
   const submit = (input: PromotionInput) => {
     const targets =
@@ -207,11 +214,11 @@ export function PromotionForm({ promotion, initial }: { promotion?: PromotionAdm
                 <FormMessage message={errors.endsAt?.message} />
               </Field>
               <label className="flex items-center gap-2 text-sm">
-                <Switch checked={form.watch("isActive")} onCheckedChange={(v) => form.setValue("isActive", v)} />
+                <Switch checked={isActive} onCheckedChange={(v) => form.setValue("isActive", v)} />
                 Đang bật
               </label>
               <label className="flex items-center gap-2 text-sm">
-                <Switch checked={form.watch("isPublic")} onCheckedChange={(v) => form.setValue("isPublic", v)} />
+                <Switch checked={isPublic} onCheckedChange={(v) => form.setValue("isPublic", v)} />
                 Hiện gợi ý ở giỏ hàng (tắt = khách phải nhập tay)
               </label>
             </FieldGroup>
