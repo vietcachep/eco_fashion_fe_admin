@@ -2,7 +2,7 @@ import { formatVnd } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 /*
- * Số tiền VND có dấu và màu theo chiều dòng tiền: âm đỏ, dương xanh, 0 xám. Dùng cho sổ cái ví quỹ và các dòng đối
+ * Số tiền VND có dấu và màu theo chiều dòng tiền: âm đỏ, dương xanh, 0 xám. Dùng cho các dòng đối
  * soát — nơi dấu +/− quan trọng hơn bản thân con số (backend trả chuỗi số nguyên, âm = trừ).
  */
 export function SignedMoney({ value, showPlus = true, className }: { value: string | number | null | undefined; showPlus?: boolean; className?: string }) {

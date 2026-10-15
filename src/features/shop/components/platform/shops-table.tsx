@@ -20,7 +20,7 @@ import { ROUTES } from "@/lib/constants";
 import { formatDate, formatNumber } from "@/lib/format";
 import type { AdminShopSummaryResponse } from "@/lib/api/generated/model";
 import { useListState } from "@/hooks/use-list-state";
-import { CodBadge, formatCommissionRate, ShopIdentity, ShopStatusBadge } from "@/features/shop/components/platform/shop-cells";
+import { formatCommissionRate, ShopIdentity, ShopStatusBadge } from "@/features/shop/components/platform/shop-cells";
 import {
   ShopActionDialogs,
   useShopActionItems,
@@ -108,7 +108,6 @@ export function ShopsTable() {
       { id: "owner", header: "Chủ shop", cell: ({ row }) => <ShopOwnerCell name={row.original.ownerName} email={row.original.ownerEmail} /> },
       { id: "status", header: "Trạng thái", cell: ({ row }) => <ShopStatusBadge status={row.original.status} /> },
       { id: "commission", header: "Hoa hồng", cell: ({ row }) => formatCommissionRate(row.original.commissionRate) },
-      { id: "cod", header: "COD", cell: ({ row }) => <CodBadge enabled={row.original.codEnabled} /> },
       { id: "products", header: "Sản phẩm", cell: ({ row }) => formatNumber(row.original.totalProducts) },
       {
         id: "rating",

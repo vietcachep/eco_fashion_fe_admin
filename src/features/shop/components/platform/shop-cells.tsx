@@ -1,18 +1,16 @@
 import Link from "next/link";
 import { StoreIcon } from "lucide-react";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { cn } from "@/lib/utils";
 import { ROUTES } from "@/lib/constants";
-import { formatVnd } from "@/lib/format";
 import { SHOP_STATUS, statusMeta } from "@/lib/labels";
 
 /*
- * Các ô hiển thị dùng lại ở nhiều bảng phía sàn (danh sách shop, ví quỹ, nộp quỹ,
- * đối soát): logo + tên shop, nhãn trạng thái, hoa hồng, COD, số dư. Gom một chỗ để
+ * Các ô hiển thị dùng lại ở nhiều bảng phía sàn (danh sách shop, đối soát):
+ * logo + tên shop, nhãn trạng thái, hoa hồng. Gom một chỗ để
  * cùng một dữ liệu luôn trông giống nhau (Rule 0 — "bảng/badge trùng là bug").
  */
 
-/* Logo + tên + mã shop; tên là link sang chi tiết. `tab` mở thẳng tab tương ứng (vd "wallet"). */
+/* Logo + tên + mã shop; tên là link sang chi tiết. `tab` mở thẳng tab tương ứng (vd "payouts"). */
 export function ShopIdentity({
   id,
   name,
@@ -24,7 +22,7 @@ export function ShopIdentity({
   name: string | null;
   code?: string;
   logoUrl?: string | null;
-  tab?: "profile" | "wallet" | "payouts";
+  tab?: "profile" | "payouts";
 }) {
   const href = tab ? `${ROUTES.shop.shops}/${id}?tab=${tab}` : `${ROUTES.shop.shops}/${id}`;
   return (
@@ -59,12 +57,3 @@ export function formatCommissionRate(rate: string | null | undefined): string {
   return `${n.toLocaleString("vi-VN", { maximumFractionDigits: 2 })}%`;
 }
 
-export function CodBadge({ enabled }: { enabled: boolean }) {
-  return enabled ? <StatusBadge tone="success">COD bật</StatusBadge> : <StatusBadge tone="danger">COD khoá</StatusBadge>;
-}
-
-/* Số dư quỹ COD (chuỗi VND) — đỏ khi ≤ 0 vì lúc đó COD của shop bị khoá. */
-export function WalletBalance({ balance, className }: { balance: string; className?: string }) {
-  const low = Number(balance) <= 0;
-  return <span className={cn("font-semibold tabular-nums", low && "text-destructive", className)}>{formatVnd(balance)}</span>;
-}

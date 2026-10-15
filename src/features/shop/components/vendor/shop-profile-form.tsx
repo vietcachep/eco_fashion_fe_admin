@@ -226,7 +226,6 @@ function ShopPlatformInfoCard({ shop }: { shop: ShopResponse }) {
             { label: "Slug", value: shop.slug },
             { label: "Trạng thái", value: <StatusBadge tone={meta.tone}>{shop.statusLabel || meta.label}</StatusBadge> },
             { label: "Hoa hồng sàn", value: `${Number(shop.commissionRate)}%` },
-            { label: "Bán COD", value: shop.codEnabled ? "Đang bật" : "Đang bị khoá" },
             { label: "Sản phẩm", value: formatNumber(shop.totalProducts) },
             { label: "Tạo lúc", value: formatDate(shop.createdAt) },
           ]}

@@ -73,7 +73,7 @@ export function ShopActionDialogs({ action, onClose }: { action: ShopAction | nu
         description={
           unlock
             ? "Shop được bán trở lại, sản phẩm hiện lại trên web bán hàng."
-            : "Shop được bán hàng ngay và tự có ví quỹ COD (COD mở khi ví > 0)."
+            : "Shop được bán hàng ngay; nếu do người bán tự đăng ký thì người đăng ký trở thành chủ gian hàng. Doanh thu (online và COD) được sàn đối soát và chi theo tài khoản ngân hàng của shop."
         }
         confirmLabel={unlock ? "Mở khoá" : "Duyệt"}
         onConfirm={() => approve.mutate({ id: shop.id, unlock })}

@@ -21,12 +21,11 @@ import {
 } from "@/features/shop/components/platform/shop-actions";
 import { ShopPayoutsTab } from "@/features/shop/components/platform/shop-payouts-tab";
 import { ShopProfileTab } from "@/features/shop/components/platform/shop-profile-tab";
-import { ShopWalletTab } from "@/features/shop/components/platform/shop-wallet-tab";
 import { useAdminShop } from "@/features/shop/hooks/use-admin-shops";
 
 const LOAD_ERROR = "Không tải được gian hàng.";
 
-type TabKey = "profile" | "wallet" | "payouts";
+type TabKey = "profile" | "payouts";
 
 /* Nút thao tác ở đầu trang — cùng bộ thao tác với menu "⋯" ở danh sách (xem shop-actions). */
 function ShopHeaderActions({ shop, onAction }: { shop: AdminShopResponse; onAction: (kind: ShopActionKind) => void }) {
@@ -48,16 +47,14 @@ function ShopHeaderActions({ shop, onAction }: { shop: AdminShopResponse; onActi
 }
 
 /*
- * Chi tiết MỘT gian hàng (sàn xem, quyền supplier.shop.read) gồm ba tab: Hồ sơ (kèm tài khoản
- * ngân hàng đầy đủ), Ví quỹ COD và Đối soát. Tab hiện tại nằm ở `?tab=` để danh sách ví quỹ / nộp
- * quỹ link thẳng vào đúng tab; tab ví / đối soát chỉ hiện khi có quyền đọc tương ứng.
+ * Chi tiết MỘT gian hàng (sàn xem, quyền supplier.shop.read) gồm hai tab: Hồ sơ (kèm tài khoản
+ * ngân hàng đầy đủ) và Đối soát. Tab hiện tại nằm ở `?tab=`; tab đối soát chỉ hiện khi có quyền đọc.
  */
 export function ShopDetail({ id }: { id: string }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { data: shop, isPending, error } = useAdminShop(id);
-  const canWallet = usePermission(PERMISSIONS.supplierWalletRead);
   const canPayout = usePermission(PERMISSIONS.supplierPayoutRead);
   const [action, setAction] = useState<ShopAction | null>(null);
 
@@ -73,7 +70,6 @@ export function ShopDetail({ id }: { id: string }) {
   }
 
   const tabs: FilterTab[] = [{ key: "profile", label: "Hồ sơ" }];
-  if (canWallet) tabs.push({ key: "wallet", label: "Ví quỹ COD" });
   if (canPayout) tabs.push({ key: "payouts", label: "Đối soát" });
   const requested = searchParams.get("tab");
   const tab = (tabs.some((t) => t.key === requested) ? requested : "profile") as TabKey;
@@ -97,7 +93,6 @@ export function ShopDetail({ id }: { id: string }) {
       ) : null}
 
       {tab === "profile" ? <ShopProfileTab shop={shop} /> : null}
-      {tab === "wallet" ? <ShopWalletTab shopId={shop.id} shopName={shop.name} /> : null}
       {tab === "payouts" ? <ShopPayoutsTab shopId={shop.id} shopName={shop.name} /> : null}
 
       <ShopActionDialogs action={action} onClose={() => setAction(null)} />

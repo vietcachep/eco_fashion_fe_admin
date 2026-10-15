@@ -66,7 +66,7 @@ export function RunPayoutDialog({ onClose }: { onClose: () => void }) {
             <DialogHeader>
               <DialogTitle>Chạy kỳ đối soát</DialogTitle>
               <DialogDescription>
-                Chỉ tính đơn ONLINE đã qua hạn đổi trả trong kỳ; trừ hoa hồng, tiền hoàn và nợ mang sang từ kỳ trước. Chạy lại cùng
+                Sàn đã tự động chạy kỳ mỗi ngày — nút này để chạy bù. Tính cả đơn online (PayOS) và COD đã qua hạn đổi trả trong kỳ; trừ hoa hồng, tiền hoàn và nợ mang sang từ kỳ trước. Chạy lại cùng
                 kỳ không tạo trùng, nhưng kỳ mới không được chồng lên kỳ đã chạy.
               </DialogDescription>
             </DialogHeader>

@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { DetailList } from "@/components/shared/detail-list";
 import { formatDateTime, formatNumber } from "@/lib/format";
 import type { AdminShopResponse } from "@/lib/api/generated/model";
-import { CodBadge, formatCommissionRate } from "@/features/shop/components/platform/shop-cells";
+import { formatCommissionRate } from "@/features/shop/components/platform/shop-cells";
+import { ShopRegistrationCard } from "@/features/shop/components/platform/shop-registration-card";
 import { bankNameByBin } from "@/features/shop/types/bank-list";
 
 /*
@@ -17,6 +18,7 @@ export function ShopProfileTab({ shop }: { shop: AdminShopResponse }) {
 
   return (
     <div className="grid gap-4 lg:grid-cols-3">
+      <ShopRegistrationCard shopId={shop.id} />
       <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle className="text-base">Thông tin gian hàng</CardTitle>
@@ -42,7 +44,6 @@ export function ShopProfileTab({ shop }: { shop: AdminShopResponse }) {
                 ),
               },
               { label: "Hoa hồng", value: formatCommissionRate(shop.commissionRate) },
-              { label: "Nhận COD", value: <CodBadge enabled={shop.codEnabled} /> },
               { label: "Số sản phẩm", value: formatNumber(shop.totalProducts) },
               { label: "Đánh giá TB", value: shop.ratingAvg ? Number(shop.ratingAvg).toFixed(1) : "Chưa có" },
               { label: "Mô tả", value: shop.description || "—" },

@@ -17,12 +17,9 @@ import { asPage } from "@/types/common";
 
 /*
  * Sàn quản lý gian hàng bất kỳ (quyền supplier.shop.*) — danh sách, chi tiết,
- * duyệt / mở khoá / khoá / từ chối / sửa hoa hồng. Prefix `/admin/shops` cũng phủ
- * ví + sổ cái của shop (`/admin/shops/:id/wallet…`); `/admin/wallets` hiện cờ COD
- * lấy từ shop nên làm mới cùng lúc.
+ * duyệt / mở khoá / khoá / từ chối / sửa hoa hồng.
  */
 const PATH = "/api/v1/admin/shops";
-const RELATED = ["/api/v1/admin/wallets"];
 
 export function useAdminShops(params: { status?: string; keyword?: string; page: number; size: number }) {
   return useAdminShopControllerList(
@@ -70,7 +67,7 @@ export function useApproveShop() {
     // `unlock` chỉ đổi câu thông báo: backend dùng chung một endpoint cho duyệt (pending) và mở khoá (suspended).
     mutationFn: (v: { id: string; unlock?: boolean }) => adminShopControllerApprove(v.id),
     onSuccess: (_r, v) => {
-      invalidateByPath(qc, PATH, ...RELATED);
+      invalidateByPath(qc, PATH);
       toast.success(v.unlock ? "Đã mở khoá gian hàng." : "Đã duyệt gian hàng.");
     },
     onError: (e) => toast.error(apiErrorMessage(e, "Duyệt gian hàng thất bại.")),
@@ -82,7 +79,7 @@ export function useSuspendShop() {
   return useMutation({
     mutationFn: (v: { id: string; reason: string }) => adminShopControllerSuspend(v.id, { reason: v.reason }),
     onSuccess: () => {
-      invalidateByPath(qc, PATH, ...RELATED);
+      invalidateByPath(qc, PATH);
       toast.success("Đã khoá gian hàng.");
     },
     onError: (e) => toast.error(apiErrorMessage(e, "Khoá gian hàng thất bại.")),
@@ -94,7 +91,7 @@ export function useRejectShop() {
   return useMutation({
     mutationFn: (v: { id: string; reason: string }) => adminShopControllerReject(v.id, { reason: v.reason }),
     onSuccess: () => {
-      invalidateByPath(qc, PATH, ...RELATED);
+      invalidateByPath(qc, PATH);
       toast.success("Đã từ chối gian hàng.");
     },
     onError: (e) => toast.error(apiErrorMessage(e, "Từ chối gian hàng thất bại.")),
