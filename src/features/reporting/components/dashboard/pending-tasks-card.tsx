@@ -21,11 +21,6 @@ const ITEMS: Array<{
   { key: "packing", label: "Đang đóng gói", href: `${ROUTES.order.orders}?status=packing` },
   { key: "shipping", label: "Đang giao", href: `${ROUTES.order.orders}?status=shipping` },
   { key: "returnsRequested", label: "Đổi trả chờ duyệt", href: `${ROUTES.order.returns}?status=requested` },
-  {
-    key: "transfersToConfirm",
-    label: "Chuyển khoản chờ đối soát",
-    href: `${ROUTES.payment.payments}?status=pending&methodCode=bank_transfer`,
-  },
   { key: "refundsRequested", label: "Hoàn tiền chờ xử lý", href: `${ROUTES.payment.refunds}?status=requested` },
 ];
 

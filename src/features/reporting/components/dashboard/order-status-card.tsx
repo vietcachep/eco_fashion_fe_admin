@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatNumber } from "@/lib/format";
-import { ORDER_STATUS_LABEL, PAYMENT_METHOD_LABEL } from "@/lib/labels";
+import { ORDER_STATUS_LABEL, paymentMethodLabel } from "@/lib/labels";
 import type { DashboardResponse } from "@/features/reporting/types/reporting";
 
 /* Phân bố trạng thái đơn + phương thức thanh toán (tháng này). */
@@ -58,7 +58,7 @@ export function OrderStatusCard({
             <ul className="flex flex-col gap-1.5 text-sm">
               {(paymentMethods ?? []).map((m) => (
                 <li key={m.method} className="flex justify-between">
-                  <span>{PAYMENT_METHOD_LABEL[m.method] ?? m.method}</span>
+                  <span>{paymentMethodLabel(m.method)}</span>
                   <span className="text-muted-foreground">
                     {formatNumber(m.count)} đơn ·{" "}
                     <span className="font-medium text-foreground">{m.revenue.display}</span>

@@ -7,7 +7,6 @@ import {
   useShopReportingControllerRevenue,
   useShopReportingControllerTop,
 } from "@/lib/api/generated/shop-reports/shop-reports";
-import { useShopWalletControllerSummary } from "@/lib/api/generated/shop-wallet/shop-wallet";
 import type { ShopDayRange } from "@/features/reporting/types/shop-reporting";
 
 /*
@@ -73,18 +72,3 @@ export function useShopLowStock(params: { threshold?: number; limit: number }) {
   });
 }
 
-/*
- * Ví quỹ COD chỉ để cảnh báo trên dashboard — bọc endpoint /shop/wallet tại đây
- * (không import hook của feature shop). Cùng khoá cache Orval với màn ví nên
- * không thêm request khi đã có. `enabled` để nhân viên thiếu shop.wallet.read
- * khỏi bắn một request chắc chắn 403.
- */
-export function useShopCodStatus(enabled: boolean) {
-  return useShopWalletControllerSummary({
-    query: {
-      enabled,
-      staleTime: 30_000,
-      select: (w) => ({ balance: w.balance, codEnabled: w.codEnabled }),
-    },
-  });
-}

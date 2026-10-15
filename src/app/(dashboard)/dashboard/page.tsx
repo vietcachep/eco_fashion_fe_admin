@@ -10,7 +10,7 @@ export default function DashboardPage() {
   return (
     <PermissionGuard permission={PERMISSIONS.dashboardRead}>
       <div className="flex flex-col gap-4">
-        <PageHeader title="Dashboard" description="Tổng quan vận hành cửa hàng FITLY" />
+        <PageHeader title="Dashboard" description="Tổng quan vận hành sàn FITLY" />
         <DashboardScreen />
       </div>
     </PermissionGuard>

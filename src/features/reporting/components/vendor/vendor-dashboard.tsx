@@ -3,8 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { BanknoteIcon, ShoppingBagIcon, ShoppingCartIcon, TriangleAlertIcon, UsersIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { BanknoteIcon, ShoppingBagIcon, ShoppingCartIcon, UsersIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ApiErrorState } from "@/components/shared/api-error-state";
@@ -12,12 +11,11 @@ import { FilterTabs } from "@/components/shared/filter-tabs";
 import { StatCard } from "@/components/shared/stat-card";
 import type { MoneyResponse } from "@/lib/api/generated/model";
 import { PERMISSIONS, ROUTES } from "@/lib/constants";
-import { formatDateTime, formatNumber, formatPercent, formatVnd } from "@/lib/format";
+import { formatDateTime, formatNumber, formatPercent } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { usePermission } from "@/hooks/use-permission";
 import {
   shiftDay,
-  useShopCodStatus,
   useShopDashboard,
   useShopLowStock,
   useShopPrevMonthRevenue,
@@ -53,30 +51,6 @@ function deltaHint(current: MoneyResponse | undefined, previous: MoneyResponse |
     <span className={up ? "text-emerald-600" : "text-red-600"}>
       {up ? "↑" : "↓"} {formatPercent(Math.abs(pct))} so với {label}
     </span>
-  );
-}
-
-/* Ví COD ≤ 0 ⇒ backend khoá COD (khách không chọn được COD cho hàng của shop) — cảnh báo đỏ dẫn tới ví. */
-function CodWalletAlert({ balance, codEnabled }: { balance: string; codEnabled: boolean }) {
-  return (
-    <div
-      role="alert"
-      className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-900 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200"
-    >
-      <p className="flex items-start gap-2">
-        <TriangleAlertIcon className="mt-0.5 size-4 shrink-0" />
-        <span>
-          <b>{codEnabled ? "Ví quỹ COD đã hết số dư" : "COD đang bị khoá"}</b>
-          {codEnabled
-            ? " — COD sẽ bị khoá ngay khi đơn COD kế tiếp hoàn tất."
-            : " — khách không thể chọn thanh toán khi nhận hàng cho sản phẩm của shop."}{" "}
-          Số dư hiện tại <b>{formatVnd(balance)}</b>; nộp quỹ để {codEnabled ? "tiếp tục nhận" : "mở lại"} đơn COD.
-        </span>
-      </p>
-      <Button size="sm" variant="outline" nativeButton={false} render={<Link href={ROUTES.vendor.wallet} />}>
-        Xem ví quỹ COD
-      </Button>
-    </div>
   );
 }
 
@@ -121,20 +95,18 @@ function PendingTile({
  * Dashboard của shop (GET /shop/reports/dashboard — backend gom sẵn, cache 60s):
  * doanh thu hôm nay / tháng này kèm so kỳ trước, số đơn, khách mới, việc đang
  * chờ, biểu đồ 7 ngày (từ dashboard) hoặc 30 ngày (từ báo cáo doanh thu), top
- * sản phẩm tháng này, sản phẩm sắp hết hàng và cảnh báo ví COD.
+ * sản phẩm tháng này, sản phẩm sắp hết hàng.
  */
 export function VendorDashboard() {
   const [range, setRange] = useState<"7" | "30">("7");
   const canReadOrders = usePermission(PERMISSIONS.shopOrderRead);
   const canReadInventory = usePermission(PERMISSIONS.shopInventoryRead);
-  const canReadWallet = usePermission(PERMISSIONS.shopWalletRead);
 
   const { data, isLoading, error } = useShopDashboard();
   const today = data?.today.day;
   const prevMonth = useShopPrevMonthRevenue(today);
   const revenue30 = useShopRevenue({ from: today ? shiftDay(today, -29) : "", to: today ?? "", granularity: "day" }, range === "30" && !!today);
   const lowStock = useShopLowStock({ limit: 6 });
-  const cod = useShopCodStatus(canReadWallet);
 
   if (error) return <ApiErrorState error={error} fallback={LOAD_ERROR} />;
 
@@ -145,12 +117,9 @@ export function VendorDashboard() {
       ? data?.last7Days.map((p) => ({ period: p.day, revenue: p.revenue, orderCount: p.orderCount }))
       : revenue30.data?.points.map((p) => ({ period: p.period, revenue: p.revenue, orderCount: p.orderCount }));
   const chartLoading = range === "7" ? isLoading : revenue30.isPending;
-  const codLow = !!cod.data && (!cod.data.codEnabled || Number(cod.data.balance) <= 0);
 
   return (
     <div className="flex flex-col gap-4">
-      {cod.data && codLow ? <CodWalletAlert balance={cod.data.balance} codEnabled={cod.data.codEnabled} /> : null}
-
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Doanh thu hôm nay"
