@@ -5,7 +5,6 @@
  * Backend sàn thương mại điện tử đa ngành hàng — web bán hàng + web quản trị. Mọi response theo envelope ApiResponse.
  * OpenAPI spec version: 0.1.0
  */
-import type { BankTransferIntentResponse } from './bankTransferIntentResponse';
 import type { MoneyResponse } from './moneyResponse';
 import type { OrderHistoryResponse } from './orderHistoryResponse';
 import type { OrderItemResponse } from './orderItemResponse';
@@ -51,10 +50,8 @@ export interface OrderResponse {
   /** Phần giảm do sàn chịu (sàn hoàn lại cho shop) */
   platformDiscount: MoneyResponse;
   total: MoneyResponse;
-  /** @nullable */
-  paymentIntent?: BankTransferIntentResponse | null;
   /**
-     * VNPay: URL chuyển hướng để thanh toán
+     * PayOS: URL chuyển hướng để thanh toán
      * @nullable
      */
   paymentUrl?: string | null;

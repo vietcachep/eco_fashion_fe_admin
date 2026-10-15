@@ -11,7 +11,5 @@ export type ShopOrderControllerListPaymentMethodCode = typeof ShopOrderControlle
 
 export const ShopOrderControllerListPaymentMethodCode = {
   cod: 'cod',
-  bank_transfer: 'bank_transfer',
-  vnpay: 'vnpay',
   payos: 'payos',
 } as const;

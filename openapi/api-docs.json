@@ -6979,36 +6979,6 @@
         ]
       }
     },
-    "/api/v1/payments/vnpay/return": {
-      "get": {
-        "operationId": "PaymentPublicController_vnpayReturn",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "summary": "FE trang kết quả gọi với toàn bộ query VNPay trả về — xác minh chữ ký, ghi nhận thanh toán (idempotent)",
-        "tags": [
-          "payments"
-        ]
-      }
-    },
-    "/api/v1/payments/vnpay/ipn": {
-      "get": {
-        "operationId": "PaymentPublicController_vnpayIpn",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "summary": "IPN VNPay (server-to-server) — trả {RspCode, Message}",
-        "tags": [
-          "payments"
-        ]
-      }
-    },
     "/api/v1/payments/payos/webhook": {
       "post": {
         "operationId": "PaymentPublicController_payosWebhook",
@@ -7072,35 +7042,6 @@
           }
         ],
         "summary": "Khách thanh toán lại đơn PayOS (link hết hạn / đã huỷ) — trả link mới",
-        "tags": [
-          "payments"
-        ]
-      }
-    },
-    "/api/v1/payments/vnpay/retry/{orderCode}": {
-      "post": {
-        "operationId": "PaymentController_retry",
-        "parameters": [
-          {
-            "name": "orderCode",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Khách thanh toán lại đơn VNPay (sau khi huỷ/thất bại trên cổng)",
         "tags": [
           "payments"
         ]
@@ -7256,45 +7197,6 @@
         ]
       }
     },
-    "/api/v1/admin/payments/{id}/confirm-transfer": {
-      "post": {
-        "operationId": "AdminPaymentController_confirm",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ConfirmTransferRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Kế toán đối soát: tiền đã về → paid, đơn được xác nhận",
-        "tags": [
-          "admin-payments"
-        ]
-      }
-    },
     "/api/v1/admin/refunds": {
       "get": {
         "operationId": "AdminPaymentController_refunds",
@@ -7409,474 +7311,6 @@
         "summary": "Hoàn tất GHI SỔ cho refund mà cổng ĐÃ chi (processing + providerRef) nhưng ghi sổ lỗi. KHÔNG gọi cổng; idempotent (chỉ ghi sổ một lần).",
         "tags": [
           "admin-payments"
-        ]
-      }
-    },
-    "/api/v1/shop/wallet": {
-      "get": {
-        "operationId": "ShopWalletController_summary",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ShopWalletResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Ví quỹ COD: số dư, COD bật/tắt, yêu cầu nộp quỹ đang chờ",
-        "tags": [
-          "shop-wallet"
-        ]
-      }
-    },
-    "/api/v1/shop/wallet/transactions": {
-      "get": {
-        "operationId": "ShopWalletController_transactions",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "default": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "size",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Sổ cái ví (mới nhất trước)",
-        "tags": [
-          "shop-wallet"
-        ]
-      }
-    },
-    "/api/v1/shop/wallet/deposit-requests": {
-      "get": {
-        "operationId": "ShopWalletController_deposits",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "default": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "size",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "number"
-            }
-          },
-          {
-            "name": "status",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "pending",
-                "approved",
-                "rejected"
-              ]
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Lịch sử yêu cầu nộp quỹ của shop",
-        "tags": [
-          "shop-wallet"
-        ]
-      },
-      "post": {
-        "operationId": "ShopWalletController_createDeposit",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateDepositRequestDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DepositRequestResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Xin nộp thêm quỹ (một yêu cầu chờ duyệt mỗi lúc)",
-        "tags": [
-          "shop-wallet"
-        ]
-      }
-    },
-    "/api/v1/admin/wallets": {
-      "get": {
-        "operationId": "AdminWalletController_list",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "default": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "size",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "number"
-            }
-          },
-          {
-            "name": "lowOnly",
-            "required": false,
-            "in": "query",
-            "description": "Chỉ ví đang ≤ 0 (COD bị khoá)",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Danh sách ví quỹ COD các shop (lowOnly = ví ≤ 0, COD đang khoá)",
-        "tags": [
-          "admin-wallet"
-        ]
-      }
-    },
-    "/api/v1/admin/shops/{id}/wallet": {
-      "get": {
-        "operationId": "AdminWalletController_shopWallet",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ShopWalletResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Ví quỹ COD của một gian hàng",
-        "tags": [
-          "admin-wallet"
-        ]
-      }
-    },
-    "/api/v1/admin/shops/{id}/wallet/transactions": {
-      "get": {
-        "operationId": "AdminWalletController_shopTransactions",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "default": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "size",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Sổ cái ví của một gian hàng",
-        "tags": [
-          "admin-wallet"
-        ]
-      }
-    },
-    "/api/v1/admin/shops/{id}/wallet/adjust": {
-      "post": {
-        "operationId": "AdminWalletController_adjust",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AdjustWalletDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Điều chỉnh ví (dương = cộng, âm = trừ) — bắt buộc ghi chú",
-        "tags": [
-          "admin-wallet"
-        ]
-      }
-    },
-    "/api/v1/admin/wallet-deposits": {
-      "get": {
-        "operationId": "AdminWalletController_deposits",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "default": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "size",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "number"
-            }
-          },
-          {
-            "name": "status",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "pending",
-                "approved",
-                "rejected"
-              ]
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Yêu cầu nộp quỹ (lọc theo trạng thái)",
-        "tags": [
-          "admin-wallet"
-        ]
-      }
-    },
-    "/api/v1/admin/wallet-deposits/{id}/approve": {
-      "post": {
-        "operationId": "AdminWalletController_approve",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ApproveDepositDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Duyệt nộp quỹ: cộng ví, mở lại COD khi ví > 0",
-        "tags": [
-          "admin-wallet"
-        ]
-      }
-    },
-    "/api/v1/admin/wallet-deposits/{id}/reject": {
-      "post": {
-        "operationId": "AdminWalletController_reject",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RejectDepositDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Từ chối nộp quỹ (bắt buộc lý do)",
-        "tags": [
-          "admin-wallet"
         ]
       }
     },
@@ -9118,8 +8552,6 @@
               "type": "string",
               "enum": [
                 "cod",
-                "bank_transfer",
-                "vnpay",
                 "payos"
               ]
             }
@@ -12948,9 +12380,6 @@
             "example": "10.00",
             "description": "% hoa hồng sàn thu"
           },
-          "codEnabled": {
-            "type": "boolean"
-          },
           "ratingAvg": {
             "type": "string",
             "nullable": true,
@@ -13013,7 +12442,6 @@
           "status",
           "statusLabel",
           "commissionRate",
-          "codEnabled",
           "totalProducts",
           "ownerUserId",
           "createdAt",
@@ -13061,9 +12489,6 @@
             "type": "string",
             "example": "10.00",
             "description": "% hoa hồng sàn thu"
-          },
-          "codEnabled": {
-            "type": "boolean"
           },
           "ratingAvg": {
             "type": "string",
@@ -13121,7 +12546,6 @@
           "status",
           "statusLabel",
           "commissionRate",
-          "codEnabled",
           "totalProducts",
           "ownerUserId",
           "createdAt",
@@ -13209,9 +12633,6 @@
             "example": "10.00",
             "description": "% hoa hồng sàn thu"
           },
-          "codEnabled": {
-            "type": "boolean"
-          },
           "ratingAvg": {
             "type": "string",
             "nullable": true,
@@ -13256,7 +12677,6 @@
           "status",
           "statusLabel",
           "commissionRate",
-          "codEnabled",
           "totalProducts",
           "ownerUserId",
           "createdAt",
@@ -16054,18 +15474,6 @@
           "isActive"
         ]
       },
-      "ConfirmTransferRequest": {
-        "type": "object",
-        "properties": {
-          "bankRef": {
-            "type": "string",
-            "example": "FT26091512345"
-          },
-          "note": {
-            "type": "string"
-          }
-        }
-      },
       "ProcessRefundRequest": {
         "type": "object",
         "properties": {
@@ -16075,169 +15483,8 @@
           },
           "note": {
             "type": "string"
-          },
-          "confirmGatewayNotRefunded": {
-            "type": "boolean",
-            "description": "Chỉ dùng cho refund VNPay `failed` chưa rõ kết quả (needsReconcile): đã đối chiếu trên cổng và xác nhận CHƯA hoàn ⇒ cho phép gọi lại cổng."
           }
         }
-      },
-      "PendingDepositResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "amount": {
-            "type": "string",
-            "example": "500000"
-          }
-        },
-        "required": [
-          "id",
-          "amount"
-        ]
-      },
-      "ShopWalletResponse": {
-        "type": "object",
-        "properties": {
-          "shopId": {
-            "type": "string"
-          },
-          "balance": {
-            "type": "string",
-            "example": "1000000",
-            "description": "Số dư quỹ COD (VND); ≤ 0 ⇒ COD bị khoá"
-          },
-          "codEnabled": {
-            "type": "boolean",
-            "description": "COD của shop đang bật?"
-          },
-          "pendingDeposit": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PendingDepositResponse"
-              }
-            ]
-          }
-        },
-        "required": [
-          "shopId",
-          "balance",
-          "codEnabled",
-          "pendingDeposit"
-        ]
-      },
-      "CreateDepositRequestDto": {
-        "type": "object",
-        "properties": {
-          "amount": {
-            "type": "number",
-            "example": 500000,
-            "description": "Số tiền muốn nộp (VND)"
-          },
-          "proofUrl": {
-            "type": "string",
-            "description": "Ảnh chứng từ chuyển khoản (URL)"
-          },
-          "note": {
-            "type": "string",
-            "example": "Nộp quỹ để mở lại COD"
-          }
-        },
-        "required": [
-          "amount"
-        ]
-      },
-      "DepositRequestResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "shopId": {
-            "type": "string"
-          },
-          "shopName": {
-            "type": "string",
-            "nullable": true
-          },
-          "amount": {
-            "type": "string",
-            "example": "500000"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "pending",
-              "approved",
-              "rejected"
-            ]
-          },
-          "proofUrl": {
-            "type": "string",
-            "nullable": true
-          },
-          "note": {
-            "type": "string",
-            "nullable": true
-          },
-          "createdAt": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "shopId",
-          "shopName",
-          "amount",
-          "status",
-          "proofUrl",
-          "note",
-          "createdAt"
-        ]
-      },
-      "AdjustWalletDto": {
-        "type": "object",
-        "properties": {
-          "amount": {
-            "type": "number",
-            "example": 100000,
-            "description": "Số tiền điều chỉnh: dương = cộng, âm = trừ (VND, khác 0)"
-          },
-          "note": {
-            "type": "string",
-            "example": "Điều chỉnh do khiếu nại hoàn tiền #123",
-            "description": "Lý do (≥ 5 ký tự) — vào sổ cái và nhật ký"
-          }
-        },
-        "required": [
-          "amount",
-          "note"
-        ]
-      },
-      "ApproveDepositDto": {
-        "type": "object",
-        "properties": {
-          "note": {
-            "type": "string",
-            "example": "Đã đối chiếu sao kê"
-          }
-        }
-      },
-      "RejectDepositDto": {
-        "type": "object",
-        "properties": {
-          "note": {
-            "type": "string",
-            "example": "Chứng từ không khớp số tiền"
-          }
-        },
-        "required": [
-          "note"
-        ]
       },
       "PayosBalanceResponse": {
         "type": "object",
@@ -16656,17 +15903,10 @@
             "type": "string",
             "enum": [
               "cod",
-              "bank_transfer",
-              "vnpay",
-              "payos",
-              "card"
+              "payos"
             ],
             "example": "cod",
             "description": "`card` = VNPay thẻ quốc tế"
-          },
-          "bankCode": {
-            "type": "string",
-            "description": "VNPay: VNBANK (ATM) · INTCARD (Visa/Master) · VNPAYQR"
           },
           "note": {
             "type": "string"
@@ -16748,42 +15988,6 @@
           "unitPrice",
           "lineTotal",
           "reviewed"
-        ]
-      },
-      "BankTransferIntentResponse": {
-        "type": "object",
-        "properties": {
-          "bankCode": {
-            "type": "string"
-          },
-          "accountNumber": {
-            "type": "string"
-          },
-          "accountName": {
-            "type": "string"
-          },
-          "transferContent": {
-            "type": "string",
-            "example": "DH2609150001"
-          },
-          "qrUrl": {
-            "type": "string",
-            "nullable": true
-          },
-          "amount": {
-            "type": "string"
-          },
-          "expiresAt": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "bankCode",
-          "accountNumber",
-          "accountName",
-          "transferContent",
-          "amount"
         ]
       },
       "OrderHistoryResponse": {
@@ -16928,15 +16132,6 @@
           },
           "total": {
             "$ref": "#/components/schemas/MoneyResponse"
-          },
-          "paymentIntent": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/BankTransferIntentResponse"
-              }
-            ]
           },
           "paymentUrl": {
             "type": "string",

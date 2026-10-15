@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 /*
  * Lockup thương hiệu trên sidebar: ô vuông coral chữ "F" + wordmark FITLY +
- * eyebrow "QUẢN TRỊ CỬA HÀNG". Dùng chung cho sidebar desktop và sheet mobile
+ * eyebrow "QUẢN TRỊ SÀN". Dùng chung cho sidebar desktop và sheet mobile
  * để hai nơi đọc giống hệt nhau. `compact` = rail thu gọn chỉ còn ô "F".
  *
  * Không dùng file ảnh: web bán hàng (fashion_frontend_user) dùng logo template
@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
  */
 export function SidebarBrand({
   compact = false,
-  eyebrow = "QUẢN TRỊ CỬA HÀNG",
+  eyebrow = "QUẢN TRỊ SÀN",
 }: {
   compact?: boolean;
   /** Dòng nhỏ dưới wordmark — scope vendor truyền "CỔNG NHÀ CUNG CẤP" (PLAN-0002 §2). */

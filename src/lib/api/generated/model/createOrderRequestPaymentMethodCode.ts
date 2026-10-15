@@ -6,16 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-/**
- * `card` = VNPay thẻ quốc tế
- */
 export type CreateOrderRequestPaymentMethodCode = typeof CreateOrderRequestPaymentMethodCode[keyof typeof CreateOrderRequestPaymentMethodCode];
 
 
 export const CreateOrderRequestPaymentMethodCode = {
   cod: 'cod',
-  bank_transfer: 'bank_transfer',
-  vnpay: 'vnpay',
   payos: 'payos',
-  card: 'card',
 } as const;

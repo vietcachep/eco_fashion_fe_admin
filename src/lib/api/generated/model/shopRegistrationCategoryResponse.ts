@@ -6,14 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface BankTransferIntentResponse {
-  bankCode: string;
-  accountNumber: string;
-  accountName: string;
-  transferContent: string;
-  /** @nullable */
-  qrUrl?: string | null;
-  amount: string;
-  /** @nullable */
-  expiresAt?: string | null;
+export interface ShopRegistrationCategoryResponse {
+  id: string;
+  /** Tên ngành hàng tại thời điểm nộp (snapshot) */
+  name: string;
 }

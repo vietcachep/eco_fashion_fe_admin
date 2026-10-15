@@ -6,7 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface ConfirmTransferRequest {
-  bankRef?: string;
-  note?: string;
+export interface ShopRegistrationApplicantResponse {
+  userId: string;
+  fullName: string;
+  email: string;
 }

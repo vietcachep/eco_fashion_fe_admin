@@ -3,7 +3,7 @@
  * Nguồn: openapi/permissions.json (catalog quyền của backend eco_backend).
  * Sinh lại: npm run perms:sync
  *
- * 83 mã quyền dạng module.resource.action. Dùng để ràng buộc kiểu
+ * 79 mã quyền dạng module.resource.action. Dùng để ràng buộc kiểu
  * cho PERMISSIONS trong lib/constants.ts và props của PermissionGuard / PermissionGate.
  */
 
@@ -75,8 +75,6 @@ export const PERMISSION_CODES = [
   "shop.staff.read",
   "shop.staff.remove",
   "shop.staff.update",
-  "shop.wallet.deposit_request",
-  "shop.wallet.read",
   "supplier.payout.process",
   "supplier.payout.read",
   "supplier.shop.approve",
@@ -84,8 +82,6 @@ export const PERMISSION_CODES = [
   "supplier.shop.read",
   "supplier.shop.reject",
   "supplier.shop.suspend",
-  "supplier.wallet.adjust",
-  "supplier.wallet.read",
   "system.banner.manage",
   "system.notification.send",
   "system.province.manage",

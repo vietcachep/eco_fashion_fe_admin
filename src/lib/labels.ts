@@ -125,33 +125,13 @@ export const SHOP_PAYOUT_STATUS: Record<string, StatusMeta> = {
   settled: { label: "Không phát sinh", tone: "neutral" },
 };
 
-/* Loại dòng sổ cái ví quỹ COD — backend `WALLET_TX_TYPE`. */
-export const WALLET_TX_TYPE_LABEL: Record<string, StatusMeta> = {
-  cod_commission: { label: "Hoa hồng đơn COD", tone: "warning" },
-  deposit: { label: "Nộp quỹ", tone: "success" },
-  adjust: { label: "Điều chỉnh", tone: "pending" },
-  cod_refund: { label: "Hoàn tiền đơn COD", tone: "neutral" },
-};
-
-/* Yêu cầu nộp quỹ COD của shop. */
-export const DEPOSIT_STATUS: Record<string, StatusMeta> = {
-  pending: { label: "Chờ duyệt", tone: "warning" },
-  approved: { label: "Đã duyệt", tone: "success" },
-  rejected: { label: "Từ chối", tone: "danger" },
-};
-
 /*
  * Cách nói RIÊNG cho vendor (cổng `/vendor/**`): backend che lỗi cổng chi với vendor (payout `failed` chỉ báo "sàn đang xử lý lại"),
- * và dòng điều chỉnh ví luôn do sàn thực hiện nên nói rõ "bởi sàn". Dựng từ bảng chung ở trên để không lặp mã/tông.
+ * Dựng từ bảng chung ở trên để không lặp mã/tông.
  */
 export const VENDOR_PAYOUT_STATUS: Record<string, StatusMeta> = {
   ...SHOP_PAYOUT_STATUS,
   failed: { label: "Đang xử lý lại", tone: "warning" },
-};
-
-export const VENDOR_WALLET_TX_TYPE_LABEL: Record<string, StatusMeta> = {
-  ...WALLET_TX_TYPE_LABEL,
-  adjust: { label: "Điều chỉnh bởi sàn", tone: "pending" },
 };
 
 export const SHOP_MEMBER_ROLE_LABEL: Record<string, string> = {
@@ -174,11 +154,14 @@ export const MODERATION_LABEL: Record<string, StatusMeta> = {
 
 export const PAYMENT_METHOD_LABEL: Record<string, string> = {
   cod: "COD",
-  bank_transfer: "Chuyển khoản",
-  vnpay: "VNPay",
   payos: "PayOS",
-  card: "Thẻ",
 };
+
+/* Dòng lịch sử có mã đã bị gỡ (vnpay / bank_transfer …) vẫn hiển thị được bằng nhãn chung. */
+export function paymentMethodLabel(code?: string | null): string {
+  if (!code) return "—";
+  return PAYMENT_METHOD_LABEL[code] ?? "Phương thức cũ";
+}
 
 export const ORDER_STATUS_LABEL: Record<string, string> = Object.fromEntries(
   Object.entries(ORDER_STATUS).map(([k, v]) => [k, v.label]),

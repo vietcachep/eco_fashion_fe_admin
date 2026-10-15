@@ -456,33 +456,9 @@
     "deprecated": false
   },
   {
-    "code": "shop.wallet.read",
-    "module": "shop",
-    "description": "Xem ví quỹ COD của gian hàng mình",
-    "deprecated": false
-  },
-  {
-    "code": "shop.wallet.deposit_request",
-    "module": "shop",
-    "description": "Gửi yêu cầu nộp thêm quỹ vào ví COD",
-    "deprecated": false
-  },
-  {
     "code": "shop.payout.read",
     "module": "shop",
     "description": "Xem các kỳ đối soát / chi trả của gian hàng mình",
-    "deprecated": false
-  },
-  {
-    "code": "supplier.wallet.read",
-    "module": "supplier",
-    "description": "Xem ví quỹ COD và yêu cầu nộp quỹ của mọi gian hàng",
-    "deprecated": false
-  },
-  {
-    "code": "supplier.wallet.adjust",
-    "module": "supplier",
-    "description": "Điều chỉnh ví / duyệt nộp quỹ của gian hàng",
     "deprecated": false
   },
   {

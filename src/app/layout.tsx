@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     default: "FITLY Quản trị",
     template: "%s | FITLY Quản trị",
   },
-  description: "Khu quản trị cửa hàng thời trang FITLY — sản phẩm, đơn hàng, thanh toán, khuyến mãi, báo cáo.",
+  description: "Khu quản trị sàn thương mại điện tử FITLY — gian hàng, sản phẩm, đơn hàng, thanh toán, khuyến mãi, báo cáo.",
 };
 
 /*

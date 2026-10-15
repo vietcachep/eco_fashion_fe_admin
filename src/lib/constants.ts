@@ -93,8 +93,6 @@ export const ROUTES = {
    */
   shop: {
     shops: "/shop/shops",
-    wallets: "/shop/wallets",
-    walletDeposits: "/shop/wallet-deposits",
     payouts: "/shop/payouts",
   },
   /*
@@ -116,7 +114,6 @@ export const ROUTES = {
     promotions: "/vendor/promotions",
     promotionNew: "/vendor/promotions/new",
     reviews: "/vendor/reviews",
-    wallet: "/vendor/wallet",
     payouts: "/vendor/payouts",
   },
 } as const;
@@ -197,8 +194,6 @@ export const PERMISSIONS = {
   supplierShopSuspend: "supplier.shop.suspend",
   supplierShopReject: "supplier.shop.reject",
   supplierShopCommission: "supplier.shop.commission",
-  supplierWalletRead: "supplier.wallet.read",
-  supplierWalletAdjust: "supplier.wallet.adjust",
   supplierPayoutRead: "supplier.payout.read",
   supplierPayoutProcess: "supplier.payout.process",
   // vendor — quyền của vai (shop_owner/shop_staff) trong CHÍNH gian hàng mình; nguồn: GET /shop/session
@@ -219,8 +214,6 @@ export const PERMISSIONS = {
   shopPromotionRead: "shop.promotion.read",
   shopPromotionManage: "shop.promotion.manage",
   shopReportRead: "shop.report.read",
-  shopWalletRead: "shop.wallet.read",
-  shopWalletDepositRequest: "shop.wallet.deposit_request",
   shopPayoutRead: "shop.payout.read",
 } as const satisfies Record<string, PermissionCode>;
 
@@ -482,7 +475,7 @@ export const SIDEBAR_NAV: NavGroup[] = [
     ],
   },
   {
-    /* Sàn quản lý gian hàng nhà cung cấp (module BE `shop` + payment: ví quỹ COD, đối soát) — mã quyền `supplier.*`. */
+    /* Sàn quản lý gian hàng nhà cung cấp (module BE `shop` + payment: đối soát) — mã quyền `supplier.*`. */
     title: "SÀN — GIAN HÀNG",
     items: [
       {
@@ -494,16 +487,6 @@ export const SIDEBAR_NAV: NavGroup[] = [
             title: "Danh sách shop",
             href: ROUTES.shop.shops,
             permission: PERMISSIONS.supplierShopRead,
-          },
-          {
-            title: "Ví quỹ COD",
-            href: ROUTES.shop.wallets,
-            permission: PERMISSIONS.supplierWalletRead,
-          },
-          {
-            title: "Yêu cầu nộp quỹ",
-            href: ROUTES.shop.walletDeposits,
-            permission: PERMISSIONS.supplierWalletRead,
           },
           {
             title: "Đối soát (payout)",
@@ -665,7 +648,6 @@ export const VENDOR_NAV: NavGroup[] = [
         title: "Tài chính",
         icon: Wallet,
         children: [
-          { title: "Ví quỹ COD", href: ROUTES.vendor.wallet, permission: PERMISSIONS.shopWalletRead },
           { title: "Đối soát (payout)", href: ROUTES.vendor.payouts, permission: PERMISSIONS.shopPayoutRead },
         ],
       },

@@ -7,9 +7,7 @@
  */
 
 export interface ProcessRefundRequest {
-  /** Mã tham chiếu chuyển khoản (bắt buộc khi hoàn tay). Với refund VNPay `failed` chưa rõ kết quả (needsReconcile): mã giao dịch hoàn trên cổng — ghi sổ, KHÔNG gọi cổng. */
+  /** Mã tham chiếu chuyển khoản / giao dịch hoàn (bắt buộc khi hoàn tay). */
   providerRef?: string;
   note?: string;
-  /** Chỉ dùng cho refund VNPay `failed` chưa rõ kết quả (needsReconcile): đã đối chiếu trên cổng và xác nhận CHƯA hoàn ⇒ cho phép gọi lại cổng. */
-  confirmGatewayNotRefunded?: boolean;
 }

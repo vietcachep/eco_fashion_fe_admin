@@ -21,7 +21,6 @@ export interface AdminShopSummaryResponse {
   statusLabel: string;
   /** % hoa hồng sàn thu */
   commissionRate: string;
-  codEnabled: boolean;
   /** @nullable */
   ratingAvg?: string | null;
   totalProducts: number;

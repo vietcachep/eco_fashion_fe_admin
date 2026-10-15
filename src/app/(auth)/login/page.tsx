@@ -41,16 +41,16 @@ export default function LoginPage() {
           <BrandGlyph size={44} />
           <div className="leading-none">
             <div className="font-heading text-2xl font-bold tracking-[.06em] text-white">FITLY</div>
-            <div className="pt-1 text-[10px] font-semibold tracking-[.14em] text-[#ff8a7a]">QUẢN TRỊ CỬA HÀNG</div>
+            <div className="pt-1 text-[10px] font-semibold tracking-[.14em] text-[#ff8a7a]">QUẢN TRỊ SÀN</div>
           </div>
         </div>
 
         <div className="relative space-y-6">
           <h1 className="max-w-md font-heading text-3xl font-bold leading-tight text-white">
-            Một nơi để vận hành cả cửa hàng thời trang
+            Một nơi để vận hành cả sàn thương mại điện tử
           </h1>
           <p className="max-w-md text-white/75">
-            Sản phẩm & tồn kho, đơn hàng & đổi trả, thanh toán VNPay / chuyển khoản, khuyến mãi, đánh giá, báo cáo và trợ lý AI — cho từng vai nhân viên.
+            Gian hàng, sản phẩm & tồn kho, đơn hàng & đổi trả, thanh toán COD / PayOS, đối soát, khuyến mãi, đánh giá, báo cáo và trợ lý AI — cho từng vai nhân viên và nhà cung cấp.
           </p>
           <div className="flex flex-wrap gap-2.5">
             {[
@@ -69,7 +69,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <p className="relative text-xs text-white/40">© 2026 FITLY — Cửa hàng thời trang</p>
+        <p className="relative text-xs text-white/40">© 2026 FITLY — Sàn thương mại điện tử</p>
       </div>
 
       <div className="relative flex items-center justify-center overflow-hidden p-6">
