@@ -23,7 +23,6 @@ import type {
 import type {
   AdminPaymentControllerListParams,
   AdminPaymentControllerRefundsParams,
-  ConfirmTransferRequest,
   ProcessRefundRequest,
   SetMethodActiveRequest
 } from '../model';
@@ -404,107 +403,6 @@ export function useAdminPaymentControllerGet<TData = Awaited<ReturnType<typeof a
 
 
 
-/**
- * @summary Kế toán đối soát: tiền đã về → paid, đơn được xác nhận
- */
-export const adminPaymentControllerConfirm = (
-    id: string,
-    confirmTransferRequest: ConfirmTransferRequest,
- options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
-) => {
-
-
-      return customInstance<void>(
-      {url: `/api/v1/admin/payments/${id}/confirm-transfer`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: confirmTransferRequest, signal
-    },
-      options);
-    }
-
-
-
-
-export const getAdminPaymentControllerConfirmQueryKey = (id: string,
-    confirmTransferRequest?: ConfirmTransferRequest,) => {
-    return [
-    'POST', `/api/v1/admin/payments/${id}/confirm-transfer`, confirmTransferRequest
-    ] as const;
-    }
-
-
-export const getAdminPaymentControllerConfirmQueryOptions = <TData = Awaited<ReturnType<typeof adminPaymentControllerConfirm>>, TError = unknown>(id: string,
-    confirmTransferRequest: ConfirmTransferRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminPaymentControllerConfirm>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAdminPaymentControllerConfirmQueryKey(id,confirmTransferRequest);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof adminPaymentControllerConfirm>>> = ({ signal }) => adminPaymentControllerConfirm(id,confirmTransferRequest, requestOptions, signal);
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof adminPaymentControllerConfirm>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AdminPaymentControllerConfirmQueryResult = NonNullable<Awaited<ReturnType<typeof adminPaymentControllerConfirm>>>
-export type AdminPaymentControllerConfirmQueryError = unknown
-
-
-export function useAdminPaymentControllerConfirm<TData = Awaited<ReturnType<typeof adminPaymentControllerConfirm>>, TError = unknown>(
- id: string,
-    confirmTransferRequest: ConfirmTransferRequest, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminPaymentControllerConfirm>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminPaymentControllerConfirm>>,
-          TError,
-          Awaited<ReturnType<typeof adminPaymentControllerConfirm>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAdminPaymentControllerConfirm<TData = Awaited<ReturnType<typeof adminPaymentControllerConfirm>>, TError = unknown>(
- id: string,
-    confirmTransferRequest: ConfirmTransferRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminPaymentControllerConfirm>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminPaymentControllerConfirm>>,
-          TError,
-          Awaited<ReturnType<typeof adminPaymentControllerConfirm>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAdminPaymentControllerConfirm<TData = Awaited<ReturnType<typeof adminPaymentControllerConfirm>>, TError = unknown>(
- id: string,
-    confirmTransferRequest: ConfirmTransferRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminPaymentControllerConfirm>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Kế toán đối soát: tiền đã về → paid, đơn được xác nhận
- */
-
-export function useAdminPaymentControllerConfirm<TData = Awaited<ReturnType<typeof adminPaymentControllerConfirm>>, TError = unknown>(
- id: string,
-    confirmTransferRequest: ConfirmTransferRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminPaymentControllerConfirm>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAdminPaymentControllerConfirmQueryOptions(id,confirmTransferRequest,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
 export const adminPaymentControllerRefunds = (
     params?: AdminPaymentControllerRefundsParams,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
@@ -593,7 +491,7 @@ export function useAdminPaymentControllerRefunds<TData = Awaited<ReturnType<type
 
 
 /**
- * @summary Thực hiện hoàn tiền: VNPay API (gateway) hoặc ghi nhận đã chuyển tay (providerRef). Refund `processing` quá 10 phút chưa có providerRef được chiếm lại; đã có providerRef chỉ ghi sổ (không gọi cổng).
+ * @summary Thực hiện hoàn tiền: PayOS hoặc ghi nhận đã chuyển tay (providerRef). Refund `processing` quá 10 phút chưa có providerRef được chiếm lại; đã có providerRef chỉ ghi sổ (không gọi cổng).
  */
 export const adminPaymentControllerProcess = (
     id: string,
@@ -672,7 +570,7 @@ export function useAdminPaymentControllerProcess<TData = Awaited<ReturnType<type
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Thực hiện hoàn tiền: VNPay API (gateway) hoặc ghi nhận đã chuyển tay (providerRef). Refund `processing` quá 10 phút chưa có providerRef được chiếm lại; đã có providerRef chỉ ghi sổ (không gọi cổng).
+ * @summary Thực hiện hoàn tiền: PayOS hoặc ghi nhận đã chuyển tay (providerRef). Refund `processing` quá 10 phút chưa có providerRef được chiếm lại; đã có providerRef chỉ ghi sổ (không gọi cổng).
  */
 
 export function useAdminPaymentControllerProcess<TData = Awaited<ReturnType<typeof adminPaymentControllerProcess>>, TError = unknown>(

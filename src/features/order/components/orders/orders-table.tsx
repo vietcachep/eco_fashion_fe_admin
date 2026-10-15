@@ -13,7 +13,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { isForbiddenError } from "@/lib/api-error";
 import { ROUTES } from "@/lib/constants";
 import { formatDateTime, formatNumber } from "@/lib/format";
-import { ORDER_PAYMENT_STATUS, ORDER_STATUS, PAYMENT_METHOD_LABEL, statusMeta } from "@/lib/labels";
+import { ORDER_PAYMENT_STATUS, ORDER_STATUS, PAYMENT_METHOD_LABEL, statusMeta, paymentMethodLabel } from "@/lib/labels";
 import { useListState } from "@/hooks/use-list-state";
 import { useAdminOrders } from "@/features/order/hooks/use-orders";
 import type { OrderSummaryResponse } from "@/features/order/types/order";
@@ -86,7 +86,7 @@ export function OrdersTable() {
           return (
             <div className="flex flex-col gap-0.5">
               <StatusBadge tone={m.tone}>{m.label}</StatusBadge>
-              <span className="text-xs text-muted-foreground">{PAYMENT_METHOD_LABEL[row.original.paymentMethodCode] ?? row.original.paymentMethodCode}</span>
+              <span className="text-xs text-muted-foreground">{paymentMethodLabel(row.original.paymentMethodCode)}</span>
             </div>
           );
         },
@@ -136,7 +136,7 @@ export function OrdersTable() {
         </NativeSelect>
         <NativeSelect aria-label="Phương thức" className="w-40" value={filters.paymentMethodCode} onChange={(e) => setFilter("paymentMethodCode", e.target.value)}>
           <option value="">Mọi phương thức</option>
-          {["cod", "bank_transfer", "vnpay"].map((k) => (
+          {["cod", "payos"].map((k) => (
             <option key={k} value={k}>
               {PAYMENT_METHOD_LABEL[k]}
             </option>

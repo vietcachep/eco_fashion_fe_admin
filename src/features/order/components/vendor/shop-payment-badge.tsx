@@ -1,5 +1,5 @@
 import { StatusBadge } from "@/components/shared/status-badge";
-import { ORDER_PAYMENT_STATUS, PAYMENT_METHOD_LABEL, statusMeta, type StatusMeta } from "@/lib/labels";
+import { ORDER_PAYMENT_STATUS, statusMeta, type StatusMeta, paymentMethodLabel } from "@/lib/labels";
 
 /*
  * Thanh toán của đơn nhìn từ phía shop: shop cần biết "tiền đã về chưa" chứ
@@ -24,14 +24,14 @@ export function ShopPaymentBadge({
 }: {
   method: string;
   status: string;
-  /** Dòng phụ tên phương thức (COD / Chuyển khoản / VNPay / PayOS) dưới badge. */
+  /** Dòng phụ tên phương thức (COD / PayOS; mã cũ hiện nhãn chung) dưới badge. */
   showMethod?: boolean;
 }) {
   const meta = paymentMeta(method, status);
   return (
     <div className="flex flex-col items-start gap-0.5">
       <StatusBadge tone={meta.tone}>{meta.label}</StatusBadge>
-      {showMethod ? <span className="text-xs text-muted-foreground">{PAYMENT_METHOD_LABEL[method] ?? method}</span> : null}
+      {showMethod ? <span className="text-xs text-muted-foreground">{paymentMethodLabel(method)}</span> : null}
     </div>
   );
 }

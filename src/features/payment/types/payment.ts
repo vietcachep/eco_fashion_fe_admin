@@ -20,10 +20,8 @@ export interface PaymentResponse {
   amount: Money;
   status: string;
   transactionCode: string | null;
-  bankCode: string | null;
   cardBrand: string | null;
   cardLast4: string | null;
-  transferContent: string | null;
   refundedAmount: Money;
   paidAt: string | null;
   expiresAt: string | null;
@@ -43,6 +41,4 @@ export interface RefundResponse {
   createdAt: string;
   /* order = hoàn theo đơn · duplicate_payment = hoàn khoản khách trả trùng (đơn vẫn giữ trạng thái đã thanh toán). */
   kind: string;
-  /* failed mà cổng VNPay từng được gọi không rõ kết quả — phải đối chiếu trên cổng trước khi hoàn lại. */
-  needsReconcile: boolean;
 }

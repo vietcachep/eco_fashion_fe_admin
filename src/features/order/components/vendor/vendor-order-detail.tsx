@@ -14,7 +14,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import type { ShopUpdateOrderStatusRequestStatus } from "@/lib/api/generated/model";
 import { PERMISSIONS, ROUTES } from "@/lib/constants";
 import { formatDateTime, formatNumber } from "@/lib/format";
-import { ORDER_STATUS, PAYMENT_METHOD_LABEL, statusMeta } from "@/lib/labels";
+import { ORDER_STATUS, statusMeta, paymentMethodLabel } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import { useShopOrder } from "@/features/order/hooks/use-shop-orders";
 import {
@@ -48,7 +48,7 @@ function stepInfo(o: ShopOrderDetail): StepInfo {
       if (isAwaitingOnlinePayment(o)) {
         return {
           title: "Chờ khách thanh toán",
-          description: `Đơn thanh toán online (${PAYMENT_METHOD_LABEL[o.paymentMethodCode] ?? o.paymentMethodCode}) — chưa nhận được tiền nên chưa xác nhận được.${
+          description: `Đơn thanh toán online (${paymentMethodLabel(o.paymentMethodCode)}) — chưa nhận được tiền nên chưa xác nhận được.${
             o.paymentExpiresAt ? ` Đơn tự huỷ nếu quá hạn lúc ${formatDateTime(o.paymentExpiresAt)}.` : ""
           }`,
           tone: "warning",
@@ -69,7 +69,7 @@ function stepInfo(o: ShopOrderDetail): StepInfo {
       return {
         title: "Đang giao hàng",
         description: isCod
-          ? "Khi khách nhận hàng, bấm \"Đã giao thành công\" và xác nhận đã thu tiền mặt — hoa hồng sẽ trừ vào ví COD khi đơn hoàn tất."
+          ? "Khi khách nhận hàng, bấm \"Đã giao thành công\" và xác nhận shipper đã thu tiền mặt và nộp về sàn — sàn sẽ tự trừ hoa hồng và chi trả cho shop sau hạn đổi trả."
           : "Khi khách nhận hàng, bấm \"Đã giao thành công\".",
         tone: "info",
       };
@@ -321,7 +321,7 @@ export function VendorOrderDetail({ code }: { code: string }) {
             <CardContent className="flex flex-col gap-3">
               <DetailList
                 rows={[
-                  { label: "Phương thức", value: PAYMENT_METHOD_LABEL[o.paymentMethodCode] ?? o.paymentMethodCode },
+                  { label: "Phương thức", value: paymentMethodLabel(o.paymentMethodCode) },
                   {
                     label: "Trạng thái",
                     value: <ShopPaymentBadge method={o.paymentMethodCode} status={o.paymentStatus} showMethod={false} />,

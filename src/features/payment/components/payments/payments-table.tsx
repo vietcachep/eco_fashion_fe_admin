@@ -1,23 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
-import { CheckCircle2Icon } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/shared/data-table";
 import { ApiErrorState } from "@/components/shared/api-error-state";
 import { FilterTabs } from "@/components/shared/filter-tabs";
 import { NativeSelect } from "@/components/shared/native-select";
-import { PermissionGate } from "@/components/shared/permission-gate";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { isForbiddenError } from "@/lib/api-error";
-import { PERMISSIONS, ROUTES } from "@/lib/constants";
+import { ROUTES } from "@/lib/constants";
 import { formatDateTime } from "@/lib/format";
-import { PAYMENT_METHOD_LABEL, PAYMENT_STATUS, statusMeta } from "@/lib/labels";
+import { PAYMENT_METHOD_LABEL, PAYMENT_STATUS, statusMeta, paymentMethodLabel } from "@/lib/labels";
 import { useListState } from "@/hooks/use-list-state";
 import { useAdminPayments } from "@/features/payment/hooks/use-payments";
-import { ConfirmTransferDialog } from "@/features/payment/components/payments/confirm-transfer-dialog";
 import type { PaymentResponse } from "@/features/payment/types/payment";
 
 const TABS = [
@@ -33,13 +29,9 @@ const PAGE_SIZE = 15;
 const LOAD_ERROR = "Không tải được giao dịch.";
 const DEFAULTS = { status: "", methodCode: "" };
 
-/*
- * Giao dịch thanh toán. Chuyển khoản đang chờ (`pending` + `bank_transfer`)
- * có nút "Đã nhận tiền" cho kế toán đối soát (payment.transfer.confirm).
- */
+/* Giao dịch thanh toán (COD · PayOS; dòng cũ vnpay / chuyển khoản hiện nhãn chung). */
 export function PaymentsTable() {
   const { filters, setFilter, search, setSearch, keyword, pageIndex, setPageIndex, page } = useListState(DEFAULTS);
-  const [confirming, setConfirming] = useState<PaymentResponse | null>(null);
   const { data, isLoading, isError, error } = useAdminPayments({
     keyword,
     status: filters.status,
@@ -59,7 +51,7 @@ export function PaymentsTable() {
           </Link>
         ),
       },
-      { id: "method", header: "Phương thức", cell: ({ row }) => PAYMENT_METHOD_LABEL[row.original.methodCode] ?? row.original.methodCode },
+      { id: "method", header: "Phương thức", cell: ({ row }) => paymentMethodLabel(row.original.methodCode) },
       {
         id: "amount",
         header: "Số tiền",
@@ -79,7 +71,7 @@ export function PaymentsTable() {
           const p = row.original;
           return (
             <span className="font-mono text-xs text-muted-foreground">
-              {p.transactionCode ?? p.transferContent ?? "—"}
+              {p.transactionCode ?? "—"}
               {p.cardBrand ? ` · ${p.cardBrand} ${p.cardLast4 ?? ""}` : ""}
             </span>
           );
@@ -102,24 +94,6 @@ export function PaymentsTable() {
           </span>
         ),
       },
-      {
-        id: "actions",
-        header: () => <span className="sr-only">Thao tác</span>,
-        cell: ({ row }) => {
-          const p = row.original;
-          if (p.methodCode !== "bank_transfer" || p.status !== "pending") return null;
-          return (
-            <PermissionGate permission={PERMISSIONS.transferConfirm}>
-              <div className="flex justify-end">
-                <Button size="sm" className="h-8" onClick={() => setConfirming(p)}>
-                  <CheckCircle2Icon className="size-3.5" />
-                  Đã nhận tiền
-                </Button>
-              </div>
-            </PermissionGate>
-          );
-        },
-      },
     ],
     [],
   );
@@ -132,7 +106,7 @@ export function PaymentsTable() {
         <FilterTabs tabs={TABS} value={filters.status} onChange={(v) => setFilter("status", v)} />
         <NativeSelect aria-label="Phương thức" className="w-40" value={filters.methodCode} onChange={(e) => setFilter("methodCode", e.target.value)}>
           <option value="">Mọi phương thức</option>
-          {["cod", "bank_transfer", "vnpay"].map((k) => (
+          {["cod", "payos"].map((k) => (
             <option key={k} value={k}>
               {PAYMENT_METHOD_LABEL[k]}
             </option>
@@ -155,7 +129,6 @@ export function PaymentsTable() {
           onPageChange: setPageIndex,
         }}
       />
-      <ConfirmTransferDialog payment={confirming} onClose={() => setConfirming(null)} />
     </div>
   );
 }

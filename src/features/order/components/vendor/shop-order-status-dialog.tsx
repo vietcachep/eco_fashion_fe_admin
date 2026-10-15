@@ -58,7 +58,7 @@ function StatusDialogBody({
         <div className="flex gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
           <TriangleAlertIcon className="mt-0.5 size-4 shrink-0" />
           <p>
-            Đơn COD: hãy xác nhận <b>đã thu đủ tiền mặt</b> từ khách. Hoa hồng của sàn sẽ được trừ vào ví quỹ COD của shop khi đơn hoàn tất.
+            Đơn COD: đơn vị vận chuyển thu hộ tiền mặt và nộp về <b>sàn</b>; shop không giữ tiền mặt. Tiền được đối soát và chi cho shop như đơn online.
           </p>
         </div>
       ) : null}

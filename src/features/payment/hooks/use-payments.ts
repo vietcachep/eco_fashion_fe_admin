@@ -3,7 +3,6 @@
 import { keepPreviousData, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  adminPaymentControllerConfirm,
   adminPaymentControllerProcess,
   adminPaymentControllerRetryFinalize,
   adminPaymentControllerSetMethod,
@@ -12,17 +11,15 @@ import {
   useAdminPaymentControllerMethods,
   useAdminPaymentControllerRefunds,
 } from "@/lib/api/generated/admin-payments/admin-payments";
-import type { ConfirmTransferRequest, ProcessRefundRequest } from "@/lib/api/generated/model";
+import type { ProcessRefundRequest } from "@/lib/api/generated/model";
 import { apiErrorMessage } from "@/lib/api-error";
 import { invalidateByPath } from "@/lib/query-invalidate";
 import { asPage } from "@/types/common";
 import type { PaymentMethodResponse, PaymentResponse, RefundResponse } from "@/features/payment/types/payment";
 
 /*
- * Thanh toán: giao dịch (COD / chuyển khoản / VNPay), đối soát chuyển khoản
- * (kế toán xác nhận tiền đã về → đơn được xác nhận), hoàn tiền (VNPay API
- * hoặc ghi nhận chuyển tay), bật/tắt phương thức. Sau đối soát / hoàn tiền
- * invalidate cả đơn hàng + báo cáo.
+ * Thanh toán: giao dịch (COD / PayOS), hoàn tiền (PayOS hoặc ghi nhận chuyển tay),
+ * bật/tắt phương thức. Sau hoàn tiền invalidate cả đơn hàng + báo cáo.
  */
 const PATH = "/api/v1/admin/payments";
 const REFUNDS_PATH = "/api/v1/admin/refunds";
@@ -51,18 +48,6 @@ export function useAdminPayments(params: { keyword?: string; status?: string; me
 export function useAdminPayment(id: string) {
   return useAdminPaymentControllerGet(id, {
     query: { enabled: !!id, select: (r) => r as unknown as PaymentResponse, staleTime: 10_000 },
-  });
-}
-
-export function useConfirmTransfer(id: string) {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (body: ConfirmTransferRequest) => adminPaymentControllerConfirm(id, body),
-    onSuccess: () => {
-      invalidateByPath(qc, PATH, ...RELATED);
-      toast.success("Đã xác nhận chuyển khoản — đơn chuyển sang đã thanh toán.");
-    },
-    onError: (e) => toast.error(apiErrorMessage(e, "Xác nhận chuyển khoản thất bại.")),
   });
 }
 

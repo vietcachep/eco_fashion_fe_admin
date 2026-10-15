@@ -10,7 +10,7 @@ export default function PaymentsPage() {
   return (
     <PermissionGuard permission={PERMISSIONS.paymentRead}>
       <div className="flex flex-col gap-4">
-        <PageHeader title="Giao dịch thanh toán" description="COD · chuyển khoản VietQR (đối soát) · VNPay" />
+        <PageHeader title="Giao dịch thanh toán" description="COD · PayOS" />
         <PaymentsTable />
       </div>
     </PermissionGuard>

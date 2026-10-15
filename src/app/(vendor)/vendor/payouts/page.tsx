@@ -11,7 +11,7 @@ export default function VendorPayoutsPage() {
     <RoleGuard>
       <PermissionGuard permission={PERMISSIONS.shopPayoutRead}>
         <div className="flex flex-col gap-4">
-          <PageHeader title="Đối soát" description="Các kỳ sàn đối soát và chi trả doanh thu online cho gian hàng của bạn" />
+          <PageHeader title="Đối soát" description="Sàn tự động đối soát và chi trả mỗi ngày — gồm cả đơn online (PayOS) và COD của gian hàng bạn" />
           <VendorPayoutsTable />
         </div>
       </PermissionGuard>

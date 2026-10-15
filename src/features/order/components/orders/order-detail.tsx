@@ -14,7 +14,7 @@ import { PermissionGate } from "@/components/shared/permission-gate";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { PERMISSIONS, ROUTES } from "@/lib/constants";
 import { formatDateTime, formatNumber } from "@/lib/format";
-import { ORDER_PAYMENT_STATUS, ORDER_STATUS, PAYMENT_METHOD_LABEL, statusMeta } from "@/lib/labels";
+import { ORDER_PAYMENT_STATUS, ORDER_STATUS, statusMeta, paymentMethodLabel } from "@/lib/labels";
 import { useAdminOrder } from "@/features/order/hooks/use-orders";
 import { STAFF_TRANSITIONS, STATUS_ACTION_LABEL } from "@/features/order/types/order";
 import { UpdateStatusDialog } from "@/features/order/components/orders/update-status-dialog";
@@ -190,7 +190,7 @@ export function OrderDetail({ code }: { code: string }) {
             <CardContent>
               <DetailList
                 rows={[
-                  { label: "Phương thức", value: PAYMENT_METHOD_LABEL[o.paymentMethodCode] ?? o.paymentMethodCode },
+                  { label: "Phương thức", value: paymentMethodLabel(o.paymentMethodCode) },
                   { label: "Trạng thái", value: <StatusBadge tone={pay.tone}>{pay.label}</StatusBadge> },
                   { label: "Mã giao dịch", value: o.transactionCode ? <code className="font-mono">{o.transactionCode}</code> : "—" },
                   { label: "Thẻ", value: o.cardBrand ? `${o.cardBrand} •••• ${o.cardLast4 ?? ""}` : "—" },
@@ -198,12 +198,6 @@ export function OrderDetail({ code }: { code: string }) {
                   { label: "Lý do huỷ", value: o.cancelReason || "—" },
                 ]}
               />
-              {o.paymentIntent ? (
-                <p className="pt-3 text-xs text-muted-foreground">
-                  Chuyển khoản: {o.paymentIntent.bankCode} {o.paymentIntent.accountNumber} · nội dung{" "}
-                  <code className="font-mono">{o.paymentIntent.transferContent}</code>
-                </p>
-              ) : null}
             </CardContent>
           </Card>
         </div>

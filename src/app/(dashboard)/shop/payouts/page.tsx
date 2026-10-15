@@ -10,7 +10,7 @@ export default function AdminPayoutsPage() {
   return (
     <PermissionGuard permission={PERMISSIONS.supplierPayoutRead}>
       <div className="flex flex-col gap-4">
-        <PageHeader title="Đối soát (payout)" description="Chạy kỳ đối soát, theo dõi và chi tiền cho gian hàng theo từng kỳ" />
+        <PageHeader title="Đối soát (payout)" description="Sàn tự động chạy đối soát và chi trả mỗi ngày (cả COD và PayOS, cờ payout.auto_enabled ở Cấu hình hệ thống); chạy bù thủ công, thử lại và đánh dấu đã chi tại đây" />
         <PayoutsScreen />
       </div>
     </PermissionGuard>

@@ -11,7 +11,7 @@ import { usePaymentMethods, useSetMethodActive } from "@/features/payment/hooks/
 
 const LOAD_ERROR = "Không tải được phương thức thanh toán.";
 
-/* Bật / tắt phương thức thanh toán hiện ở bước đặt hàng (COD · chuyển khoản · VNPay). */
+/* Bật / tắt phương thức thanh toán hiện ở bước đặt hàng (COD · PayOS; dòng cũ vnpay / chuyển khoản nếu còn trong DB chỉ để xem). */
 export function PaymentMethodsScreen() {
   const { data, isPending, error } = usePaymentMethods();
   const setActive = useSetMethodActive();

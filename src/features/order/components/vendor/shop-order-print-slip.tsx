@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { formatDateTime, formatNumber } from "@/lib/format";
-import { PAYMENT_METHOD_LABEL } from "@/lib/labels";
+import { paymentMethodLabel } from "@/lib/labels";
 import { variantText, type ShopOrderDetail } from "@/features/order/types/shop-order";
 
 const subscribe = () => () => {};
@@ -55,7 +55,7 @@ export function ShopOrderPrintSlip({ order: o }: { order: ShopOrderDetail }) {
         </div>
         <div>
           <p className="font-bold">Thanh toán</p>
-          <p>{PAYMENT_METHOD_LABEL[o.paymentMethodCode] ?? o.paymentMethodCode}</p>
+          <p>{paymentMethodLabel(o.paymentMethodCode)}</p>
           {collectCod ? (
             <p className="text-base font-bold">THU HỘ (COD): {o.total.display}</p>
           ) : (
