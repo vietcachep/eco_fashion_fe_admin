@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import {
   adminOrderControllerCancel,
   adminOrderControllerReturnProcess,
-  adminOrderControllerStatus,
   useAdminOrderControllerGet,
   useAdminOrderControllerList,
   useAdminOrderControllerReturnGet,
@@ -14,7 +13,6 @@ import {
 import type {
   ProcessReturnRequest,
   ReturnRequestResponse,
-  UpdateOrderStatusRequest,
 } from "@/lib/api/generated/model";
 import { apiErrorMessage } from "@/lib/api-error";
 import { invalidateByPath } from "@/lib/query-invalidate";
@@ -36,17 +34,19 @@ export interface AdminOrdersQuery {
   status?: string;
   paymentStatus?: string;
   paymentMethodCode?: string;
+  shopId?: string;
   page: number;
   size: number;
 }
 
-export function useAdminOrders({ keyword, status, paymentStatus, paymentMethodCode, page, size }: AdminOrdersQuery) {
+export function useAdminOrders({ keyword, status, paymentStatus, paymentMethodCode, shopId, page, size }: AdminOrdersQuery) {
   return useAdminOrderControllerList(
     {
       q: keyword || undefined,
       status: (status || undefined) as never,
       paymentStatus: paymentStatus || undefined,
       paymentMethodCode: paymentMethodCode || undefined,
+      shopId: shopId || undefined,
       page,
       size,
     },
@@ -64,18 +64,6 @@ export function useAdminOrder(code: string) {
   return useAdminOrderControllerGet(code, { query: { enabled: !!code, staleTime: 10_000 } });
 }
 
-export function useUpdateOrderStatus(code: string) {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (body: UpdateOrderStatusRequest) => adminOrderControllerStatus(code, body),
-    onSuccess: () => {
-      invalidateByPath(qc, PATH, ...RELATED);
-      toast.success("Đã cập nhật trạng thái đơn.");
-    },
-    onError: (e) => toast.error(apiErrorMessage(e, "Cập nhật trạng thái thất bại.")),
-  });
-}
-
 export function useCancelOrder(code: string) {
   const qc = useQueryClient();
   return useMutation({
@@ -88,9 +76,9 @@ export function useCancelOrder(code: string) {
   });
 }
 
-export function useAdminReturns(params: { status?: string; page: number; size: number }) {
+export function useAdminReturns(params: { status?: string; shopId?: string; page: number; size: number }) {
   return useAdminOrderControllerReturnsList(
-    { status: (params.status || undefined) as never, page: params.page, size: params.size },
+    { status: (params.status || undefined) as never, shopId: params.shopId || undefined, page: params.page, size: params.size },
     {
       query: {
         select: (r) => asPage<ReturnRequestResponse>(r),

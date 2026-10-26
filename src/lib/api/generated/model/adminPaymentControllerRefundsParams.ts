@@ -17,4 +17,8 @@ page?: number;
  */
 size?: number;
 status?: string;
+/**
+ * Chỉ dữ liệu thuộc gian hàng này (sàn xem theo từng shop)
+ */
+shopId?: string;
 };

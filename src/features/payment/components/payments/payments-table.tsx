@@ -12,6 +12,7 @@ import { isForbiddenError } from "@/lib/api-error";
 import { ROUTES } from "@/lib/constants";
 import { formatDateTime } from "@/lib/format";
 import { PAYMENT_METHOD_LABEL, PAYMENT_STATUS, statusMeta, paymentMethodLabel } from "@/lib/labels";
+import { ShopScope } from "@/features/shop/components/platform/shop-scope";
 import { useListState } from "@/hooks/use-list-state";
 import { useAdminPayments } from "@/features/payment/hooks/use-payments";
 import type { PaymentResponse } from "@/features/payment/types/payment";
@@ -27,15 +28,21 @@ const TABS = [
 
 const PAGE_SIZE = 15;
 const LOAD_ERROR = "Không tải được giao dịch.";
-const DEFAULTS = { status: "", methodCode: "" };
+const DEFAULTS = { status: "", methodCode: "", shopId: "" };
 
 /* Giao dịch thanh toán (COD · PayOS; dòng cũ vnpay / chuyển khoản hiện nhãn chung). */
 export function PaymentsTable() {
+  // Sàn: chọn gian hàng trước, bảng chỉ hiện dữ liệu của shop đó.
+  return <ShopScope noun="giao dịch thanh toán">{() => <PaymentsList />}</ShopScope>;
+}
+
+function PaymentsList() {
   const { filters, setFilter, search, setSearch, keyword, pageIndex, setPageIndex, page } = useListState(DEFAULTS);
   const { data, isLoading, isError, error } = useAdminPayments({
     keyword,
     status: filters.status,
     methodCode: filters.methodCode,
+    shopId: filters.shopId,
     page,
     size: PAGE_SIZE,
   });

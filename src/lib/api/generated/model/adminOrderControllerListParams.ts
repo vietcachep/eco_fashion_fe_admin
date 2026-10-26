@@ -24,4 +24,8 @@ status?: AdminOrderControllerListStatus;
 q?: string;
 paymentStatus?: string;
 paymentMethodCode?: string;
+/**
+ * Chỉ đơn con của gian hàng này
+ */
+shopId?: string;
 };

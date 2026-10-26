@@ -13,6 +13,7 @@ import { isForbiddenError } from "@/lib/api-error";
 import { ROUTES } from "@/lib/constants";
 import { formatDateTime, truncate } from "@/lib/format";
 import { RETURN_STATUS, statusMeta } from "@/lib/labels";
+import { ShopScope } from "@/features/shop/components/platform/shop-scope";
 import { useListState } from "@/hooks/use-list-state";
 import { useAdminReturns } from "@/features/order/hooks/use-orders";
 import type { ReturnRequestResponse } from "@/lib/api/generated/model";
@@ -27,12 +28,17 @@ const TABS = [
 
 const PAGE_SIZE = 15;
 const LOAD_ERROR = "Không tải được yêu cầu đổi trả.";
-const DEFAULTS = { status: "" };
+const DEFAULTS = { status: "", shopId: "" };
 
 /* Yêu cầu đổi trả của khách: đơn, lý do, số tiền hoàn dự kiến, trạng thái. */
 export function ReturnsTable() {
+  // Sàn: chọn gian hàng trước, bảng chỉ hiện dữ liệu của shop đó.
+  return <ShopScope noun="yêu cầu đổi trả">{() => <ReturnsList />}</ShopScope>;
+}
+
+function ReturnsList() {
   const { filters, setFilter, pageIndex, setPageIndex, page } = useListState(DEFAULTS);
-  const { data, isLoading, isError, error } = useAdminReturns({ status: filters.status, page, size: PAGE_SIZE });
+  const { data, isLoading, isError, error } = useAdminReturns({ status: filters.status, shopId: filters.shopId, page, size: PAGE_SIZE });
 
   const columns: ColumnDef<ReturnRequestResponse>[] = useMemo(
     () => [

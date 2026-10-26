@@ -15,6 +15,7 @@ import { ROUTES } from "@/lib/constants";
 import { formatDateTime, formatNumber } from "@/lib/format";
 import { ORDER_PAYMENT_STATUS, ORDER_STATUS, PAYMENT_METHOD_LABEL, statusMeta, paymentMethodLabel } from "@/lib/labels";
 import { useListState } from "@/hooks/use-list-state";
+import { ShopScope } from "@/features/shop/components/platform/shop-scope";
 import { useAdminOrders } from "@/features/order/hooks/use-orders";
 import type { OrderSummaryResponse } from "@/features/order/types/order";
 
@@ -32,16 +33,22 @@ const STATUS_TABS = [
 
 const PAGE_SIZE = 15;
 const LOAD_ERROR = "Không tải được danh sách đơn.";
-const DEFAULTS = { status: "", paymentStatus: "", paymentMethodCode: "" };
+const DEFAULTS = { status: "", paymentStatus: "", paymentMethodCode: "", shopId: "" };
 
 /* Danh sách đơn: lọc trạng thái đơn / thanh toán / phương thức, tìm mã đơn / tên / SĐT. */
 export function OrdersTable() {
+  // Sàn: chọn gian hàng trước, bảng chỉ hiện đơn con của shop đó.
+  return <ShopScope noun="đơn hàng">{() => <OrdersList />}</ShopScope>;
+}
+
+function OrdersList() {
   const { filters, setFilter, search, setSearch, keyword, pageIndex, setPageIndex, page } = useListState(DEFAULTS);
   const { data, isLoading, isError, error } = useAdminOrders({
     keyword,
     status: filters.status,
     paymentStatus: filters.paymentStatus,
     paymentMethodCode: filters.paymentMethodCode,
+    shopId: filters.shopId,
     page,
     size: PAGE_SIZE,
   });

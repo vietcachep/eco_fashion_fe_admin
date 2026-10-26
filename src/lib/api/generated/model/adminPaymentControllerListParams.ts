@@ -19,4 +19,8 @@ size?: number;
 status?: string;
 methodCode?: string;
 q?: string;
+/**
+ * Chỉ dữ liệu thuộc gian hàng này (sàn xem theo từng shop)
+ */
+shopId?: string;
 };

@@ -24,6 +24,7 @@ import { isForbiddenError } from "@/lib/api-error";
 import { PERMISSIONS, ROUTES } from "@/lib/constants";
 import { formatDateTime } from "@/lib/format";
 import { REFUND_KIND, REFUND_STATUS, statusMeta, paymentMethodLabel } from "@/lib/labels";
+import { ShopScope } from "@/features/shop/components/platform/shop-scope";
 import { useListState } from "@/hooks/use-list-state";
 import { useAdminRefunds, useProcessRefund, useRetryFinalizeRefund } from "@/features/payment/hooks/use-payments";
 import type { RefundResponse } from "@/features/payment/types/payment";
@@ -38,7 +39,7 @@ const TABS = [
 
 const PAGE_SIZE = 15;
 const LOAD_ERROR = "Không tải được yêu cầu hoàn tiền.";
-const DEFAULTS = { status: "" };
+const DEFAULTS = { status: "", shopId: "" };
 
 /*
  * Hoàn tiền: sinh từ huỷ đơn đã thanh toán, duyệt đổi trả, hoặc khách trả trùng. Kế toán bấm
@@ -48,10 +49,15 @@ const DEFAULTS = { status: "" };
  * Tình huống cần người xử lý: cổng ĐÃ chi mà ghi sổ lỗi (đang xử lý + có mã tham chiếu) → "Ghi sổ lại", không gọi cổng.
  */
 export function RefundsTable() {
+  // Sàn: chọn gian hàng trước, bảng chỉ hiện dữ liệu của shop đó.
+  return <ShopScope noun="yêu cầu hoàn tiền">{() => <RefundsList />}</ShopScope>;
+}
+
+function RefundsList() {
   const { filters, setFilter, pageIndex, setPageIndex, page } = useListState(DEFAULTS);
   const [processing, setProcessing] = useState<RefundResponse | null>(null);
   const retry = useRetryFinalizeRefund();
-  const { data, isLoading, isError, error } = useAdminRefunds({ status: filters.status, page, size: PAGE_SIZE });
+  const { data, isLoading, isError, error } = useAdminRefunds({ status: filters.status, shopId: filters.shopId, page, size: PAGE_SIZE });
 
   const columns: ColumnDef<RefundResponse>[] = useMemo(
     () => [

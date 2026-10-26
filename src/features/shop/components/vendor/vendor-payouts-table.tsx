@@ -134,7 +134,7 @@ function PayoutRulesNote() {
         <InfoIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
         <ul className="flex list-disc flex-col gap-1 pl-4 text-xs text-muted-foreground">
           <li>
-            Sàn <b className="text-foreground">tự động đối soát và chi trả mỗi ngày</b>. Cả đơn <b className="text-foreground">online (PayOS) lẫn COD</b> đã qua hạn đổi trả đều vào kỳ đối soát (sàn thu tiền COD từ đơn vị vận chuyển).
+            Sàn <b className="text-foreground">tự động đối soát và chi trả mỗi ngày</b>. Kỳ đối soát gồm đơn <b className="text-foreground">online (PayOS)</b> đã qua hạn đổi trả. Đơn COD bạn tự thu tiền mặt — sàn trừ hoa hồng từ <b className="text-foreground">ví đặt cọc COD</b>, không nằm trong kỳ này.
           </li>
           <li>
             Thực nhận = Doanh thu − Hoa hồng sàn − Hoàn tiền cho khách − Nợ kỳ trước. Voucher do sàn tài trợ do sàn chịu (đã cộng vào doanh thu của bạn).

@@ -16,20 +16,18 @@ import { PERMISSIONS, ROUTES } from "@/lib/constants";
 import { formatDateTime, formatNumber } from "@/lib/format";
 import { ORDER_PAYMENT_STATUS, ORDER_STATUS, statusMeta, paymentMethodLabel } from "@/lib/labels";
 import { useAdminOrder } from "@/features/order/hooks/use-orders";
-import { STAFF_TRANSITIONS, STATUS_ACTION_LABEL } from "@/features/order/types/order";
-import { UpdateStatusDialog } from "@/features/order/components/orders/update-status-dialog";
+import { STAFF_TRANSITIONS } from "@/features/order/types/order";
 import { CancelOrderDialog } from "@/features/order/components/orders/cancel-order-dialog";
 
 const LOAD_ERROR = "Không tải được đơn hàng.";
 
 /*
  * Chi tiết đơn: dòng hàng, tiền, người nhận, thanh toán, lịch sử trạng thái.
- * Nút hành động sinh từ STAFF_TRANSITIONS theo trạng thái hiện tại: chuyển
- * trạng thái (dialog kèm link vận chuyển / ghi chú) hoặc huỷ (dialog lý do).
+ * Sàn CHỈ giám sát: xác nhận / đóng gói / giao là việc của chủ shop (cổng vendor).
+ * Sàn chỉ huỷ được đơn khi cần xử lý tranh chấp (dialog lý do).
  */
 export function OrderDetail({ code }: { code: string }) {
   const { data: o, isPending, error } = useAdminOrder(code);
-  const [next, setNext] = useState<string | null>(null);
   const [cancelOpen, setCancelOpen] = useState(false);
 
   if (error) return <ApiErrorState error={error} fallback={LOAD_ERROR} />;
@@ -45,7 +43,6 @@ export function OrderDetail({ code }: { code: string }) {
   const status = statusMeta(ORDER_STATUS, o.status);
   const pay = statusMeta(ORDER_PAYMENT_STATUS, o.paymentStatus);
   const transitions = STAFF_TRANSITIONS[o.status] ?? [];
-  const statusActions = transitions.filter((t) => t in STATUS_ACTION_LABEL);
   const canCancel = transitions.includes("cancelled");
 
   return (
@@ -56,13 +53,6 @@ export function OrderDetail({ code }: { code: string }) {
           <ArrowLeftIcon className="size-4" />
           Danh sách
         </Button>
-        <PermissionGate permission={PERMISSIONS.orderStatusUpdate}>
-          {statusActions.map((s) => (
-            <Button key={s} onClick={() => setNext(s)}>
-              {STATUS_ACTION_LABEL[s]}
-            </Button>
-          ))}
-        </PermissionGate>
         {canCancel ? (
           <PermissionGate permission={PERMISSIONS.orderCancel}>
             <Button variant="destructive" onClick={() => setCancelOpen(true)}>
@@ -203,7 +193,6 @@ export function OrderDetail({ code }: { code: string }) {
         </div>
       </div>
 
-      <UpdateStatusDialog code={o.code} next={next} onClose={() => setNext(null)} />
       <CancelOrderDialog code={o.code} open={cancelOpen} onOpenChange={setCancelOpen} />
     </div>
   );

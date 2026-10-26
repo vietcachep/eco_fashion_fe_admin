@@ -18,4 +18,8 @@ page?: number;
  */
 size?: number;
 status?: AdminOrderControllerReturnsListStatus;
+/**
+ * Chỉ dữ liệu thuộc gian hàng này (sàn xem theo từng shop)
+ */
+shopId?: string;
 };

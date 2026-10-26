@@ -26,9 +26,10 @@ const REFUNDS_PATH = "/api/v1/admin/refunds";
 const METHODS_PATH = "/api/v1/admin/payment-methods";
 const RELATED = ["/api/v1/admin/orders", "/api/v1/admin/reports"];
 
-export function useAdminPayments(params: { keyword?: string; status?: string; methodCode?: string; page: number; size: number }) {
+export function useAdminPayments(params: { keyword?: string; status?: string; methodCode?: string; shopId?: string; page: number; size: number }) {
   return useAdminPaymentControllerList(
     {
+      shopId: params.shopId || undefined,
       q: params.keyword || undefined,
       status: (params.status || undefined) as never,
       methodCode: (params.methodCode || undefined) as never,
@@ -51,9 +52,9 @@ export function useAdminPayment(id: string) {
   });
 }
 
-export function useAdminRefunds(params: { status?: string; page: number; size: number }) {
+export function useAdminRefunds(params: { status?: string; shopId?: string; page: number; size: number }) {
   return useAdminPaymentControllerRefunds(
-    { status: (params.status || undefined) as never, page: params.page, size: params.size },
+    { status: (params.status || undefined) as never, shopId: params.shopId || undefined, page: params.page, size: params.size },
     {
       query: {
         select: (r) => asPage<RefundResponse>(r),
