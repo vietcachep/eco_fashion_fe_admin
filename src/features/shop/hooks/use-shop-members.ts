@@ -10,6 +10,7 @@ import {
   useShopMemberControllerList,
 } from "@/lib/api/generated/shops/shops";
 import type { AddShopMemberRequest, ShopMemberResponse, UpdateShopMemberRequest } from "@/lib/api/generated/model";
+import { customInstance } from "@/lib/api/mutator";
 import { apiErrorMessage } from "@/lib/api-error";
 import { invalidateByPath } from "@/lib/query-invalidate";
 import { asPage } from "@/types/common";
@@ -84,5 +85,19 @@ export function useLeaveShop() {
       toast.success("Bạn đã rời gian hàng.");
     },
     onError: (e) => toast.error(apiErrorMessage(e, "Rời gian hàng thất bại.")),
+  });
+}
+
+/* Chủ shop tự đặt quyền cho một nhân viên (PUT /shop/members/:id/permissions); `permissionCodes` null = quay về preset của vai. */
+export function useSetMemberPermissions() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { id: string; permissionCodes: string[] | null }) =>
+      customInstance<ShopMemberResponse>({ url: `${MEMBERS_PATH}/${v.id}/permissions`, method: "PUT", data: { permissionCodes: v.permissionCodes } }),
+    onSuccess: () => {
+      invalidateByPath(qc, MEMBERS_PATH);
+      toast.success("Đã cập nhật quyền nhân viên.");
+    },
+    onError: (e) => toast.error(apiErrorMessage(e, "Cập nhật quyền nhân viên thất bại.")),
   });
 }

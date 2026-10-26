@@ -37,10 +37,17 @@ export interface ContactResponse {
   email: string;
   phone: string | null;
   message: string;
+  /** Gửi cho gian hàng nào (null = gửi sàn) */
+  shopId: string | null;
+  shopName: string | null;
+  orderCode: string | null;
+  productName: string | null;
   status: string;
   reply: string | null;
   handledAt: string | null;
   createdAt: string;
+  /** Phía sàn: được trả lời không (tin gửi sàn, hoặc tin shop quá hạn chưa xử lý) */
+  platformCanReply: boolean;
 }
 
 export interface FaqResponse {

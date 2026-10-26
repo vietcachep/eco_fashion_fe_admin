@@ -1,6 +1,7 @@
 "use client";
 
-import { keepPreviousData, useMutation, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { customInstance } from "@/lib/api/mutator";
 import { toast } from "sonner";
 import {
   adminSystemControllerBannerDelete,
@@ -119,10 +120,10 @@ export function useBroadcast() {
 }
 
 // ---- Liên hệ
-export function useContacts(params: { status?: string; page: number; size: number }) {
+export function useContacts(params: { status?: string; scope?: string; page: number; size: number }, enabled = true) {
   return useAdminSystemControllerContacts(
-    { status: (params.status || undefined) as never, page: params.page, size: params.size },
-    { query: { select: (r) => asPage<ContactResponse>(r), placeholderData: keepPreviousData, staleTime: 15_000 } },
+    { status: (params.status || undefined) as never, scope: params.scope || undefined, page: params.page, size: params.size } as never,
+    { query: { select: (r) => asPage<ContactResponse>(r), placeholderData: keepPreviousData, staleTime: 15_000, enabled } },
   );
 }
 export function useReplyContact() {
@@ -161,5 +162,28 @@ export function useSavePage() {
     [`${P}/pages`, "/api/v1/pages"],
     "Đã lưu trang.",
     "Lưu trang thất bại.",
+  );
+}
+
+// ---- Liên hệ gửi GIAN HÀNG (vendor, quyền shop.contact.*): shop tự xem và trả lời tin của mình
+const SHOP_CONTACTS = "/api/v1/shop/contacts";
+
+export function useShopContacts(params: { status?: string; page: number; size: number }, enabled = true) {
+  return useQuery({
+    queryKey: [SHOP_CONTACTS, params],
+    queryFn: () => customInstance<unknown>({ url: SHOP_CONTACTS, method: "GET", params: { status: params.status || undefined, page: params.page, size: params.size } }),
+    select: (r) => asPage<ContactResponse>(r),
+    placeholderData: keepPreviousData,
+    staleTime: 15_000,
+    enabled,
+  });
+}
+
+export function useShopReplyContact() {
+  return useSystemMutation(
+    ({ id, reply }: { id: string; reply: string }) => customInstance<ContactResponse>({ url: `${SHOP_CONTACTS}/${id}/reply`, method: "POST", data: { reply } }),
+    [SHOP_CONTACTS],
+    "Đã gửi phản hồi qua email.",
+    "Gửi phản hồi thất bại.",
   );
 }

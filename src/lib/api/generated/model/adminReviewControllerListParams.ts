@@ -20,4 +20,8 @@ size?: number;
 rating?: number;
 status?: AdminReviewControllerListStatus;
 q?: string;
+/**
+ * Chỉ dữ liệu thuộc gian hàng này (sàn xem theo từng shop)
+ */
+shopId?: string;
 };

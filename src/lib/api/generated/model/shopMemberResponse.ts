@@ -14,6 +14,10 @@ export interface ShopMemberResponse {
   roleId: string;
   roleCode: string;
   roleName: string;
+  /** Quyền hiệu lực của thành viên (chủ = đủ quyền chủ; nhân viên = quyền chủ shop đã đặt hoặc preset vai) */
+  permissionCodes: string[];
+  /** true = chủ shop đã tự đặt quyền riêng cho nhân viên này (không theo preset vai) */
+  customPermissions: boolean;
   status: string;
   /** true nếu dòng này chính là người đang gọi API (để hiện "Bạn"/nút rời gian hàng) */
   isSelf: boolean;

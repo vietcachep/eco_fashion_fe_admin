@@ -1,6 +1,6 @@
 "use client";
 
-import { keepPreviousData, useMutation, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   adminShopControllerApprove,
@@ -11,6 +11,7 @@ import {
   useAdminShopControllerList,
 } from "@/lib/api/generated/admin-shops/admin-shops";
 import type { AdminShopControllerListStatus, AdminShopSummaryResponse } from "@/lib/api/generated/model";
+import { customInstance } from "@/lib/api/mutator";
 import { apiErrorMessage } from "@/lib/api-error";
 import { invalidateByPath } from "@/lib/query-invalidate";
 import { asPage } from "@/types/common";
@@ -108,5 +109,39 @@ export function useUpdateShopCommission() {
       toast.success("Đã lưu tỉ lệ hoa hồng (áp dụng cho đơn mới).");
     },
     onError: (e) => toast.error(apiErrorMessage(e, "Lưu hoa hồng thất bại.")),
+  });
+}
+
+/*
+ * Danh bạ gian hàng gọn cho các màn giám sát của sàn (cổng chọn shop): chỉ cần quyền XEM nghiệp vụ đang mở (đơn, sản phẩm, thanh toán…),
+ * không cần quyền quản lý shop — nên nhân viên CSKH / kế toán cũng chọn được shop.
+ */
+export interface ShopDirectoryItem {
+  id: string;
+  code: string;
+  name: string;
+  logoUrl: string | null;
+  status: string;
+  totalProducts: number;
+}
+
+const DIRECTORY_PATH = "/api/v1/admin/shop-directory";
+
+export function useShopDirectory(params: { keyword?: string; page: number; size: number }) {
+  return useQuery({
+    queryKey: [DIRECTORY_PATH, params],
+    queryFn: () => customInstance<unknown>({ url: DIRECTORY_PATH, method: "GET", params: { q: params.keyword || undefined, page: params.page, size: params.size } }),
+    select: (r) => asPage<ShopDirectoryItem>(r),
+    placeholderData: keepPreviousData,
+    staleTime: 30_000,
+  });
+}
+
+export function useShopDirectoryItem(id: string) {
+  return useQuery({
+    queryKey: [DIRECTORY_PATH, id],
+    queryFn: () => customInstance<ShopDirectoryItem>({ url: `${DIRECTORY_PATH}/${id}`, method: "GET" }),
+    enabled: !!id,
+    staleTime: 60_000,
   });
 }

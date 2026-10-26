@@ -4,7 +4,6 @@ import { keepPreviousData, useMutation, useQueryClient } from "@tanstack/react-q
 import { toast } from "sonner";
 import {
   adminReviewControllerModerate,
-  adminReviewControllerReply,
   useAdminReviewControllerList,
 } from "@/lib/api/generated/admin-reviews/admin-reviews";
 import type { ModerateRequest } from "@/lib/api/generated/model";
@@ -16,9 +15,10 @@ import type { ReviewAdminResponse } from "@/features/review/types/review";
 /* Đánh giá đã mua: kiểm duyệt (hiện / ẩn kèm ghi chú), trả lời thay cửa hàng. */
 const PATH = "/api/v1/admin/reviews";
 
-export function useAdminReviews(params: { keyword?: string; status?: string; rating?: number; page: number; size: number }) {
+export function useAdminReviews(params: { keyword?: string; status?: string; rating?: number; shopId?: string; page: number; size: number }) {
   return useAdminReviewControllerList(
     {
+      shopId: params.shopId || undefined,
       q: params.keyword || undefined,
       status: (params.status || undefined) as never,
       rating: params.rating,
@@ -44,17 +44,5 @@ export function useModerateReview() {
       toast.success(v.body.status === "approved" ? "Đánh giá đã hiển thị." : "Đã ẩn đánh giá.");
     },
     onError: (e) => toast.error(apiErrorMessage(e, "Kiểm duyệt thất bại.")),
-  });
-}
-
-export function useReplyReview() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, content }: { id: string; content: string }) => adminReviewControllerReply(id, { content }),
-    onSuccess: () => {
-      invalidateByPath(qc, PATH);
-      toast.success("Đã gửi trả lời.");
-    },
-    onError: (e) => toast.error(apiErrorMessage(e, "Gửi trả lời thất bại.")),
   });
 }

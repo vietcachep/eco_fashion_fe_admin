@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { LogOutIcon, RepeatIcon, Trash2Icon } from "lucide-react";
+import { LogOutIcon, RepeatIcon, ShieldCheckIcon, Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ApiErrorState } from "@/components/shared/api-error-state";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -15,6 +15,7 @@ import { formatDate } from "@/lib/format";
 import { SHOP_MEMBER_ROLE_LABEL } from "@/lib/labels";
 import type { ShopMemberResponse } from "@/lib/api/generated/model";
 import { useLeaveShop, useMyShopMembers, useRemoveShopMember } from "@/features/shop/hooks/use-shop-members";
+import { MemberPermissionsDialog } from "@/features/shop/components/vendor/member-permissions-dialog";
 import { ChangeMemberRoleDialog } from "@/features/shop/components/vendor/change-member-role-dialog";
 
 const PAGE_SIZE = 10;
@@ -33,6 +34,7 @@ export function ShopMembersTable() {
   const [leaveOpen, setLeaveOpen] = useState(false);
   const [removeTarget, setRemoveTarget] = useState<ShopMemberResponse | null>(null);
   const [roleTarget, setRoleTarget] = useState<ShopMemberResponse | null>(null);
+  const [permTarget, setPermTarget] = useState<ShopMemberResponse | null>(null);
 
   const columns: ColumnDef<ShopMemberResponse>[] = useMemo(
     () => [
@@ -72,6 +74,14 @@ export function ShopMembersTable() {
         cell: ({ row }) =>
           row.original.status === "active" ? (
             <div className="flex justify-end gap-2">
+              {row.original.roleCode !== "shop_owner" ? (
+                <PermissionGate permission={PERMISSIONS.shopStaffUpdate}>
+                  <Button variant="outline" size="sm" className="h-8" onClick={() => setPermTarget(row.original)}>
+                    <ShieldCheckIcon className="size-3.5" />
+                    Phân quyền
+                  </Button>
+                </PermissionGate>
+              ) : null}
               <PermissionGate permission={PERMISSIONS.shopStaffUpdate}>
                 <Button variant="outline" size="sm" className="h-8" onClick={() => setRoleTarget(row.original)}>
                   <RepeatIcon className="size-3.5" />
@@ -117,6 +127,7 @@ export function ShopMembersTable() {
         }}
       />
       <ChangeMemberRoleDialog member={roleTarget} onClose={() => setRoleTarget(null)} />
+      <MemberPermissionsDialog member={permTarget} onClose={() => setPermTarget(null)} />
       <ConfirmDialog
         open={leaveOpen}
         onOpenChange={setLeaveOpen}

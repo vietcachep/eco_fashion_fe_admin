@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
-import { EyeIcon, EyeOffIcon, Loader2Icon, MessageSquareReplyIcon, SparklesIcon } from "lucide-react";
+import { EyeIcon, EyeOffIcon, Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { DataTable } from "@/components/shared/data-table";
 import { ApiErrorState } from "@/components/shared/api-error-state";
 import { FilterTabs } from "@/components/shared/filter-tabs";
@@ -27,9 +26,9 @@ import { isForbiddenError } from "@/lib/api-error";
 import { PERMISSIONS, ROUTES } from "@/lib/constants";
 import { formatDateTime } from "@/lib/format";
 import { REVIEW_STATUS, statusMeta } from "@/lib/labels";
+import { ShopScope } from "@/features/shop/components/platform/shop-scope";
 import { useListState } from "@/hooks/use-list-state";
-import { useAdminReviews, useModerateReview, useReplyReview } from "@/features/review/hooks/use-reviews";
-import { useDraftReviewReply } from "@/features/review/hooks/use-review-ai";
+import { useAdminReviews, useModerateReview } from "@/features/review/hooks/use-reviews";
 import { ReviewStars } from "@/features/review/components/common/review-stars";
 import type { ReviewAdminResponse } from "@/features/review/types/review";
 
@@ -42,22 +41,27 @@ const TABS = [
 
 const PAGE_SIZE = 12;
 const LOAD_ERROR = "Không tải được đánh giá.";
-const DEFAULTS = { status: "", rating: "" };
+const DEFAULTS = { status: "", rating: "", shopId: "" };
 
 /*
  * Đánh giá của khách: lọc trạng thái / số sao, tìm nội dung. Hành động: ẩn /
  * hiện (kèm ghi chú kiểm duyệt) và trả lời thay cửa hàng (có nút AI soạn nháp).
  */
 export function ReviewsTable() {
+  // Sàn: chọn gian hàng trước, bảng chỉ hiện dữ liệu của shop đó.
+  return <ShopScope noun="đánh giá">{() => <ReviewsList />}</ShopScope>;
+}
+
+function ReviewsList() {
   const { filters, setFilter, search, setSearch, keyword, pageIndex, setPageIndex, page } = useListState(DEFAULTS);
   const moderate = useModerateReview();
   const [moderating, setModerating] = useState<ReviewAdminResponse | null>(null);
-  const [replying, setReplying] = useState<ReviewAdminResponse | null>(null);
 
   const { data, isLoading, isError, error } = useAdminReviews({
     keyword,
     status: filters.status,
     rating: filters.rating ? Number(filters.rating) : undefined,
+    shopId: filters.shopId,
     page,
     size: PAGE_SIZE,
   });
@@ -134,12 +138,6 @@ export function ReviewsTable() {
           const r = row.original;
           return (
             <div className="flex justify-end gap-1">
-              <PermissionGate permission={PERMISSIONS.reviewReply}>
-                <Button variant="outline" size="sm" className="h-8" onClick={() => setReplying(r)}>
-                  <MessageSquareReplyIcon className="size-3.5" />
-                  {r.reply ? "Sửa trả lời" : "Trả lời"}
-                </Button>
-              </PermissionGate>
               <PermissionGate permission={PERMISSIONS.reviewModerate}>
                 {r.status === "approved" ? (
                   <Button variant="ghost" size="sm" className="h-8" onClick={() => setModerating(r)}>
@@ -193,7 +191,6 @@ export function ReviewsTable() {
         }}
       />
       <HideReviewDialog review={moderating} onClose={() => setModerating(null)} />
-      <ReplyReviewDialog review={replying} onClose={() => setReplying(null)} />
     </div>
   );
 }
@@ -234,68 +231,6 @@ function HideReviewBody({ review, onClose }: { review: ReviewAdminResponse; onCl
         >
           {moderate.isPending ? <Loader2Icon className="size-4 animate-spin" /> : null}
           Ẩn
-        </Button>
-      </DialogFooter>
-    </>
-  );
-}
-
-function ReplyReviewDialog({ review, onClose }: { review: ReviewAdminResponse | null; onClose: () => void }) {
-  return (
-    <Dialog open={!!review} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-md">
-        {review ? <ReplyReviewBody key={review.id} review={review} onClose={onClose} /> : null}
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function ReplyReviewBody({ review, onClose }: { review: ReviewAdminResponse; onClose: () => void }) {
-  const reply = useReplyReview();
-  const draft = useDraftReviewReply();
-  const [content, setContent] = useState(review.reply?.content ?? "");
-  return (
-    <>
-      <DialogHeader>
-        <DialogTitle>Trả lời thay cửa hàng</DialogTitle>
-        <DialogDescription>
-          {review.author} · <ReviewStars rating={review.rating} /> · {review.productName}
-        </DialogDescription>
-      </DialogHeader>
-      <p className="rounded-md bg-muted px-3 py-2 text-sm">{review.content}</p>
-      <FieldGroup>
-        <Field>
-          <div className="flex items-center justify-between">
-            <FieldLabel htmlFor="reply-content">Nội dung trả lời</FieldLabel>
-            <PermissionGate permission={PERMISSIONS.aiCopyCreate}>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-7 text-primary"
-                disabled={draft.isPending}
-                onClick={() =>
-                  draft.mutate(
-                    { rating: review.rating, content: review.content, productName: review.productName },
-                    { onSuccess: (r) => setContent(r.text) },
-                  )
-                }
-              >
-                {draft.isPending ? <Loader2Icon className="size-3.5 animate-spin" /> : <SparklesIcon className="size-3.5" />}
-                AI soạn nháp
-              </Button>
-            </PermissionGate>
-          </div>
-          <Textarea id="reply-content" rows={5} value={content} onChange={(e) => setContent(e.target.value)} maxLength={1000} />
-        </Field>
-      </FieldGroup>
-      <DialogFooter>
-        <Button variant="outline" onClick={onClose}>
-          Hủy
-        </Button>
-        <Button disabled={reply.isPending || content.trim().length < 2} onClick={() => reply.mutate({ id: review.id, content: content.trim() }, { onSuccess: onClose })}>
-          {reply.isPending ? <Loader2Icon className="size-4 animate-spin" /> : null}
-          Gửi trả lời
         </Button>
       </DialogFooter>
     </>
