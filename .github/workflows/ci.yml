@@ -1,0 +1,35 @@
+name: CI
+
+# Cổng chất lượng của web quản trị: đúng `npm run verify` (lint + typecheck + build) ở máy dev.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: lint · typecheck · build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Client API (src/lib/api/generated) và mã quyền (permission-codes.generated.ts) được COMMIT sẵn — CI không cần backend chạy.
+      - name: Lint · typecheck · build
+        run: npm run verify
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
