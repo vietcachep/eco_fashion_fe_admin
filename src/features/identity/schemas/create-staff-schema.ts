@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { passwordField, PHONE_VN } from "./password-rule";
 
-const STAFF_ROLE_CODES = ["admin", "manager", "sales", "warehouse", "accountant", "marketing"] as const;
+const STAFF_ROLE_CODES = ["admin", "manager", "sales", "accountant", "marketing"] as const;
 
 /* Tạo tài khoản nhân viên (backend CreateStaffRequest). */
 export const createStaffSchema = z.object({

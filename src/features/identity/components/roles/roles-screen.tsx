@@ -22,7 +22,9 @@ const LOAD_ERROR = "Không tải được danh sách vai.";
  * có quyền quản trị — hai vai này chỉ xem, không sửa.
  */
 export function RolesScreen() {
-  const { data: roles, isPending, error } = useAdminRoles();
+  const { data: allRoles, isPending, error } = useAdminRoles();
+  // Vai của gian hàng (chủ / nhân viên shop) do từng chủ shop tự phân quyền — sàn không xem/sửa ở đây.
+  const roles = allRoles?.filter((r) => r.code !== "shop_owner" && r.code !== "shop_staff");
   const [picked, setPicked] = useState<string>("");
   // Chưa chọn thì mặc định vai "manager" (hay sửa nhất), không dùng effect để set state.
   const selected = picked || roles?.find((r) => r.code === "manager")?.code || roles?.[0]?.code || "";

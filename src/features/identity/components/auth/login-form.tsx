@@ -21,8 +21,7 @@ const SHOW_DEMO_ACCOUNTS = process.env.NODE_ENV !== "production";
 const DEMO_ACCOUNTS = [
   { label: "Admin", email: "admin@ecofashion.vn", pass: "Admin123456!" },
   { label: "Quản lý", email: "manager@ecofashion.vn", pass: "NhanVien123!" },
-  { label: "Bán hàng", email: "sales@ecofashion.vn", pass: "NhanVien123!" },
-  { label: "Kho", email: "warehouse@ecofashion.vn", pass: "NhanVien123!" },
+  { label: "CSKH", email: "sales@ecofashion.vn", pass: "NhanVien123!" },
   { label: "Kế toán", email: "accountant@ecofashion.vn", pass: "NhanVien123!" },
   { label: "Marketing", email: "marketing@ecofashion.vn", pass: "NhanVien123!" },
 ] as const;

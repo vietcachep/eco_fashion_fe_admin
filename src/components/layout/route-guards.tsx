@@ -151,7 +151,7 @@ export function RoleGuard({ children, fallback }: { children: React.ReactNode; f
 
 /*
  * Đã đăng nhập mà vào trang auth → đưa tới màn ĐẦU TIÊN người đó có quyền
- * (không phải luôn /dashboard: nhân viên kho không có quyền dashboard sẽ gặp
+ * (không phải luôn /dashboard: nhân viên không có quyền dashboard sẽ gặp
  * 403 ngay câu chào). Chờ hồ sơ /me có mã quyền rồi mới điều hướng — chỉ có
  * token mà chưa có /me thì cứ hiện trang, không nháy.
  */

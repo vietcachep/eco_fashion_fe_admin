@@ -94,6 +94,7 @@ export const ROUTES = {
   shop: {
     shops: "/shop/shops",
     payouts: "/shop/payouts",
+    wallets: "/shop/wallets",
   },
   /*
    * Route-group MỚI, riêng cho nhà cung cấp (chủ/nhân viên shop tự quản gian
@@ -114,7 +115,9 @@ export const ROUTES = {
     promotions: "/vendor/promotions",
     promotionNew: "/vendor/promotions/new",
     reviews: "/vendor/reviews",
+    contacts: "/vendor/contacts",
     payouts: "/vendor/payouts",
+    wallet: "/vendor/wallet",
   },
 } as const;
 
@@ -175,6 +178,8 @@ export const PERMISSIONS = {
   bannerManage: "system.banner.manage",
   provinceManage: "system.province.manage",
   notificationSend: "system.notification.send",
+  contactRead: "system.contact.read",
+  contactReply: "system.contact.reply",
   // reporting
   dashboardRead: "reporting.dashboard.read",
   revenueRead: "reporting.revenue.read",
@@ -196,6 +201,9 @@ export const PERMISSIONS = {
   supplierShopCommission: "supplier.shop.commission",
   supplierPayoutRead: "supplier.payout.read",
   supplierPayoutProcess: "supplier.payout.process",
+  supplierWalletRead: "supplier.wallet.read",
+  supplierWalletApprove: "supplier.wallet.approve",
+  supplierWalletAdjust: "supplier.wallet.adjust",
   // vendor — quyền của vai (shop_owner/shop_staff) trong CHÍNH gian hàng mình; nguồn: GET /shop/session
   shopProfileRead: "shop.profile.read",
   shopProfileUpdate: "shop.profile.update",
@@ -215,6 +223,10 @@ export const PERMISSIONS = {
   shopPromotionManage: "shop.promotion.manage",
   shopReportRead: "shop.report.read",
   shopPayoutRead: "shop.payout.read",
+  shopContactRead: "shop.contact.read",
+  shopContactReply: "shop.contact.reply",
+  shopWalletRead: "shop.wallet.read",
+  shopWalletDepositRequest: "shop.wallet.deposit_request",
 } as const satisfies Record<string, PermissionCode>;
 
 /*
@@ -224,8 +236,7 @@ export const PERMISSIONS = {
 export const STAFF_ROLES = [
   { code: "admin", name: "Quản trị viên" },
   { code: "manager", name: "Quản lý cửa hàng" },
-  { code: "sales", name: "Bán hàng & CSKH" },
-  { code: "warehouse", name: "Nhân viên kho" },
+  { code: "sales", name: "Chăm sóc khách hàng" },
   { code: "accountant", name: "Kế toán" },
   { code: "marketing", name: "Marketing" },
 ] as const;
@@ -323,7 +334,7 @@ export const SIDEBAR_NAV: NavGroup[] = [
           {
             title: "Liên hệ của khách",
             href: ROUTES.system.contacts,
-            permission: PERMISSIONS.notificationSend,
+            permission: PERMISSIONS.contactRead,
           },
         ],
       },
@@ -383,23 +394,6 @@ export const SIDEBAR_NAV: NavGroup[] = [
             title: "Thuộc tính động",
             href: ROUTES.catalog.dynamicAttributes,
             permission: PERMISSIONS.dynamicAttributeRead,
-          },
-        ],
-      },
-      {
-        id: "inventory",
-        title: "Kho hàng",
-        icon: Warehouse,
-        children: [
-          {
-            title: "Tồn kho",
-            href: ROUTES.product.stock,
-            permission: PERMISSIONS.inventoryRead,
-          },
-          {
-            title: "Phiếu nhập kho",
-            href: ROUTES.product.receipts,
-            permission: PERMISSIONS.inventoryRead,
           },
         ],
       },
@@ -492,6 +486,11 @@ export const SIDEBAR_NAV: NavGroup[] = [
             title: "Đối soát (payout)",
             href: ROUTES.shop.payouts,
             permission: PERMISSIONS.supplierPayoutRead,
+          },
+          {
+            title: "Ví đặt cọc COD",
+            href: ROUTES.shop.wallets,
+            permission: PERMISSIONS.supplierWalletRead,
           },
         ],
       },
@@ -638,6 +637,13 @@ export const VENDOR_NAV: NavGroup[] = [
         href: ROUTES.vendor.reviews,
         permission: PERMISSIONS.shopReviewRead,
       },
+      {
+        id: "vendor-contact",
+        title: "Tin nhắn khách",
+        icon: Users,
+        href: ROUTES.vendor.contacts,
+        permission: PERMISSIONS.shopContactRead,
+      },
     ],
   },
   {
@@ -648,6 +654,7 @@ export const VENDOR_NAV: NavGroup[] = [
         title: "Tài chính",
         icon: Wallet,
         children: [
+          { title: "Ví đặt cọc COD", href: ROUTES.vendor.wallet, permission: PERMISSIONS.shopWalletRead },
           { title: "Đối soát (payout)", href: ROUTES.vendor.payouts, permission: PERMISSIONS.shopPayoutRead },
         ],
       },
@@ -657,7 +664,7 @@ export const VENDOR_NAV: NavGroup[] = [
 
 /*
  * Màn đầu tiên người dùng ĐƯỢC vào theo thứ tự sidebar — dùng sau đăng nhập.
- * Nhân viên kho không có reporting.dashboard.read mà bị đưa về /dashboard sẽ
+ * Nhân viên không có reporting.dashboard.read mà bị đưa về /dashboard sẽ
  * gặp 403 ngay câu đầu tiên; đưa họ tới màn có quyền (Tồn kho) thì hợp lý hơn.
  *
  * `scope` chọn cây menu để dò ("platform" mặc định — giữ nguyên hành vi cũ

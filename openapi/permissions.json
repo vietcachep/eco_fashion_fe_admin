@@ -472,5 +472,59 @@
     "module": "supplier",
     "description": "Chạy kỳ đối soát và chi trả cho gian hàng",
     "deprecated": false
+  },
+  {
+    "code": "shop.wallet.read",
+    "module": "shop",
+    "description": "Xem ví đặt cọc COD và lịch sử của gian hàng mình",
+    "deprecated": false
+  },
+  {
+    "code": "shop.wallet.deposit_request",
+    "module": "shop",
+    "description": "Gửi yêu cầu nộp tiền đặt cọc COD của gian hàng mình",
+    "deprecated": false
+  },
+  {
+    "code": "supplier.wallet.read",
+    "module": "supplier",
+    "description": "Xem ví đặt cọc COD và các khoản nộp cọc của mọi gian hàng",
+    "deprecated": false
+  },
+  {
+    "code": "supplier.wallet.adjust",
+    "module": "supplier",
+    "description": "Chỉnh tay số dư ví đặt cọc COD của gian hàng (có lý do) — chỉ Admin, vì tự cộng / trừ tiền không cần chứng từ",
+    "deprecated": false
+  },
+  {
+    "code": "shop.contact.read",
+    "module": "shop",
+    "description": "Xem tin nhắn khách gửi gian hàng mình (hỏi sản phẩm / đơn)",
+    "deprecated": false
+  },
+  {
+    "code": "shop.contact.reply",
+    "module": "shop",
+    "description": "Trả lời tin nhắn khách gửi gian hàng mình",
+    "deprecated": false
+  },
+  {
+    "code": "supplier.wallet.approve",
+    "module": "supplier",
+    "description": "Đối chiếu và duyệt / từ chối khoản nộp cọc COD của gian hàng (không chỉnh được số dư)",
+    "deprecated": false
+  },
+  {
+    "code": "system.contact.read",
+    "module": "system",
+    "description": "Xem tin khách gửi SÀN (form Liên hệ) và giám sát tin gửi các gian hàng",
+    "deprecated": false
+  },
+  {
+    "code": "system.contact.reply",
+    "module": "system",
+    "description": "Trả lời tin khách gửi SÀN (tin gửi shop do shop tự trả lời)",
+    "deprecated": false
   }
 ]
