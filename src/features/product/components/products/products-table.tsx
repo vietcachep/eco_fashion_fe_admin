@@ -15,6 +15,7 @@ import { isForbiddenError } from "@/lib/api-error";
 import { formatNumber } from "@/lib/format";
 import { GENDER_LABEL, PRODUCT_STATUS, statusMeta } from "@/lib/labels";
 import { useListState } from "@/hooks/use-list-state";
+import { ShopScope } from "@/features/shop/components/platform/shop-scope";
 import { useProductCategories } from "@/features/product/hooks/use-product-catalog";
 import { useProductScope } from "@/features/product/hooks/use-product-scope";
 import { useProducts } from "@/features/product/hooks/use-products";
@@ -29,7 +30,7 @@ const STATUS_TABS = [
 
 const PAGE_SIZE = 12;
 const LOAD_ERROR = "Không tải được danh sách sản phẩm.";
-const DEFAULTS = { status: "", category: "" };
+const DEFAULTS = { status: "", category: "", shopId: "" };
 
 /*
  * Danh sách sản phẩm DÙNG CHUNG hai cổng (`scope`): sàn thấy mọi shop, vendor chỉ
@@ -42,6 +43,12 @@ const DEFAULTS = { status: "", category: "" };
  * (giới tính / màu / size chỉ có nghĩa với ngành thời trang).
  */
 export function ProductsTable({ scope }: { scope: ProductScope }) {
+  // Sàn: chọn gian hàng trước, bảng chỉ hiện sản phẩm của shop đó. Vendor chỉ có shop của mình nên vào thẳng bảng.
+  if (scope === "platform") return <ShopScope noun="sản phẩm">{() => <ProductsList scope={scope} />}</ShopScope>;
+  return <ProductsList scope={scope} />;
+}
+
+function ProductsList({ scope }: { scope: ProductScope }) {
   const { can, newHref, detailHref } = useProductScope(scope);
   const { filters, setFilter, search, setSearch, keyword, pageIndex, setPageIndex, page } = useListState(DEFAULTS);
   const categories = useProductCategories(scope);
@@ -50,6 +57,7 @@ export function ProductsTable({ scope }: { scope: ProductScope }) {
     keyword,
     status: filters.status,
     category: filters.category,
+    shopId: filters.shopId,
     page,
     pageSize: PAGE_SIZE,
   });

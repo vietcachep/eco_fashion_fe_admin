@@ -127,6 +127,11 @@ export function ProductImagesPanel({ scope, product }: { scope: ProductScope; pr
         ) : null}
       </CardHeader>
       <CardContent>
+        {!byColor && canEdit && product.variants.length === 0 ? (
+          <p className="mb-3 text-xs text-muted-foreground">
+            Muốn gắn ảnh theo màu: lưu tab Biến thể trước (chọn màu), các màu đó sẽ xuất hiện ở đây để chọn khi tải ảnh.
+          </p>
+        ) : null}
         {images.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             Chưa có ảnh — sản phẩm cần ít nhất một ảnh để đăng bán. JPG / PNG / WEBP / GIF, tối đa 5MB mỗi ảnh.

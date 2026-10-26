@@ -69,6 +69,7 @@ export function useProductScope(scope: ProductScope) {
     newHref: cfg.newHref,
     stockHref: cfg.stockHref,
     detailHref: cfg.detailHref,
-    can: { create: canCreate, update: canUpdate, publish: canPublish, remove: canRemove },
+    // Sàn KHÔNG tạo/sửa/xoá sản phẩm của shop — chỉ xem và ẩn/mở lại (chặn bán); chủ shop mới được sửa.
+    can: scope === "platform" ? { create: false, update: false, publish: canPublish, remove: false } : { create: canCreate, update: canUpdate, publish: canPublish, remove: canRemove },
   };
 }

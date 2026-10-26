@@ -23,12 +23,14 @@ import {
 import { useSaveVariants } from "@/features/product/hooks/use-products";
 import { ProductNotice } from "@/features/product/components/products/product-notice";
 import {
+  addSelectedCombos,
   computeRows,
   editRow,
   initialMatrix,
   LEGACY_COLOR_AXIS,
   LEGACY_SIZE_AXIS,
   MAX_VARIANTS,
+  pendingCombos,
   removeRow,
   toggleValue,
   toVariantInputs,
@@ -139,6 +141,7 @@ function VariantMatrix({
 
   const selectAll = (axis: MatrixAxis) =>
     setState((s) => axis.values.reduce((acc, v) => (acc.selected[axis.id]?.includes(v.id) ? acc : toggleValue(acc, axis.id, v.id)), s));
+  const pending = pendingCombos(axes, state);
   const clearAxis = (axis: MatrixAxis) => setState((s) => ({ ...s, selected: { ...s.selected, [axis.id]: [] } }));
 
   return (
@@ -204,6 +207,16 @@ function VariantMatrix({
                 </Card>
               );
             })}
+            {canEdit ? (
+              <div className="flex flex-col gap-1.5">
+                <Button size="sm" disabled={pending.length === 0} onClick={() => setState((s) => addSelectedCombos(axes, s))}>
+                  Thêm {pending.length > 0 ? `${pending.length} ` : ""}tổ hợp đã chọn
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  Chọn màu + size rồi bấm thêm; lặp lại cho cặp khác (vd Trắng-XS, rồi Đen-S). Chọn nhiều màu/size một lúc sẽ thêm mọi cặp.
+                </p>
+              </div>
+            ) : null}
           </div>
         ) : null}
 
@@ -244,7 +257,7 @@ function VariantMatrix({
                 {rows.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={axes.length + 5} className="h-24 text-center text-sm text-muted-foreground">
-                      Chọn ít nhất một giá trị cho MỖI trục ở bên trái để sinh các biến thể.
+                      Chọn giá trị cho MỖI trục ở bên trái rồi bấm “Thêm tổ hợp đã chọn”.
                     </TableCell>
                   </TableRow>
                 ) : null}

@@ -3,19 +3,10 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  adminProductControllerAttributes,
-  adminProductControllerCreate,
   adminProductControllerGet,
   adminProductControllerHide,
   adminProductControllerList,
   adminProductControllerPublish,
-  adminProductControllerRemove,
-  adminProductControllerUpdate,
-  adminProductControllerVariants,
-  adminProductImageControllerRemove,
-  adminProductImageControllerReorder,
-  adminProductImageControllerUpdate,
-  adminProductImageControllerUpload,
   getAdminProductControllerGetQueryKey,
   getAdminProductControllerListQueryKey,
 } from "@/lib/api/generated/admin-products/admin-products";
@@ -95,20 +86,23 @@ const uploadFields = ({ file, colorCode, isPrimary }: ProductImageUpload) => ({
   isPrimary: isPrimary ? "true" : undefined,
 });
 
+/* Sàn KHÔNG tạo / sửa / xoá sản phẩm của shop (PLAN-0021) — backend đã gỡ các route đó; chỉ còn chặn bán (hide) / mở bán lại (publish). */
+const platformReadOnly = (): Promise<never> => Promise.reject(new Error("Sàn không sửa sản phẩm của gian hàng — chủ shop tự quản."));
+
 const PLATFORM: ProductEndpoints = {
   basePath: "/api/v1/admin/products",
   inventoryPath: "/api/v1/admin/inventory",
-  create: (body) => adminProductControllerCreate(body),
-  update: (id, body) => adminProductControllerUpdate(id, body),
-  remove: (id) => adminProductControllerRemove(id),
-  variants: (id, variants) => adminProductControllerVariants(id, { variants }),
-  attributes: (id, attributeValues) => adminProductControllerAttributes(id, { attributeValues }),
+  create: platformReadOnly,
+  update: platformReadOnly,
+  remove: platformReadOnly,
+  variants: platformReadOnly,
+  attributes: platformReadOnly,
   publish: (id) => adminProductControllerPublish(id),
   hide: (id) => adminProductControllerHide(id),
-  uploadImage: (id, body) => adminProductImageControllerUpload(id, uploadFields(body)),
-  updateImage: (id, imageId, body) => adminProductImageControllerUpdate(id, imageId, body),
-  removeImage: (id, imageId) => adminProductImageControllerRemove(id, imageId),
-  reorderImages: (id, imageIds) => adminProductImageControllerReorder(id, { imageIds }),
+  uploadImage: platformReadOnly,
+  updateImage: platformReadOnly,
+  removeImage: platformReadOnly,
+  reorderImages: platformReadOnly,
 };
 
 const VENDOR: ProductEndpoints = {
@@ -133,11 +127,13 @@ export interface ProductsQuery {
   keyword?: string;
   status?: string;
   category?: string;
+  /** Chỉ cổng sàn: xem sản phẩm của một gian hàng. */
+  shopId?: string;
   page: number;
   pageSize: number;
 }
 
-export function useProducts(scope: ProductScope, { keyword, status, category, page, pageSize }: ProductsQuery) {
+export function useProducts(scope: ProductScope, { keyword, status, category, shopId, page, pageSize }: ProductsQuery) {
   const params: ShopProductControllerListParams = {
     q: keyword || undefined,
     status: (status || undefined) as ShopProductControllerListStatus | undefined,
@@ -146,12 +142,13 @@ export function useProducts(scope: ProductScope, { keyword, status, category, pa
     page,
     pageSize,
   };
+  const adminParams = { ...params, shopId: shopId || undefined };
   return useQuery({
-    queryKey: scope === "vendor" ? getShopProductControllerListQueryKey(params) : getAdminProductControllerListQueryKey(params),
+    queryKey: scope === "vendor" ? getShopProductControllerListQueryKey(params) : getAdminProductControllerListQueryKey(adminParams),
     queryFn: ({ signal }) =>
       scope === "vendor"
         ? shopProductControllerList(params, undefined, signal)
-        : adminProductControllerList(params, undefined, signal),
+        : adminProductControllerList(adminParams, undefined, signal),
     select: (res) => asPage<ProductListItem>(res),
     placeholderData: keepPreviousData,
     staleTime: 30_000,

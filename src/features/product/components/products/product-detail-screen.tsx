@@ -92,16 +92,16 @@ export function ProductDetailScreen({ scope, id }: { scope: ProductScope; id: st
             Xem trên web
           </Button>
         ) : null}
-        {can.publish ? (
+        {can.publish && (isVendor || product.status !== "draft") ? (
           isActive ? (
             <Button variant="outline" onClick={() => hide.mutate()} disabled={hide.isPending}>
               {hide.isPending ? <Loader2Icon className="size-4 animate-spin" /> : <EyeOffIcon className="size-4" />}
-              Ẩn
+              {isVendor ? "Ẩn" : "Chặn bán"}
             </Button>
           ) : (
             <Button onClick={() => publish.mutate()} disabled={publish.isPending}>
               {publish.isPending ? <Loader2Icon className="size-4 animate-spin" /> : <EyeIcon className="size-4" />}
-              Đăng bán
+              {isVendor ? "Đăng bán" : "Mở bán lại"}
             </Button>
           )
         ) : null}
@@ -116,7 +116,7 @@ export function ProductDetailScreen({ scope, id }: { scope: ProductScope; id: st
       {publish.isError ? (
         <ProductNotice tone="danger">{apiMessage(publish.error) ?? "Đăng bán thất bại."}</ProductNotice>
       ) : null}
-      {!isActive && can.publish && gaps.length > 0 ? (
+      {!isActive && isVendor && can.publish && gaps.length > 0 ? (
         <ProductNotice tone="info">Cần thêm {gaps.join(" và ")} (và đủ thuộc tính bắt buộc của ngành) trước khi đăng bán.</ProductNotice>
       ) : null}
 

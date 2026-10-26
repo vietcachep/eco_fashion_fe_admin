@@ -43,4 +43,8 @@ sale?: boolean;
 tag?: string;
 sort?: AdminProductControllerListSort;
 status?: AdminProductControllerListStatus;
+/**
+ * Chỉ hàng của gian hàng này (sàn duyệt theo từng shop)
+ */
+shopId?: string;
 };

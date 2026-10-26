@@ -3,10 +3,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  adminInventoryControllerAdjust,
-  adminInventoryControllerCreateReceipt,
   adminInventoryControllerMovements,
-  adminInventoryControllerPostReceipt,
   adminInventoryControllerReceipt,
   adminInventoryControllerReceipts,
   adminInventoryControllerStock,
@@ -97,9 +94,10 @@ const SOURCES: Record<InventoryScope, InventorySource> = {
     receipts: (p, signal) => adminInventoryControllerReceipts(p, undefined, signal),
     receiptKey: (id) => getAdminInventoryControllerReceiptQueryKey(id),
     receipt: (id, signal) => adminInventoryControllerReceipt(id, undefined, signal),
-    createReceipt: (body) => adminInventoryControllerCreateReceipt(body),
-    postReceipt: (id, key) => adminInventoryControllerPostReceipt(id, { headers: { "Idempotency-Key": key } }),
-    adjust: (body) => adminInventoryControllerAdjust(body),
+    // Sàn chỉ XEM kho (PLAN-0021): nhập kho / điều chỉnh là việc của chủ shop — backend đã gỡ các route ghi.
+    createReceipt: () => Promise.reject(new Error("Sàn không nhập kho thay shop.")),
+    postReceipt: () => Promise.reject(new Error("Sàn không nhập kho thay shop.")),
+    adjust: () => Promise.reject(new Error("Sàn không điều chỉnh tồn kho của shop.")),
   },
   vendor: {
     path: "/api/v1/shop/inventory",

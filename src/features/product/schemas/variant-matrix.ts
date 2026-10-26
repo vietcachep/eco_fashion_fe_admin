@@ -9,10 +9,11 @@ import { MAX_VND } from "@/features/product/schemas/product-schema";
  * - dynamic: các TRỤ BIẾN THỂ của mẫu ngành (tối đa 2; 0 trục = đúng MỘT biến
  *   thể không options) → gửi `options:[{attributeId, attributeValueId}]`.
  *
- * Mô hình: người dùng tick giá trị trên từng trục (`selected`), các dòng là TÍCH
- * ĐỀ-CÁC của những giá trị đã tick, trừ tổ hợp đã loại tay (`excluded`). Sửa
- * SKU / giá / bật-tắt lưu riêng theo khoá dòng (`edits`) để bỏ tick rồi tick lại
- * không mất. Dòng được TÍNH từ state (không lưu) nên không cần effect đồng bộ.
+ * Mô hình: danh sách tổ hợp TƯỜNG MINH (`combos`, mỗi phần tử là khoá dòng). Người
+ * dùng tick giá trị trên từng trục vào vùng chọn (`selected`) rồi bấm "Thêm tổ hợp":
+ * các tổ hợp (tích đề-các của phần đã tick) được nối vào `combos`. Nhờ vậy chọn được
+ * từng cặp tuỳ ý (Trắng-XS + Đen-S) mà không bị sinh thừa Trắng-S / Đen-XS. Sửa
+ * SKU / giá / bật-tắt lưu riêng theo khoá dòng (`edits`). Dòng được TÍNH từ state.
  *
  * Backend khớp biến thể cũ theo TỔ HỢP (không xoá-tạo lại) → giữ id + tồn kho;
  * vì vậy khoá dòng chỉ cần ổn định theo tổ hợp, không cần id biến thể.
@@ -42,8 +43,10 @@ export interface RowEdit {
 }
 
 export interface MatrixState {
+  /** Vùng chọn tạm: giá trị đã tick trên từng trục, chưa thành dòng cho tới khi bấm "Thêm tổ hợp". */
   selected: Record<string, string[]>;
-  excluded: string[];
+  /** Khoá các tổ hợp (dòng) hiện có, theo thứ tự thêm. */
+  combos: string[];
   edits: Record<string, RowEdit>;
 }
 
@@ -115,7 +118,6 @@ export function initialMatrix(
 ): InitialMatrix {
   const stock = new Map<string, number>();
   const edits: Record<string, RowEdit> = {};
-  const selected: Record<string, string[]> = Object.fromEntries(axes.map((a) => [a.id, [] as string[]]));
   let unmapped = 0;
 
   for (const v of variants) {
@@ -132,44 +134,45 @@ export function initialMatrix(
       price: Number(v.price.amount) === Number(productPrice) ? "" : v.price.amount,
       isActive: v.isActive ?? true,
     };
-    axes.forEach((a, i) => {
-      if (!selected[a.id].includes(ids[i])) selected[a.id].push(ids[i]);
-    });
   }
 
-  // Tổ hợp nằm trong tích đề-các nhưng KHÔNG phải biến thể đã có (ma trận thưa) → loại sẵn, tránh tự sinh dòng mới.
-  // Ngành không có trục: luôn đúng MỘT dòng mặc định (chưa có thì để sinh mới), không có gì để loại.
-  const excluded =
-    axes.length === 0
-      ? []
-      : combinations(axes, selected)
-          .map((c) => rowKey(c.map((v) => v.id)))
-          .filter((k) => !stock.has(k));
-
-  return { state: { selected, excluded, edits }, stock, unmapped };
+  return { state: { selected: Object.fromEntries(axes.map((a) => [a.id, [] as string[]])), combos: [...stock.keys()], edits }, stock, unmapped };
 }
 
 export function computeRows(axes: MatrixAxis[], state: MatrixState, stock: Map<string, number>): MatrixRow[] {
-  const excluded = new Set(state.excluded);
-  return combinations(axes, state.selected)
-    .map((values): MatrixRow => {
-      const key = rowKey(values.map((v) => v.id));
-      const edit = state.edits[key] ?? { sku: "", price: "", isActive: true };
-      return { key, values, ...edit, stock: stock.get(key) ?? null };
-    })
-    .filter((r) => !excluded.has(r.key));
+  const rowOf = (key: string, values: MatrixAxisValue[]): MatrixRow => {
+    const edit = state.edits[key] ?? { sku: "", price: "", isActive: true };
+    return { key, values, ...edit, stock: stock.get(key) ?? null };
+  };
+  // Ngành không có trục: luôn đúng MỘT dòng mặc định.
+  if (axes.length === 0) return [rowOf(NO_AXIS_KEY, [])];
+  return state.combos.flatMap((key) => {
+    const ids = key.split("|");
+    const values = axes.map((a, i) => a.values.find((v) => v.id === ids[i]));
+    return values.every((v): v is MatrixAxisValue => !!v) ? [rowOf(key, values)] : [];
+  });
 }
 
 export function toggleValue(state: MatrixState, axisId: string, valueId: string): MatrixState {
   const current = state.selected[axisId] ?? [];
-  if (current.includes(valueId)) {
-    return { ...state, selected: { ...state.selected, [axisId]: current.filter((id) => id !== valueId) } };
-  }
+  const next = current.includes(valueId) ? current.filter((id) => id !== valueId) : [...current, valueId];
+  return { ...state, selected: { ...state.selected, [axisId]: next } };
+}
+
+/* Tổ hợp mà vùng chọn sẽ thêm (chưa có trong `combos`); rỗng nếu một trục chưa tick giá trị nào. */
+export function pendingCombos(axes: MatrixAxis[], state: MatrixState): string[] {
+  const have = new Set(state.combos);
+  return combinations(axes, state.selected)
+    .map((c) => rowKey(c.map((v) => v.id)))
+    .filter((k) => !have.has(k));
+}
+
+/* Nối các tổ hợp của vùng chọn vào danh sách dòng rồi xoá vùng chọn. */
+export function addSelectedCombos(axes: MatrixAxis[], state: MatrixState): MatrixState {
   return {
     ...state,
-    selected: { ...state.selected, [axisId]: [...current, valueId] },
-    // Tick lại giá trị → các tổ hợp từng loại tay chứa nó được đưa trở lại.
-    excluded: state.excluded.filter((k) => !k.split("|").includes(valueId)),
+    combos: [...state.combos, ...pendingCombos(axes, state)],
+    selected: Object.fromEntries(axes.map((a) => [a.id, [] as string[]])),
   };
 }
 
@@ -179,7 +182,7 @@ export function editRow(state: MatrixState, row: MatrixRow, patch: Partial<RowEd
 }
 
 export function removeRow(state: MatrixState, key: string): MatrixState {
-  return { ...state, excluded: [...state.excluded, key] };
+  return { ...state, combos: state.combos.filter((k) => k !== key) };
 }
 
 /* Dòng → body PUT …/variants. SKU trống = bỏ khỏi body (backend giữ SKU cũ / tự sinh cho biến thể mới). */
