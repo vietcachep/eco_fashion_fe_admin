@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LandmarkIcon, Loader2Icon, ShieldAlertIcon } from "lucide-react";
+import { ClockIcon, LandmarkIcon, Loader2Icon, ShieldAlertIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -12,24 +12,38 @@ import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { DetailList } from "@/components/shared/detail-list";
 import { FormMessage } from "@/components/shared/form-message";
 import { NativeSelect } from "@/components/shared/native-select";
+import { StatusBadge } from "@/components/shared/status-badge";
 import { usePermission } from "@/hooks/use-permission";
+import { apiErrorMessage } from "@/lib/api-error";
 import { PERMISSIONS } from "@/lib/constants";
+import { SHOP_BANK_STATUS, statusMeta } from "@/lib/labels";
 import type { ShopResponse } from "@/lib/api/generated/model";
-import { useUpdateMyShop } from "@/features/shop/hooks/use-shop-profile";
+import { isGoogleLinkedBankPasswordError, useUpdateMyShop } from "@/features/shop/hooks/use-shop-profile";
 import { normalizeBankAccountName, shopBankSchema, type ShopBankInput } from "@/features/shop/schemas/shop-bank-schema";
 import { bankNameByBin, VN_BANKS } from "@/features/shop/types/bank-list";
 
 /*
  * Tài khoản ngân hàng nhận tiền đối soát (kỳ đối soát chi về đây). Backend chỉ trả bản che số (`bankAccountNumberMasked`)
  * nên không điền sẵn số cũ được; đổi tài khoản = nhập lại số + tên chủ TK, và vì đây là đường tiền ra khỏi sàn nên
- * backend tạm giữ chi trả 24 giờ + báo mọi thành viên shop (chống kẻ chiếm phiên đổi trộm TK) — nói rõ trong ConfirmDialog.
+ * backend tạm giữ chi trả + báo mọi thành viên shop (chống kẻ chiếm phiên đổi trộm TK) — nói rõ trong ConfirmDialog.
+ * Số giờ giữ là cấu hình của sàn (`bankChangeHoldHours`, mặc định 72) nên LUÔN đọc từ hồ sơ shop, không ghi cứng.
+ * Tên chủ TK lệch họ tên chủ shop → `bankStatus = pending_verification`: chi trả giữ tới khi quản lý sàn xác minh.
  */
-const HOLD_NOTICE = "Đổi tài khoản sẽ tạm giữ chi trả 24 giờ và thông báo cho mọi thành viên shop.";
+const holdNotice = (hours: number) => `Đổi tài khoản sẽ tạm giữ chi trả ${hours} giờ và thông báo cho mọi thành viên shop.`;
+
+/* Thông báo sau khi lưu: tên khớp → đếm giờ giữ ngay; tên lệch → chờ sàn xác minh rồi mới đếm. */
+function savedMessage(shop: ShopResponse): string {
+  return shop.bankStatus === "pending_verification"
+    ? "Đã cập nhật tài khoản ngân hàng — đang chờ sàn xác minh vì tên chủ tài khoản khác tên chủ shop; chi trả tạm giữ tới khi được xác minh."
+    : `Đã cập nhật tài khoản ngân hàng — chi trả tạm giữ ${shop.bankChangeHoldHours} giờ.`;
+}
 
 export function ShopBankAccountCard({ shop }: { shop: ShopResponse }) {
   const canEdit = usePermission(PERMISSIONS.shopProfileUpdate);
   const [editing, setEditing] = useState(false);
   const hasBank = !!shop.bankCode && !!shop.bankAccountNumberMasked;
+  const awaitingVerification = hasBank && shop.bankStatus === "pending_verification";
+  const bankStatus = statusMeta(SHOP_BANK_STATUS, shop.bankStatus);
   // BIN ngoài danh sách (backend vẫn nhận) → hiện mã BIN thay cho tên.
   const bankName = bankNameByBin(shop.bankCode) ?? (shop.bankCode ? `Mã BIN ${shop.bankCode}` : "—");
 
@@ -48,6 +62,7 @@ export function ShopBankAccountCard({ shop }: { shop: ShopResponse }) {
               { label: "Ngân hàng", value: bankName },
               { label: "Số tài khoản", value: <span className="font-mono tracking-wide">{shop.bankAccountNumberMasked}</span> },
               { label: "Chủ tài khoản", value: shop.bankAccountName },
+              { label: "Trạng thái", value: <StatusBadge tone={bankStatus.tone}>{bankStatus.label}</StatusBadge> },
             ]}
           />
         ) : (
@@ -56,9 +71,19 @@ export function ShopBankAccountCard({ shop }: { shop: ShopResponse }) {
           </div>
         )}
 
+        {awaitingVerification ? (
+          <div role="status" className="flex items-start gap-2 rounded-lg border border-amber-300/60 bg-amber-50 px-3 py-2.5 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
+            <ClockIcon className="mt-0.5 size-4 shrink-0" />
+            <p>
+              Tài khoản đang chờ sàn xác minh vì tên chủ tài khoản khác tên chủ shop; chi trả tạm giữ tới khi được xác minh. Sau khi được xác minh, chi trả còn tạm
+              giữ thêm {shop.bankChangeHoldHours} giờ.
+            </p>
+          </div>
+        ) : null}
+
         <p className="flex items-start gap-2 text-xs text-muted-foreground">
           <ShieldAlertIcon className="mt-0.5 size-3.5 shrink-0" />
-          <span>{HOLD_NOTICE} Số tài khoản luôn được che, chỉ hiện 4 số cuối.</span>
+          <span>{holdNotice(shop.bankChangeHoldHours)} Số tài khoản luôn được che, chỉ hiện 4 số cuối.</span>
         </p>
 
         {editing ? (
@@ -82,11 +107,11 @@ export function ShopBankAccountCard({ shop }: { shop: ShopResponse }) {
  * backend đổi updatedAt → cha dựng lại thẻ (key) và form tự đóng.
  */
 function BankAccountForm({ shop, onCancel }: { shop: ShopResponse; onCancel: () => void }) {
-  const update = useUpdateMyShop("Đã cập nhật tài khoản ngân hàng — chi trả tạm giữ 24 giờ.");
+  const update = useUpdateMyShop(savedMessage);
   const [pending, setPending] = useState<ShopBankInput | null>(null);
   const form = useForm<ShopBankInput>({
     resolver: zodResolver(shopBankSchema),
-    defaultValues: { bankCode: shop.bankCode ?? "", bankAccountNumber: "", bankAccountName: "" },
+    defaultValues: { bankCode: shop.bankCode ?? "", bankAccountNumber: "", bankAccountName: "", currentPassword: "" },
   });
   const errors = form.formState.errors;
   // BIN hiện có nhưng ngoài danh sách → vẫn phải chọn lại được đúng giá trị đó.
@@ -94,9 +119,10 @@ function BankAccountForm({ shop, onCancel }: { shop: ShopResponse; onCancel: () 
   const popular = VN_BANKS.filter((b) => b.popular);
   const others = VN_BANKS.filter((b) => !b.popular);
 
+  const hold = holdNotice(shop.bankChangeHoldHours);
   const confirmDescription = pending
-    ? `Tài khoản mới: ${bankNameByBin(pending.bankCode) ?? `BIN ${pending.bankCode}`} •••• ${pending.bankAccountNumber.slice(-4)} — ${pending.bankAccountName}. ${HOLD_NOTICE}`
-    : HOLD_NOTICE;
+    ? `Tài khoản mới: ${bankNameByBin(pending.bankCode) ?? `BIN ${pending.bankCode}`} •••• ${pending.bankAccountNumber.slice(-4)} — ${pending.bankAccountName}. ${hold} Nếu tên chủ tài khoản khác tên chủ shop, chi trả giữ tới khi sàn xác minh.`
+    : hold;
 
   const numberField = form.register("bankAccountNumber");
   const nameField = form.register("bankAccountName");
@@ -169,7 +195,24 @@ function BankAccountForm({ shop, onCancel }: { shop: ShopResponse; onCancel: () 
               Nhập lại tên chủ tài khoản, IN HOA không dấu, đúng như trên thẻ/sổ ngân hàng.
             </p>
           </Field>
+          <Field>
+            <FieldLabel htmlFor="bank-password">Mật khẩu đăng nhập của bạn</FieldLabel>
+            <Input
+              id="bank-password"
+              type="password"
+              autoComplete="current-password"
+              maxLength={128}
+              placeholder="Nhập để xác nhận đổi nơi nhận tiền"
+              aria-invalid={!!errors.currentPassword}
+              {...form.register("currentPassword")}
+            />
+            <FormMessage message={errors.currentPassword?.message} />
+            <p className="text-xs text-muted-foreground">Bắt buộc khi đổi tài khoản nhận tiền — để chắc chắn là chính bạn thao tác, không phải người khác đang dùng phiên của bạn.</p>
+          </Field>
         </FieldGroup>
+        {isGoogleLinkedBankPasswordError(update.error) ? (
+          <GoogleAccountPasswordHint message={apiErrorMessage(update.error, "Mật khẩu không đúng.")} />
+        ) : null}
         <div className="flex flex-wrap justify-end gap-2">
           <Button type="button" variant="outline" onClick={onCancel} disabled={update.isPending}>
             Hủy
@@ -191,5 +234,26 @@ function BankAccountForm({ shop, onCancel }: { shop: ShopResponse; onCancel: () 
         onConfirm={() => pending && update.mutate(pending)}
       />
     </>
+  );
+}
+
+/*
+ * 400 SHOP_BANK_PASSWORD_INVALID kèm `details.googleLinked = "true"`: tài khoản này tạo/liên kết bằng Google nên mật khẩu hiện có là
+ * chuỗi ngẫu nhiên không ai biết. Hiện nguyên thông điệp backend + các bước đặt mật khẩu bằng luồng "Quên mật khẩu" (OTP qua email).
+ * Không đặt link bấm ở đây: trang /forgot-password nằm sau GuestGuard — người đang đăng nhập bị chuyển hướng ngược về cổng nên phải
+ * đăng xuất trước (xem báo cáo PLAN-0040 6.4).
+ */
+function GoogleAccountPasswordHint({ message }: { message: string }) {
+  return (
+    <div role="alert" className="flex flex-col gap-1.5 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2.5 text-sm">
+      <p className="font-medium text-destructive">{message}</p>
+      <ol className="list-decimal pl-5 text-xs text-muted-foreground">
+        <li>Đăng xuất khỏi cổng quản trị.</li>
+        <li>
+          Ở màn đăng nhập chọn <b className="text-foreground">Quên mật khẩu</b>, nhập email của bạn để nhận mã OTP và đặt mật khẩu mới.
+        </li>
+        <li>Đăng nhập lại bằng mật khẩu vừa đặt rồi đổi tài khoản ngân hàng.</li>
+      </ol>
+    </div>
   );
 }

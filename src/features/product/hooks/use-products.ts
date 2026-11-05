@@ -29,12 +29,12 @@ import {
 } from "@/lib/api/generated/shops/shops";
 import type {
   AttributeValueInput,
-  CreateProductRequest,
+  CreateShopProductRequest,
   ProductAdminResponse,
   ShopProductControllerListParams,
   ShopProductControllerListStatus,
   UpdateImageRequest,
-  UpdateProductRequest,
+  UpdateShopProductRequest,
   VariantInput,
 } from "@/lib/api/generated/model";
 import { apiErrorMessage } from "@/lib/api-error";
@@ -66,8 +66,8 @@ interface ProductImageUpload {
 interface ProductEndpoints {
   basePath: string;
   inventoryPath: string;
-  create: (body: CreateProductRequest) => Promise<ProductAdminResponse>;
-  update: (id: string, body: UpdateProductRequest) => Promise<ProductAdminResponse>;
+  create: (body: CreateShopProductRequest) => Promise<ProductAdminResponse>;
+  update: (id: string, body: UpdateShopProductRequest) => Promise<ProductAdminResponse>;
   remove: (id: string) => Promise<void>;
   variants: (id: string, variants: VariantInput[]) => Promise<ProductAdminResponse>;
   attributes: (id: string, attributeValues: AttributeValueInput[]) => Promise<ProductAdminResponse>;
@@ -189,14 +189,14 @@ function useProductMutation<TVars, TRes>(
 export function useCreateProduct(scope: ProductScope) {
   return useProductMutation(
     scope,
-    (api, body: CreateProductRequest) => api.create(body),
+    (api, body: CreateShopProductRequest) => api.create(body),
     "Đã tạo sản phẩm (trạng thái nháp).",
     "Tạo sản phẩm thất bại.",
   );
 }
 
 export interface SaveProductVars {
-  patch: UpdateProductRequest;
+  patch: UpdateShopProductRequest;
   /**
    * Có mặt (ngành dynamic) → sau khi PATCH thông tin sẽ PUT thay TOÀN BỘ thuộc
    * tính cấp sản phẩm. Gửi sau PATCH vì đổi ngành sẽ dọn thuộc tính ngoài mẫu mới.

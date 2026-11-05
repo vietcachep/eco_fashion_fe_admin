@@ -40,6 +40,10 @@ export interface RowEdit {
   /** Chữ số VND; "" = theo giá sản phẩm. */
   price: string;
   isActive: boolean;
+  weightGram?: string;
+  lengthCm?: string;
+  widthCm?: string;
+  heightCm?: string;
 }
 
 export interface MatrixState {
@@ -133,6 +137,10 @@ export function initialMatrix(
       // Giá trả về luôn là giá hiệu lực — bằng giá sản phẩm thì coi như "theo giá sản phẩm".
       price: Number(v.price.amount) === Number(productPrice) ? "" : v.price.amount,
       isActive: v.isActive ?? true,
+      weightGram: v.weightGram?.toString() ?? "",
+      lengthCm: v.lengthCm?.toString() ?? "",
+      widthCm: v.widthCm?.toString() ?? "",
+      heightCm: v.heightCm?.toString() ?? "",
     };
   }
 
@@ -188,7 +196,12 @@ export function removeRow(state: MatrixState, key: string): MatrixState {
 /* Dòng → body PUT …/variants. SKU trống = bỏ khỏi body (backend giữ SKU cũ / tự sinh cho biến thể mới). */
 export function toVariantInputs(mode: AttributeMode, axes: MatrixAxis[], rows: MatrixRow[]): VariantInput[] {
   return rows.map((r): VariantInput => {
-    const common = { sku: r.sku.trim() || undefined, price: r.price || null, isActive: r.isActive };
+    const common = { sku: r.sku.trim() || undefined, price: r.price || null, isActive: r.isActive,
+      weightGram: r.weightGram ? Number(r.weightGram) : null,
+      lengthCm: r.lengthCm ? Number(r.lengthCm) : null,
+      widthCm: r.widthCm ? Number(r.widthCm) : null,
+      heightCm: r.heightCm ? Number(r.heightCm) : null,
+    };
     return mode === "legacy_fashion"
       ? { colorCode: r.values[0].id, sizeCode: r.values[1].id, ...common }
       : { options: axes.map((a, i) => ({ attributeId: a.id, attributeValueId: r.values[i].id })), ...common };
@@ -209,6 +222,10 @@ const priceSchema = z
 export interface RowErrors {
   sku?: string;
   price?: string;
+  weightGram?: string;
+  lengthCm?: string;
+  widthCm?: string;
+  heightCm?: string;
 }
 
 /* Lỗi theo khoá dòng. SKU duy nhất TRONG shop nên ở đây chỉ bắt được trùng trong chính danh sách đang lưu. */
@@ -222,6 +239,11 @@ export function validateRows(rows: MatrixRow[]): Record<string, RowErrors> {
     if (!sku.success) e.sku = sku.error.issues[0]?.message;
     const price = priceSchema.safeParse(r.price);
     if (!price.success) e.price = price.error.issues[0]?.message;
+    for (const key of ["weightGram", "lengthCm", "widthCm", "heightCm"] as const) {
+      const raw = r[key];
+      const max = key === "weightGram" ? 19_999 : 200;
+      if (raw && (!/^\d+$/.test(raw) || Number(raw) < 1 || Number(raw) > max)) e[key] = `Nhập số nguyên từ 1 đến ${max}`;
+    }
 
     const normalized = r.sku.trim().toUpperCase();
     if (normalized && !e.sku) {
@@ -233,7 +255,7 @@ export function validateRows(rows: MatrixRow[]): Record<string, RowErrors> {
         firstOf.set(normalized, r.key);
       }
     }
-    if (e.sku || e.price) errors[r.key] = { ...errors[r.key], ...e };
+    if (Object.values(e).some(Boolean)) errors[r.key] = { ...errors[r.key], ...e };
   }
   return errors;
 }

@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ApiErrorState } from "@/components/shared/api-error-state";
+import { MultiCombobox } from "@/components/shared/multi-combobox";
 import { formatNumber, formatVnd } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { ProductAdminResponse } from "@/lib/api/generated/model";
@@ -88,7 +89,7 @@ export function ProductVariantsEditor({ scope, product }: { scope: ProductScope;
 
   const variants: ProductVariantWithActive[] = product.variants;
   // Khoá theo nội dung biến thể trên server: lưu xong (id/SKU mới) thì dựng lại state từ dữ liệu mới.
-  const signature = variants.map((v) => `${v.id}:${v.sku}:${v.price.amount}`).join("|");
+  const signature = variants.map((v) => `${v.id}:${v.sku}:${v.price.amount}:${v.weightGram}:${v.lengthCm}:${v.widthCm}:${v.heightCm}`).join("|");
   return (
     <VariantMatrix
       key={signature}
@@ -186,23 +187,16 @@ function VariantMatrix({
                       </div>
                     ) : null}
                   </CardHeader>
-                  <CardContent className="flex flex-wrap gap-1.5">
-                    {axis.values.map((v) => (
-                      <button
-                        key={v.id}
-                        type="button"
-                        disabled={!canEdit}
-                        aria-pressed={picked.has(v.id)}
-                        onClick={() => setState((s) => toggleValue(s, axis.id, v.id))}
-                        className={cn(
-                          "inline-flex h-8 min-w-10 items-center justify-center gap-1.5 rounded-md border px-2.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60",
-                          picked.has(v.id) ? "border-primary bg-primary/10 text-primary" : "hover:bg-muted",
-                        )}
-                      >
-                        {v.hex ? <span className="size-3.5 rounded-full border" style={{ background: v.hex }} /> : null}
-                        {v.label}
-                      </button>
-                    ))}
+                  <CardContent>
+                    {/* Combobox xổ xuống + gõ để tìm (danh sách màu/size có thể dài) — chọn nhiều giá trị cho trục này. */}
+                    <MultiCombobox
+                      ariaLabel={`Chọn ${axis.name}`}
+                      placeholder={`Chọn ${axis.name.toLowerCase()}…`}
+                      disabled={!canEdit}
+                      options={axis.values.map((v) => ({ id: v.id, label: v.label, hex: v.hex }))}
+                      value={[...picked]}
+                      onChange={(ids) => setState((s) => ({ ...s, selected: { ...s.selected, [axis.id]: ids } }))}
+                    />
                   </CardContent>
                 </Card>
               );
@@ -248,6 +242,8 @@ function VariantMatrix({
                   {noAxis ? <TableHead>Biến thể</TableHead> : null}
                   <TableHead>SKU</TableHead>
                   <TableHead>Giá riêng (VND)</TableHead>
+                  <TableHead>Khối lượng (g)</TableHead>
+                  <TableHead>Kích thước (cm)</TableHead>
                   <TableHead className="text-right">Tồn</TableHead>
                   <TableHead>Bán</TableHead>
                   <TableHead />
@@ -256,7 +252,7 @@ function VariantMatrix({
               <TableBody>
                 {rows.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={axes.length + 5} className="h-24 text-center text-sm text-muted-foreground">
+                    <TableCell colSpan={axes.length + 7} className="h-24 text-center text-sm text-muted-foreground">
                       Chọn giá trị cho MỖI trục ở bên trái rồi bấm “Thêm tổ hợp đã chọn”.
                     </TableCell>
                   </TableRow>
@@ -300,6 +296,8 @@ function VariantMatrix({
                         />
                         {err?.price ? <p className="mt-1 max-w-36 text-xs text-destructive">{err.price}</p> : null}
                       </TableCell>
+                      <TableCell className="align-top"><Input className="h-8 w-28" inputMode="numeric" placeholder="Mặc định 500" aria-label="Khối lượng gram" aria-invalid={!!err?.weightGram} disabled={!canEdit} value={r.weightGram ?? ""} onChange={(e) => setState((s) => editRow(s, r, { weightGram: e.target.value }))} />{err?.weightGram ? <p className="mt-1 max-w-28 text-xs text-destructive">{err.weightGram}</p> : null}</TableCell>
+                      <TableCell className="align-top"><div className="flex gap-1">{([{ key: "lengthCm", label: "Dài", placeholder: "20" }, { key: "widthCm", label: "Rộng", placeholder: "15" }, { key: "heightCm", label: "Cao", placeholder: "10" }] as const).map((field) => <div key={field.key}><Input className="h-8 w-16" inputMode="numeric" placeholder={field.placeholder} aria-label={`${field.label} cm`} aria-invalid={!!err?.[field.key]} disabled={!canEdit} value={r[field.key] ?? ""} onChange={(e) => setState((s) => editRow(s, r, { [field.key]: e.target.value }))} />{err?.[field.key] ? <p className="mt-1 max-w-16 text-xs text-destructive">{err[field.key]}</p> : null}</div>)}</div></TableCell>
                       <TableCell className="text-right">
                         {r.stock === null ? <span className="text-xs text-muted-foreground">mới</span> : formatNumber(r.stock)}
                       </TableCell>
@@ -342,7 +340,7 @@ function VariantMatrix({
               <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
                 <InfoIcon className="mt-0.5 size-3.5 shrink-0" />
                 <span>
-                  SKU để trống thì hệ thống tự sinh (duy nhất trong shop). Giá riêng để trống = theo giá sản phẩm. Lưu không xoá tồn kho:
+                  Khối lượng/kích thước để trống dùng mặc định hệ thống. Kích thước nhập theo thứ tự dài × rộng × cao. SKU để trống thì hệ thống tự sinh (duy nhất trong shop). Giá riêng để trống = theo giá sản phẩm. Lưu không xoá tồn kho:
                   biến thể giữ nguyên tổ hợp được cập nhật tại chỗ. Số tồn không sửa ở đây — nhập kho / điều chỉnh ở{" "}
                   <Link href={stockHref} className="text-primary hover:underline">
                     màn Kho

@@ -25,6 +25,7 @@ import { useUploadMedia } from "@/features/shop/hooks/use-media-upload";
 import { useMyShop, useUpdateMyShop } from "@/features/shop/hooks/use-shop-profile";
 import { shopProfileSchema, type ShopProfileInput } from "@/features/shop/schemas/shop-profile-schema";
 import { ShopBankAccountCard } from "@/features/shop/components/vendor/shop-bank-account-card";
+import { ShopShippingCard } from "@/features/shop/components/vendor/shop-shipping-card";
 
 const LOAD_ERROR = "Không tải được hồ sơ gian hàng.";
 
@@ -57,6 +58,7 @@ export function ShopProfileForm() {
       <div className="flex flex-col gap-4 lg:col-span-2">
         <ShopIdentityCard key={`identity-${shop.updatedAt}`} shop={shop} />
         <ShopBankAccountCard key={`bank-${shop.updatedAt}`} shop={shop} />
+        <ShopShippingCard />
       </div>
       <ShopPlatformInfoCard shop={shop} />
     </div>

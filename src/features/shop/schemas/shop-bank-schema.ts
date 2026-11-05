@@ -2,7 +2,7 @@ import { z } from "zod";
 
 /*
  * Form tài khoản ngân hàng nhận tiền đối soát (PATCH /shop/me — bankCode / bankAccountNumber / bankAccountName).
- * Luôn gửi ĐỦ cả ba: lần đầu backend bắt buộc đủ ba, và khi đổi số TK / BIN phải gửi lại tên chủ TK.
+ * Luôn gửi ĐỦ cả ba: lần đầu backend bắt buộc đủ ba, và khi đổi số TK / BIN phải gửi lại tên chủ TK — kèm `currentPassword`.
  * Số tài khoản backend chỉ trả bản che nên không điền sẵn được — người dùng nhập lại số (cũng là bước xác nhận).
  */
 export const shopBankSchema = z.object({
@@ -14,6 +14,8 @@ export const shopBankSchema = z.object({
     .min(2, "Nhập tên chủ tài khoản")
     .max(120, "Tối đa 120 ký tự")
     .regex(/^[A-Z ]+$/, "Tên chủ tài khoản IN HOA, không dấu (ví dụ NGUYEN VAN A)"),
+  // Đổi nơi nhận tiền phải nhập lại mật khẩu đăng nhập (chống kẻ chiếm phiên đổi trộm TK) — backend kiểm, FE chỉ chặn để trống.
+  currentPassword: z.string().min(1, "Nhập mật khẩu đăng nhập của bạn để xác nhận"),
 });
 
 export type ShopBankInput = z.infer<typeof shopBankSchema>;

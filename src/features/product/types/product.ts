@@ -48,4 +48,4 @@ export interface ProductTemplate {
 }
 
 /* Response chi tiết kèm cờ `isActive` mà backend CHƯA trả (xem product-variants-editor) — đọc phòng hờ, thiếu = bật. */
-export type ProductVariantWithActive = ProductVariantResponse & { isActive?: boolean };
+export type ProductVariantWithActive = ProductVariantResponse & { isActive?: boolean; weightGram?: number | null; lengthCm?: number | null; widthCm?: number | null; heightCm?: number | null };

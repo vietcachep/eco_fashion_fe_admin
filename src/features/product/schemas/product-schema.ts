@@ -2,14 +2,14 @@ import { z } from "zod";
 import type { DefaultValues } from "react-hook-form";
 import type {
   AttributeValueInput,
-  CreateProductRequest,
+  CreateShopProductRequest,
   ProductAdminResponse,
-  UpdateProductRequest,
+  UpdateShopProductRequest,
 } from "@/lib/api/generated/model";
 import type { ProductTemplate } from "@/features/product/types/product";
 
 /*
- * Form sản phẩm (Create/UpdateProductRequest + PUT …/attributes). Dùng chung hai cổng.
+ * Form sản phẩm (Create/UpdateShopProductRequest + PUT …/attributes). Dùng chung hai cổng.
  * Giá là CHUỖI số nguyên VND ở backend (> 0, ≤ 99.999.999.999.999) — form nhập
  * số rồi đổi sang chuỗi khi gửi. care nhập mỗi dòng một mục; tags phẩy/xuống dòng.
  *
@@ -136,7 +136,7 @@ export function buildAttributeValues(values: Record<string, string>, template: P
   });
 }
 
-export function buildCreateBody(input: ProductInput, { legacy, platform, template }: ProductContext): CreateProductRequest {
+export function buildCreateBody(input: ProductInput, { legacy, platform, template }: ProductContext): CreateShopProductRequest {
   return {
     name: input.name,
     slug: input.slug || undefined,
@@ -152,7 +152,7 @@ export function buildCreateBody(input: ProductInput, { legacy, platform, templat
   };
 }
 
-export function buildUpdateBody(input: ProductInput, { legacy, platform }: ProductContext): UpdateProductRequest {
+export function buildUpdateBody(input: ProductInput, { legacy, platform }: ProductContext): UpdateShopProductRequest {
   return {
     name: input.name,
     slug: input.slug || undefined,
