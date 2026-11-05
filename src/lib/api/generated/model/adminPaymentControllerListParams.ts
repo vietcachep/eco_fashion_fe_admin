@@ -20,7 +20,7 @@ status?: string;
 methodCode?: string;
 q?: string;
 /**
- * Chỉ dữ liệu thuộc gian hàng này (sàn xem theo từng shop)
+ * Chỉ giao dịch của đơn thuộc gian hàng này
  */
 shopId?: string;
 };

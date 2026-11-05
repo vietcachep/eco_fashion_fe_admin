@@ -5,8 +5,13 @@
  * Backend sàn thương mại điện tử đa ngành hàng — web bán hàng + web quản trị. Mọi response theo envelope ApiResponse.
  * OpenAPI spec version: 0.1.0
  */
+import type { CreateAddressRequestAddressSystem } from './createAddressRequestAddressSystem';
 
 export interface CreateAddressRequest {
+  addressSystem?: CreateAddressRequestAddressSystem;
+  ghnProvinceId?: number;
+  ghnDistrictId?: number;
+  ghnWardCode?: string;
   recipientName: string;
   phone: string;
   /** Mã tỉnh/thành (danh mục system.provinces) — FE nhập tay có thể bỏ trống, BE khớp theo tên */

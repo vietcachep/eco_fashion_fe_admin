@@ -10,4 +10,6 @@ export interface MarkPaidRequest {
   /** Mã giao dịch / chứng từ chuyển khoản */
   providerRef: string;
   note?: string;
+  /** Bắt buộc = true khi kỳ đang processing/unknown: kế toán ĐÃ tra bảng điều khiển PayOS và xác nhận lệnh chi KHÔNG được thực hiện (chống chi trùng) */
+  confirmGatewayNotExecuted?: boolean;
 }

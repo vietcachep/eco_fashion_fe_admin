@@ -22,17 +22,16 @@ import type {
 
 import type {
   CancelOrderRequest,
+  CancelOrderRequestRequest,
+  ChangeOrderAddressRequest,
   CheckoutSummaryResponse,
   CreateOrderRequest,
-  CreateReturnRequest,
   OrderControllerMineGroupsParams,
   OrderControllerMineParams,
-  OrderControllerMyReturnsParams,
   OrderControllerSummaryParams,
   OrderGroupResponse,
   OrderResponse,
-  PageResponse,
-  ReturnRequestResponse
+  PageResponse
 } from '../model';
 
 import { customInstance } from '../../mutator';
@@ -151,7 +150,7 @@ export function useOrderControllerSummary<TData = Awaited<ReturnType<typeof orde
 
 
 /**
- * @summary Đặt hàng từ giỏ (dòng đã tick) — trả đơn CHA kèm đơn con theo shop (PLAN-0014 bước 7). Không gửi tiền; không gửi số thẻ (card → VNPay redirect)
+ * @summary Đặt hàng từ giỏ (dòng đã tick) — trả đơn CHA kèm đơn con theo shop (PLAN-0014 bước 7). Không gửi tiền; không gửi số thẻ (payos → redirect sang link PayOS)
  */
 export const orderControllerPlace = (
     createOrderRequest: CreateOrderRequest,
@@ -177,7 +176,7 @@ export const getOrderControllerPlaceQueryKey = (createOrderRequest?: CreateOrder
     }
 
 
-export const getOrderControllerPlaceQueryOptions = <TData = Awaited<ReturnType<typeof orderControllerPlace>>, TError = unknown>(createOrderRequest: CreateOrderRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerPlace>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getOrderControllerPlaceQueryOptions = <TData = Awaited<ReturnType<typeof orderControllerPlace>>, TError = CheckoutSummaryResponse>(createOrderRequest: CreateOrderRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerPlace>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -196,10 +195,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type OrderControllerPlaceQueryResult = NonNullable<Awaited<ReturnType<typeof orderControllerPlace>>>
-export type OrderControllerPlaceQueryError = unknown
+export type OrderControllerPlaceQueryError = CheckoutSummaryResponse
 
 
-export function useOrderControllerPlace<TData = Awaited<ReturnType<typeof orderControllerPlace>>, TError = unknown>(
+export function useOrderControllerPlace<TData = Awaited<ReturnType<typeof orderControllerPlace>>, TError = CheckoutSummaryResponse>(
  createOrderRequest: CreateOrderRequest, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerPlace>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof orderControllerPlace>>,
@@ -209,7 +208,7 @@ export function useOrderControllerPlace<TData = Awaited<ReturnType<typeof orderC
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useOrderControllerPlace<TData = Awaited<ReturnType<typeof orderControllerPlace>>, TError = unknown>(
+export function useOrderControllerPlace<TData = Awaited<ReturnType<typeof orderControllerPlace>>, TError = CheckoutSummaryResponse>(
  createOrderRequest: CreateOrderRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerPlace>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof orderControllerPlace>>,
@@ -219,15 +218,15 @@ export function useOrderControllerPlace<TData = Awaited<ReturnType<typeof orderC
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useOrderControllerPlace<TData = Awaited<ReturnType<typeof orderControllerPlace>>, TError = unknown>(
+export function useOrderControllerPlace<TData = Awaited<ReturnType<typeof orderControllerPlace>>, TError = CheckoutSummaryResponse>(
  createOrderRequest: CreateOrderRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerPlace>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Đặt hàng từ giỏ (dòng đã tick) — trả đơn CHA kèm đơn con theo shop (PLAN-0014 bước 7). Không gửi tiền; không gửi số thẻ (card → VNPay redirect)
+ * @summary Đặt hàng từ giỏ (dòng đã tick) — trả đơn CHA kèm đơn con theo shop (PLAN-0014 bước 7). Không gửi tiền; không gửi số thẻ (payos → redirect sang link PayOS)
  */
 
-export function useOrderControllerPlace<TData = Awaited<ReturnType<typeof orderControllerPlace>>, TError = unknown>(
+export function useOrderControllerPlace<TData = Awaited<ReturnType<typeof orderControllerPlace>>, TError = CheckoutSummaryResponse>(
  createOrderRequest: CreateOrderRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerPlace>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -603,7 +602,7 @@ export function useOrderControllerDetail<TData = Awaited<ReturnType<typeof order
 
 
 /**
- * @summary Khách huỷ đơn (chỉ khi còn chờ xác nhận)
+ * @summary Khách huỷ đơn TỨC THÌ khi chờ xác nhận / đã xác nhận (PLAN-0027; đơn đang đóng gói ⇒ 409, dùng cancel-request). Gửi reasonCode (+note) hoặc reason
  */
 export const orderControllerCancel = (
     code: string,
@@ -682,7 +681,7 @@ export function useOrderControllerCancel<TData = Awaited<ReturnType<typeof order
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Khách huỷ đơn (chỉ khi còn chờ xác nhận)
+ * @summary Khách huỷ đơn TỨC THÌ khi chờ xác nhận / đã xác nhận (PLAN-0027; đơn đang đóng gói ⇒ 409, dùng cancel-request). Gửi reasonCode (+note) hoặc reason
  */
 
 export function useOrderControllerCancel<TData = Awaited<ReturnType<typeof orderControllerCancel>>, TError = unknown>(
@@ -704,19 +703,19 @@ export function useOrderControllerCancel<TData = Awaited<ReturnType<typeof order
 
 
 /**
- * @summary Gửi yêu cầu đổi trả (đơn đã giao, trong hạn, có minh chứng)
+ * @summary Khách YÊU CẦU huỷ đơn đang đóng gói — shop chấp nhận / từ chối, im lặng quá order.cancel_request_hours ⇒ tự chấp nhận (mỗi đơn một yêu cầu)
  */
-export const orderControllerCreateReturn = (
+export const orderControllerRequestCancel = (
     code: string,
-    createReturnRequest: CreateReturnRequest,
+    cancelOrderRequestRequest: CancelOrderRequestRequest,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
 
 
-      return customInstance<ReturnRequestResponse>(
-      {url: `/api/v1/orders/${code}/returns`, method: 'POST',
+      return customInstance<OrderResponse>(
+      {url: `/api/v1/orders/${code}/cancel-request`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: createReturnRequest, signal
+      data: cancelOrderRequestRequest, signal
     },
       options);
     }
@@ -724,75 +723,75 @@ export const orderControllerCreateReturn = (
 
 
 
-export const getOrderControllerCreateReturnQueryKey = (code: string,
-    createReturnRequest?: CreateReturnRequest,) => {
+export const getOrderControllerRequestCancelQueryKey = (code: string,
+    cancelOrderRequestRequest?: CancelOrderRequestRequest,) => {
     return [
-    'POST', `/api/v1/orders/${code}/returns`, createReturnRequest
+    'POST', `/api/v1/orders/${code}/cancel-request`, cancelOrderRequestRequest
     ] as const;
     }
 
 
-export const getOrderControllerCreateReturnQueryOptions = <TData = Awaited<ReturnType<typeof orderControllerCreateReturn>>, TError = unknown>(code: string,
-    createReturnRequest: CreateReturnRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerCreateReturn>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getOrderControllerRequestCancelQueryOptions = <TData = Awaited<ReturnType<typeof orderControllerRequestCancel>>, TError = unknown>(code: string,
+    cancelOrderRequestRequest: CancelOrderRequestRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerRequestCancel>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getOrderControllerCreateReturnQueryKey(code,createReturnRequest);
+  const queryKey =  queryOptions?.queryKey ?? getOrderControllerRequestCancelQueryKey(code,cancelOrderRequestRequest);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof orderControllerCreateReturn>>> = ({ signal }) => orderControllerCreateReturn(code,createReturnRequest, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof orderControllerRequestCancel>>> = ({ signal }) => orderControllerRequestCancel(code,cancelOrderRequestRequest, requestOptions, signal);
 
 
 
 
 
-   return  { queryKey, queryFn, enabled: code !== null && code !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof orderControllerCreateReturn>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: code !== null && code !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof orderControllerRequestCancel>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type OrderControllerCreateReturnQueryResult = NonNullable<Awaited<ReturnType<typeof orderControllerCreateReturn>>>
-export type OrderControllerCreateReturnQueryError = unknown
+export type OrderControllerRequestCancelQueryResult = NonNullable<Awaited<ReturnType<typeof orderControllerRequestCancel>>>
+export type OrderControllerRequestCancelQueryError = unknown
 
 
-export function useOrderControllerCreateReturn<TData = Awaited<ReturnType<typeof orderControllerCreateReturn>>, TError = unknown>(
+export function useOrderControllerRequestCancel<TData = Awaited<ReturnType<typeof orderControllerRequestCancel>>, TError = unknown>(
  code: string,
-    createReturnRequest: CreateReturnRequest, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerCreateReturn>>, TError, TData>> & Pick<
+    cancelOrderRequestRequest: CancelOrderRequestRequest, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerRequestCancel>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof orderControllerCreateReturn>>,
+          Awaited<ReturnType<typeof orderControllerRequestCancel>>,
           TError,
-          Awaited<ReturnType<typeof orderControllerCreateReturn>>
+          Awaited<ReturnType<typeof orderControllerRequestCancel>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useOrderControllerCreateReturn<TData = Awaited<ReturnType<typeof orderControllerCreateReturn>>, TError = unknown>(
+export function useOrderControllerRequestCancel<TData = Awaited<ReturnType<typeof orderControllerRequestCancel>>, TError = unknown>(
  code: string,
-    createReturnRequest: CreateReturnRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerCreateReturn>>, TError, TData>> & Pick<
+    cancelOrderRequestRequest: CancelOrderRequestRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerRequestCancel>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof orderControllerCreateReturn>>,
+          Awaited<ReturnType<typeof orderControllerRequestCancel>>,
           TError,
-          Awaited<ReturnType<typeof orderControllerCreateReturn>>
+          Awaited<ReturnType<typeof orderControllerRequestCancel>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useOrderControllerCreateReturn<TData = Awaited<ReturnType<typeof orderControllerCreateReturn>>, TError = unknown>(
+export function useOrderControllerRequestCancel<TData = Awaited<ReturnType<typeof orderControllerRequestCancel>>, TError = unknown>(
  code: string,
-    createReturnRequest: CreateReturnRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerCreateReturn>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+    cancelOrderRequestRequest: CancelOrderRequestRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerRequestCancel>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Gửi yêu cầu đổi trả (đơn đã giao, trong hạn, có minh chứng)
+ * @summary Khách YÊU CẦU huỷ đơn đang đóng gói — shop chấp nhận / từ chối, im lặng quá order.cancel_request_hours ⇒ tự chấp nhận (mỗi đơn một yêu cầu)
  */
 
-export function useOrderControllerCreateReturn<TData = Awaited<ReturnType<typeof orderControllerCreateReturn>>, TError = unknown>(
+export function useOrderControllerRequestCancel<TData = Awaited<ReturnType<typeof orderControllerRequestCancel>>, TError = unknown>(
  code: string,
-    createReturnRequest: CreateReturnRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerCreateReturn>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+    cancelOrderRequestRequest: CancelOrderRequestRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerRequestCancel>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getOrderControllerCreateReturnQueryOptions(code,createReturnRequest,options)
+  const queryOptions = getOrderControllerRequestCancelQueryOptions(code,cancelOrderRequestRequest,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -804,15 +803,20 @@ export function useOrderControllerCreateReturn<TData = Awaited<ReturnType<typeof
 
 
 
-export const orderControllerMyReturns = (
-    params?: OrderControllerMyReturnsParams,
+/**
+ * @summary Khách đổi người nhận / SĐT / địa chỉ khi đơn chờ xác nhận hoặc đã xác nhận (không đổi sang tỉnh/thành khác; đang đóng gói ⇒ 409)
+ */
+export const orderControllerChangeAddress = (
+    code: string,
+    changeOrderAddressRequest: ChangeOrderAddressRequest,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
 
 
-      return customInstance<PageResponse>(
-      {url: `/api/v1/returns`, method: 'GET',
-        params, signal
+      return customInstance<OrderResponse>(
+      {url: `/api/v1/orders/${code}/address`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: changeOrderAddressRequest, signal
     },
       options);
     }
@@ -820,66 +824,167 @@ export const orderControllerMyReturns = (
 
 
 
-export const getOrderControllerMyReturnsQueryKey = (params?: OrderControllerMyReturnsParams,) => {
+export const getOrderControllerChangeAddressQueryKey = (code: string,
+    changeOrderAddressRequest?: ChangeOrderAddressRequest,) => {
     return [
-    `/api/v1/returns`, ...(params ? [params] : [])
+    'PUT', `/api/v1/orders/${code}/address`, changeOrderAddressRequest
     ] as const;
     }
 
 
-export const getOrderControllerMyReturnsQueryOptions = <TData = Awaited<ReturnType<typeof orderControllerMyReturns>>, TError = unknown>(params?: OrderControllerMyReturnsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerMyReturns>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getOrderControllerChangeAddressQueryOptions = <TData = Awaited<ReturnType<typeof orderControllerChangeAddress>>, TError = unknown>(code: string,
+    changeOrderAddressRequest: ChangeOrderAddressRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerChangeAddress>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getOrderControllerMyReturnsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getOrderControllerChangeAddressQueryKey(code,changeOrderAddressRequest);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof orderControllerMyReturns>>> = ({ signal }) => orderControllerMyReturns(params, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof orderControllerChangeAddress>>> = ({ signal }) => orderControllerChangeAddress(code,changeOrderAddressRequest, requestOptions, signal);
 
 
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof orderControllerMyReturns>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: code !== null && code !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof orderControllerChangeAddress>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type OrderControllerMyReturnsQueryResult = NonNullable<Awaited<ReturnType<typeof orderControllerMyReturns>>>
-export type OrderControllerMyReturnsQueryError = unknown
+export type OrderControllerChangeAddressQueryResult = NonNullable<Awaited<ReturnType<typeof orderControllerChangeAddress>>>
+export type OrderControllerChangeAddressQueryError = unknown
 
 
-export function useOrderControllerMyReturns<TData = Awaited<ReturnType<typeof orderControllerMyReturns>>, TError = unknown>(
- params: undefined |  OrderControllerMyReturnsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerMyReturns>>, TError, TData>> & Pick<
+export function useOrderControllerChangeAddress<TData = Awaited<ReturnType<typeof orderControllerChangeAddress>>, TError = unknown>(
+ code: string,
+    changeOrderAddressRequest: ChangeOrderAddressRequest, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerChangeAddress>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof orderControllerMyReturns>>,
+          Awaited<ReturnType<typeof orderControllerChangeAddress>>,
           TError,
-          Awaited<ReturnType<typeof orderControllerMyReturns>>
+          Awaited<ReturnType<typeof orderControllerChangeAddress>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useOrderControllerMyReturns<TData = Awaited<ReturnType<typeof orderControllerMyReturns>>, TError = unknown>(
- params?: OrderControllerMyReturnsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerMyReturns>>, TError, TData>> & Pick<
+export function useOrderControllerChangeAddress<TData = Awaited<ReturnType<typeof orderControllerChangeAddress>>, TError = unknown>(
+ code: string,
+    changeOrderAddressRequest: ChangeOrderAddressRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerChangeAddress>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof orderControllerMyReturns>>,
+          Awaited<ReturnType<typeof orderControllerChangeAddress>>,
           TError,
-          Awaited<ReturnType<typeof orderControllerMyReturns>>
+          Awaited<ReturnType<typeof orderControllerChangeAddress>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useOrderControllerMyReturns<TData = Awaited<ReturnType<typeof orderControllerMyReturns>>, TError = unknown>(
- params?: OrderControllerMyReturnsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerMyReturns>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useOrderControllerChangeAddress<TData = Awaited<ReturnType<typeof orderControllerChangeAddress>>, TError = unknown>(
+ code: string,
+    changeOrderAddressRequest: ChangeOrderAddressRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerChangeAddress>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Khách đổi người nhận / SĐT / địa chỉ khi đơn chờ xác nhận hoặc đã xác nhận (không đổi sang tỉnh/thành khác; đang đóng gói ⇒ 409)
+ */
 
-export function useOrderControllerMyReturns<TData = Awaited<ReturnType<typeof orderControllerMyReturns>>, TError = unknown>(
- params?: OrderControllerMyReturnsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerMyReturns>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useOrderControllerChangeAddress<TData = Awaited<ReturnType<typeof orderControllerChangeAddress>>, TError = unknown>(
+ code: string,
+    changeOrderAddressRequest: ChangeOrderAddressRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerChangeAddress>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getOrderControllerMyReturnsQueryOptions(params,options)
+  const queryOptions = getOrderControllerChangeAddressQueryOptions(code,changeOrderAddressRequest,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Khách xác nhận "Đã nhận hàng": đơn đã giao ⇒ hoàn tất ngay (409 khi còn yêu cầu đổi trả / chưa nhận hàng đang mở)
+ */
+export const orderControllerReceived = (
+    code: string,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<OrderResponse>(
+      {url: `/api/v1/orders/${code}/received`, method: 'POST', signal
+    },
+      options);
+    }
+
+
+
+
+export const getOrderControllerReceivedQueryKey = (code: string,) => {
+    return [
+    'POST', `/api/v1/orders/${code}/received`
+    ] as const;
+    }
+
+
+export const getOrderControllerReceivedQueryOptions = <TData = Awaited<ReturnType<typeof orderControllerReceived>>, TError = unknown>(code: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerReceived>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getOrderControllerReceivedQueryKey(code);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof orderControllerReceived>>> = ({ signal }) => orderControllerReceived(code, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: code !== null && code !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof orderControllerReceived>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type OrderControllerReceivedQueryResult = NonNullable<Awaited<ReturnType<typeof orderControllerReceived>>>
+export type OrderControllerReceivedQueryError = unknown
+
+
+export function useOrderControllerReceived<TData = Awaited<ReturnType<typeof orderControllerReceived>>, TError = unknown>(
+ code: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerReceived>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof orderControllerReceived>>,
+          TError,
+          Awaited<ReturnType<typeof orderControllerReceived>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useOrderControllerReceived<TData = Awaited<ReturnType<typeof orderControllerReceived>>, TError = unknown>(
+ code: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerReceived>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof orderControllerReceived>>,
+          TError,
+          Awaited<ReturnType<typeof orderControllerReceived>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useOrderControllerReceived<TData = Awaited<ReturnType<typeof orderControllerReceived>>, TError = unknown>(
+ code: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerReceived>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Khách xác nhận "Đã nhận hàng": đơn đã giao ⇒ hoàn tất ngay (409 khi còn yêu cầu đổi trả / chưa nhận hàng đang mở)
+ */
+
+export function useOrderControllerReceived<TData = Awaited<ReturnType<typeof orderControllerReceived>>, TError = unknown>(
+ code: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof orderControllerReceived>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getOrderControllerReceivedQueryOptions(code,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

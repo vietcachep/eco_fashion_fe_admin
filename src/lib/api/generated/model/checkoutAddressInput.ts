@@ -7,6 +7,10 @@
  */
 
 export interface CheckoutAddressInput {
+  addressSystem?: string;
+  ghnProvinceId?: number;
+  ghnDistrictId?: number;
+  ghnWardCode?: string;
   recipientName: string;
   phone: string;
   provinceName: string;

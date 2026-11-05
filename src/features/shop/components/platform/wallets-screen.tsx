@@ -21,6 +21,7 @@ import { isForbiddenError } from "@/lib/api-error";
 import { PERMISSIONS } from "@/lib/constants";
 import { formatDateTime, formatNumber, formatVnd } from "@/lib/format";
 import { ReasonDialog } from "@/features/shop/components/platform/reason-dialog";
+import { WalletTopupsTab } from "@/features/shop/components/platform/wallet-topups-tab";
 import { DEPOSIT_STATUS_META } from "@/features/shop/components/wallet-labels";
 import { useAdjustWallet, useAdminDeposits, useAdminWallets, useApproveDeposit, useRejectDeposit } from "@/features/shop/hooks/use-wallet";
 import { SignedMoney } from "@/features/shop/components/vendor/signed-money";
@@ -31,6 +32,7 @@ const LOAD_ERROR = "Không tải được dữ liệu ví đặt cọc.";
 const TABS = [
   { key: "deposits", label: "Khoản nộp cọc" },
   { key: "wallets", label: "Ví các gian hàng" },
+  { key: "topups", label: "Nạp qua PayOS" },
 ] as const;
 const DEPOSIT_TABS = [
   { key: "pending", label: "Chờ duyệt" },
@@ -44,15 +46,16 @@ const WALLET_TABS = [
 ] as const;
 
 /*
- * Ví đặt cọc COD toàn sàn (quyền supplier.wallet.read; duyệt / từ chối cần supplier.wallet.approve; chỉnh ví tay chỉ Admin — supplier.wallet.adjust). Hai tab:
+ * Ví đặt cọc COD toàn sàn (quyền supplier.wallet.read; duyệt / từ chối cần supplier.wallet.approve; chỉnh ví tay chỉ Admin — supplier.wallet.adjust). Ba tab:
  * khoản nộp cọc chờ kế toán đối chiếu sao kê rồi duyệt (cộng ví), và danh sách ví từng gian hàng (sắp xếp số dư thấp nhất lên đầu).
+ * Tab thứ ba (PLAN-0041) chỉ để xem khoản nạp qua PayOS: ví đã tự được ghi có khi PayOS xác nhận nên sàn không duyệt tay.
  */
 export function WalletsScreen() {
   const [tab, setTab] = useState<string>("deposits");
   return (
     <div className="flex flex-col gap-3">
       <FilterTabs tabs={TABS} value={tab} onChange={setTab} />
-      {tab === "wallets" ? <WalletsTable /> : <DepositsTable />}
+      {tab === "topups" ? <WalletTopupsTab /> : tab === "wallets" ? <WalletsTable /> : <DepositsTable />}
     </div>
   );
 }
@@ -136,6 +139,7 @@ function DepositsTable() {
         serverPagination={{ pageIndex, pageSize: PAGE_SIZE, pageCount: data?.totalPages || 1, total: data?.totalElements ?? 0, onPageChange: setPageIndex }}
       />
       <p className="text-xs text-muted-foreground">{formatNumber(data?.totalElements)} khoản nộp khớp bộ lọc. Chỉ duyệt khi đã thấy tiền về tài khoản sàn khớp mã giao dịch.</p>
+      <p className="text-xs text-muted-foreground">Khoản nạp qua PayOS tự ghi có ví khi PayOS xác nhận — xem tab “Nạp qua PayOS”; không duyệt tay.</p>
       <ConfirmDialog
         open={!!toApprove}
         onOpenChange={(o) => !o && setToApprove(null)}

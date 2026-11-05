@@ -23,7 +23,8 @@ import type {
 import type {
   ContactRequest,
   HealthResponse,
-  SystemPublicControllerBannersListParams
+  SystemPublicControllerBannersListParams,
+  WorkerHealthResponse
 } from '../model';
 
 import { customInstance } from '../../mutator';
@@ -49,7 +50,7 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
 };
 
 /**
- * @summary Sức khoẻ hệ thống (DB, Redis)
+ * @summary Sức khoẻ hệ thống (DB, Redis, worker) — 503 khi DB hoặc Redis DOWN
  */
 export const healthControllerCheck = (
 
@@ -73,7 +74,7 @@ export const getHealthControllerCheckQueryKey = () => {
     }
 
 
-export const getHealthControllerCheckQueryOptions = <TData = Awaited<ReturnType<typeof healthControllerCheck>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof healthControllerCheck>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getHealthControllerCheckQueryOptions = <TData = Awaited<ReturnType<typeof healthControllerCheck>>, TError = HealthResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof healthControllerCheck>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -92,10 +93,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type HealthControllerCheckQueryResult = NonNullable<Awaited<ReturnType<typeof healthControllerCheck>>>
-export type HealthControllerCheckQueryError = unknown
+export type HealthControllerCheckQueryError = HealthResponse
 
 
-export function useHealthControllerCheck<TData = Awaited<ReturnType<typeof healthControllerCheck>>, TError = unknown>(
+export function useHealthControllerCheck<TData = Awaited<ReturnType<typeof healthControllerCheck>>, TError = HealthResponse>(
   options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof healthControllerCheck>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof healthControllerCheck>>,
@@ -105,7 +106,7 @@ export function useHealthControllerCheck<TData = Awaited<ReturnType<typeof healt
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useHealthControllerCheck<TData = Awaited<ReturnType<typeof healthControllerCheck>>, TError = unknown>(
+export function useHealthControllerCheck<TData = Awaited<ReturnType<typeof healthControllerCheck>>, TError = HealthResponse>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof healthControllerCheck>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof healthControllerCheck>>,
@@ -115,20 +116,112 @@ export function useHealthControllerCheck<TData = Awaited<ReturnType<typeof healt
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useHealthControllerCheck<TData = Awaited<ReturnType<typeof healthControllerCheck>>, TError = unknown>(
+export function useHealthControllerCheck<TData = Awaited<ReturnType<typeof healthControllerCheck>>, TError = HealthResponse>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof healthControllerCheck>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Sức khoẻ hệ thống (DB, Redis)
+ * @summary Sức khoẻ hệ thống (DB, Redis, worker) — 503 khi DB hoặc Redis DOWN
  */
 
-export function useHealthControllerCheck<TData = Awaited<ReturnType<typeof healthControllerCheck>>, TError = unknown>(
+export function useHealthControllerCheck<TData = Awaited<ReturnType<typeof healthControllerCheck>>, TError = HealthResponse>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof healthControllerCheck>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getHealthControllerCheckQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Sức khoẻ worker (nhịp tim job nền) — 503 khi không phải UP
+ */
+export const healthControllerCheckWorker = (
+
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<WorkerHealthResponse>(
+      {url: `/api/v1/health/worker`, method: 'GET', signal
+    },
+      options);
+    }
+
+
+
+
+export const getHealthControllerCheckWorkerQueryKey = () => {
+    return [
+    `/api/v1/health/worker`
+    ] as const;
+    }
+
+
+export const getHealthControllerCheckWorkerQueryOptions = <TData = Awaited<ReturnType<typeof healthControllerCheckWorker>>, TError = WorkerHealthResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof healthControllerCheckWorker>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getHealthControllerCheckWorkerQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof healthControllerCheckWorker>>> = ({ signal }) => healthControllerCheckWorker(requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof healthControllerCheckWorker>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type HealthControllerCheckWorkerQueryResult = NonNullable<Awaited<ReturnType<typeof healthControllerCheckWorker>>>
+export type HealthControllerCheckWorkerQueryError = WorkerHealthResponse
+
+
+export function useHealthControllerCheckWorker<TData = Awaited<ReturnType<typeof healthControllerCheckWorker>>, TError = WorkerHealthResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof healthControllerCheckWorker>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof healthControllerCheckWorker>>,
+          TError,
+          Awaited<ReturnType<typeof healthControllerCheckWorker>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useHealthControllerCheckWorker<TData = Awaited<ReturnType<typeof healthControllerCheckWorker>>, TError = WorkerHealthResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof healthControllerCheckWorker>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof healthControllerCheckWorker>>,
+          TError,
+          Awaited<ReturnType<typeof healthControllerCheckWorker>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useHealthControllerCheckWorker<TData = Awaited<ReturnType<typeof healthControllerCheckWorker>>, TError = WorkerHealthResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof healthControllerCheckWorker>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Sức khoẻ worker (nhịp tim job nền) — 503 khi không phải UP
+ */
+
+export function useHealthControllerCheckWorker<TData = Awaited<ReturnType<typeof healthControllerCheckWorker>>, TError = WorkerHealthResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof healthControllerCheckWorker>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getHealthControllerCheckWorkerQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

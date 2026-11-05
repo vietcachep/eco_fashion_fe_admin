@@ -2,7 +2,7 @@ import Link from "next/link";
 import { StoreIcon } from "lucide-react";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ROUTES } from "@/lib/constants";
-import { SHOP_STATUS, statusMeta } from "@/lib/labels";
+import { SHOP_BANK_STATUS, SHOP_STATUS, statusMeta } from "@/lib/labels";
 
 /*
  * Các ô hiển thị dùng lại ở nhiều bảng phía sàn (danh sách shop, đối soát):
@@ -47,6 +47,12 @@ export function ShopIdentity({
 
 export function ShopStatusBadge({ status }: { status: string }) {
   const meta = statusMeta(SHOP_STATUS, status);
+  return <StatusBadge tone={meta.tone}>{meta.label}</StatusBadge>;
+}
+
+/* PLAN-0040 5.2: trạng thái xác minh tài khoản ngân hàng (`bankStatus`) — "Chờ sàn xác minh" = tên chủ TK lệch tên chủ shop. */
+export function ShopBankStatusBadge({ status }: { status: string }) {
+  const meta = statusMeta(SHOP_BANK_STATUS, status);
   return <StatusBadge tone={meta.tone}>{meta.label}</StatusBadge>;
 }
 

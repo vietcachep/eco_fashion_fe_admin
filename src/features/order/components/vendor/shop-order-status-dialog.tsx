@@ -1,6 +1,7 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useMemo } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2Icon, TriangleAlertIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,23 +10,25 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { ApiErrorState } from "@/components/shared/api-error-state";
 import { FormMessage } from "@/components/shared/form-message";
-import type { ShopUpdateOrderStatusRequestStatus } from "@/lib/api/generated/model";
-import { ORDER_STATUS } from "@/lib/labels";
+import { NativeSelect } from "@/components/shared/native-select";
+import type { ShopUpdateOrderStatusRequest, ShopUpdateOrderStatusRequestStatus } from "@/lib/api/generated/model";
+import { CARRIER_LABEL, ORDER_STATUS } from "@/lib/labels";
 import { useShopUpdateOrderStatus } from "@/features/order/hooks/use-shop-orders";
-import { shopStatusSchema, type ShopStatusInput } from "@/features/order/schemas/shop-order-schema";
-import { VENDOR_ACTION_LABEL } from "@/features/order/types/shop-order";
+import { buildShopStatusSchema, type ShopStatusInput } from "@/features/order/schemas/shop-order-schema";
+import { CARRIER_CODES, VENDOR_ACTION_LABEL, carrierNeedsTrackingUrl, isCarrierCode } from "@/features/order/types/shop-order";
 
 const HINT: Record<ShopUpdateOrderStatusRequestStatus, string> = {
   confirmed: "Xác nhận nghĩa là shop nhận đơn và giữ hàng cho khách — kho được trừ thật. Khách nhận thông báo ngay.",
   packing: "Chuyển sang đóng gói khi bắt đầu lấy hàng. Đóng gói xong, bấm \"Giao cho vận chuyển\" ở bước sau.",
-  shipping: "Khách nhận thông báo đơn đã giao cho vận chuyển. Nhập link theo dõi (https) nếu có để khách tự xem hành trình.",
+  shipping: "Chọn hãng vận chuyển và nhập mã vận đơn — khách nhận thông báo kèm hãng, mã và link tra cứu để tự xem hành trình.",
   delivered: "Chỉ xác nhận khi khách đã nhận hàng. Khách nhận thông báo ngay.",
 };
 
 /*
  * Thân dialog tách riêng + `key` theo trạng thái đích: mỗi lần mở là một form
  * mới (không cần setState/reset trong useEffect — React Compiler lint
- * set-state-in-effect). Lỗi nghiệp vụ của backend hiện ngay trong khung này.
+ * set-state-in-effect). Lỗi nghiệp vụ của backend hiện ngay trong khung này
+ * (ORDER_TRACKING_REQUIRED, ORDER_NOT_RECEIVED_OPEN, ORDER_INVALID_TRANSITION…).
  */
 function StatusDialogBody({
   code,
@@ -39,11 +42,26 @@ function StatusDialogBody({
   onClose: () => void;
 }) {
   const update = useShopUpdateOrderStatus(code);
+  const shipping = next === "shipping";
+  const schema = useMemo(() => buildShopStatusSchema(shipping), [shipping]);
   const form = useForm<ShopStatusInput>({
-    resolver: zodResolver(shopStatusSchema),
-    defaultValues: { trackingUrl: "", note: "" },
+    resolver: zodResolver(schema),
+    defaultValues: { carrier: "", trackingCode: "", trackingUrl: "", note: "" },
   });
   const errors = form.formState.errors;
+  const carrier = useWatch({ control: form.control, name: "carrier" });
+  // Hãng có mẫu link (GHN, GHTK…) thì backend tự sinh link tra cứu; chỉ hãng khác / Ahamove mới cho shop nhập link.
+  const showUrl = shipping && carrier !== "" && carrierNeedsTrackingUrl(carrier);
+
+  const submit = (input: ShopStatusInput) => {
+    const body: ShopUpdateOrderStatusRequest = { status: next, note: input.note || undefined };
+    if (shipping && isCarrierCode(input.carrier)) {
+      body.carrier = input.carrier;
+      body.trackingCode = input.trackingCode;
+      if (carrierNeedsTrackingUrl(input.carrier) && input.trackingUrl) body.trackingUrl = input.trackingUrl;
+    }
+    update.mutate(body, { onSuccess: onClose });
+  };
 
   return (
     <>
@@ -63,27 +81,47 @@ function StatusDialogBody({
         </div>
       ) : null}
 
-      <form
-        id="shop-status-form"
-        noValidate
-        onSubmit={form.handleSubmit((input) =>
-          update.mutate(
-            {
-              status: next,
-              trackingUrl: next === "shipping" ? input.trackingUrl || undefined : undefined,
-              note: input.note || undefined,
-            },
-            { onSuccess: onClose },
-          ),
-        )}
-      >
+      <form id="shop-status-form" noValidate onSubmit={form.handleSubmit(submit)}>
         <FieldGroup className="gap-4">
-          {next === "shipping" ? (
-            <Field>
-              <FieldLabel htmlFor="shop-st-tracking">Link theo dõi vận chuyển (tuỳ chọn)</FieldLabel>
-              <Input id="shop-st-tracking" inputMode="url" placeholder="https://…" aria-invalid={!!errors.trackingUrl} {...form.register("trackingUrl")} />
-              <FormMessage message={errors.trackingUrl?.message} />
-            </Field>
+          {shipping ? (
+            <>
+              <Field>
+                <FieldLabel htmlFor="shop-st-carrier">Hãng vận chuyển</FieldLabel>
+                <NativeSelect id="shop-st-carrier" aria-invalid={!!errors.carrier} {...form.register("carrier")}>
+                  <option value="">Chọn hãng vận chuyển…</option>
+                  {CARRIER_CODES.map((c) => (
+                    <option key={c} value={c}>
+                      {CARRIER_LABEL[c] ?? c}
+                    </option>
+                  ))}
+                </NativeSelect>
+                <FormMessage message={errors.carrier?.message} />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="shop-st-code">Mã vận đơn</FieldLabel>
+                <Input
+                  id="shop-st-code"
+                  autoComplete="off"
+                  autoCapitalize="characters"
+                  maxLength={40}
+                  placeholder="Vd: GHN123456789"
+                  aria-invalid={!!errors.trackingCode}
+                  {...form.register("trackingCode")}
+                />
+                <p className="text-xs text-muted-foreground">4–40 ký tự gồm chữ, số hoặc dấu gạch ngang, đúng như in trên phiếu gửi của hãng.</p>
+                <FormMessage message={errors.trackingCode?.message} />
+              </Field>
+              {showUrl ? (
+                <Field>
+                  <FieldLabel htmlFor="shop-st-tracking">Link theo dõi vận chuyển (tuỳ chọn)</FieldLabel>
+                  <Input id="shop-st-tracking" inputMode="url" placeholder="https://…" aria-invalid={!!errors.trackingUrl} {...form.register("trackingUrl")} />
+                  <p className="text-xs text-muted-foreground">Hãng này chưa có link tra cứu tự động — nhập link https nếu muốn khách tự xem hành trình.</p>
+                  <FormMessage message={errors.trackingUrl?.message} />
+                </Field>
+              ) : carrier !== "" ? (
+                <p className="rounded-lg bg-muted/60 p-2.5 text-xs text-muted-foreground">Link tra cứu hành trình sẽ được hệ thống tạo tự động theo hãng và mã vận đơn.</p>
+              ) : null}
+            </>
           ) : null}
           <Field>
             <FieldLabel htmlFor="shop-st-note">Ghi chú (tuỳ chọn)</FieldLabel>
@@ -108,7 +146,7 @@ function StatusDialogBody({
   );
 }
 
-/* Chuyển trạng thái đơn của vendor: xác nhận · đóng gói · giao vận chuyển (link https) · đã giao. */
+/* Chuyển trạng thái đơn của vendor: xác nhận · đóng gói · giao vận chuyển (BẮT BUỘC hãng + mã vận đơn) · đã giao. */
 export function ShopOrderStatusDialog({
   code,
   next,
@@ -125,7 +163,7 @@ export function ShopOrderStatusDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-md">
         {next ? <StatusDialogBody key={next} code={code} next={next} isCod={isCod} onClose={() => onOpenChange(false)} /> : null}
       </DialogContent>
     </Dialog>

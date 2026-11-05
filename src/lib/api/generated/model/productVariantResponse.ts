@@ -9,6 +9,17 @@ import type { MoneyResponse } from './moneyResponse';
 import type { VariantOptionResponse } from './variantOptionResponse';
 
 export interface ProductVariantResponse {
+  /**
+     * Khối lượng gram, null dùng mặc định vận chuyển
+     * @nullable
+     */
+  weightGram?: number | null;
+  /** @nullable */
+  lengthCm?: number | null;
+  /** @nullable */
+  widthCm?: number | null;
+  /** @nullable */
+  heightCm?: number | null;
   id: string;
   /**
      * null cho category dynamic

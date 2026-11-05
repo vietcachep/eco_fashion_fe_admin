@@ -6,8 +6,9 @@ import { PERMISSIONS } from "@/lib/constants";
 import { usePermission } from "@/hooks/use-permission";
 import { ReasonDialog } from "@/features/shop/components/platform/reason-dialog";
 import { ShopCommissionDialog } from "@/features/shop/components/platform/shop-commission-dialog";
-import { useApproveShop, useRejectShop, useSuspendShop } from "@/features/shop/hooks/use-admin-shops";
+import { useApproveShop, useRejectShop, useShopOpenOrders, useSuspendShop } from "@/features/shop/hooks/use-admin-shops";
 import { SHOP_REASON_RULE } from "@/features/shop/schemas/reason-schema";
+import type { ShopOpenOrdersSummaryResponse } from "@/lib/api/generated/model";
 import type { ShopActionTarget } from "@/features/shop/types/admin-shop";
 
 /*
@@ -58,7 +59,6 @@ export function useShopActionItems(shop: ShopActionTarget): ShopActionItem[] {
 /* Mount đúng hộp thoại của thao tác đang chọn; `action = null` thì không render gì. */
 export function ShopActionDialogs({ action, onClose }: { action: ShopAction | null; onClose: () => void }) {
   const approve = useApproveShop();
-  const suspend = useSuspendShop();
   const reject = useRejectShop();
   if (!action) return null;
   const { kind, shop } = action;
@@ -81,22 +81,7 @@ export function ShopActionDialogs({ action, onClose }: { action: ShopAction | nu
     );
   }
 
-  if (kind === "suspend") {
-    return (
-      <ReasonDialog
-        title={`Khoá gian hàng ${shop.name}?`}
-        description="Shop ngừng bán ngay lập tức; sản phẩm đang có bị ẩn khỏi web bán hàng. Có thể mở khoá lại sau."
-        label="Lý do khoá"
-        placeholder="Bán hàng giả, khách phản ánh nhiều lần…"
-        confirmLabel="Khoá"
-        destructive
-        rule={SHOP_REASON_RULE}
-        pending={suspend.isPending}
-        onSubmit={(reason) => suspend.mutate({ id: shop.id, reason }, { onSuccess: onClose })}
-        onClose={onClose}
-      />
-    );
-  }
+  if (kind === "suspend") return <SuspendShopDialog shop={shop} onClose={onClose} />;
 
   if (kind === "reject") {
     return (
@@ -116,4 +101,47 @@ export function ShopActionDialogs({ action, onClose }: { action: ShopAction | nu
   }
 
   return <ShopCommissionDialog shop={shop} onClose={onClose} />;
+}
+
+/*
+ * PLAN-0040 6.4 — hộp thoại KHOÁ shop kèm số đơn đang mở (GET /admin/shops/{id}/open-orders-summary) để quản lý biết hệ quả TRƯỚC khi khoá:
+ * đơn chờ xác nhận / đã xác nhận sẽ TỰ HUỶ + hoàn tiền (worker nghe SHOP_SUSPENDED); đơn đang đóng gói / đang giao giữ nguyên, CSKH nhận một
+ * thông báo để huỷ tay từng đơn. Con số chỉ là thông tin: đang tải / tải lỗi (vd thiếu supplier.shop.read) vẫn KHOÁ được — không chặn thao tác.
+ * Tách thành component con để chỉ gọi API khi người dùng thật sự mở hộp thoại khoá.
+ */
+const SUSPEND_BASE = "Shop ngừng bán ngay lập tức; sản phẩm đang có bị ẩn khỏi web bán hàng. Có thể mở khoá lại sau.";
+
+function openOrdersNote(s: ShopOpenOrdersSummaryResponse): string {
+  const auto = s.pending + s.confirmed;
+  const manual = s.packing + s.shipping;
+  if (auto + manual === 0) return "Shop hiện không có đơn đang mở.";
+  const parts: string[] = [];
+  if (auto > 0) parts.push(`${auto} đơn chờ xác nhận / đã xác nhận (${s.pending} + ${s.confirmed}) sẽ TỰ HUỶ và hoàn tiền cho khách`);
+  if (manual > 0) parts.push(`${manual} đơn đang đóng gói / đang giao (${s.packing} + ${s.shipping}) giữ nguyên, CSKH sẽ nhận thông báo để huỷ tay từng đơn`);
+  return `Đơn đang mở của shop: ${parts.join("; ")}.`;
+}
+
+function SuspendShopDialog({ shop, onClose }: { shop: ShopActionTarget; onClose: () => void }) {
+  const suspend = useSuspendShop();
+  const openOrders = useShopOpenOrders(shop.id);
+  const note = openOrders.data
+    ? openOrdersNote(openOrders.data)
+    : openOrders.isError
+      ? "Không tải được số đơn đang mở của shop — vẫn có thể khoá."
+      : "Đang kiểm tra các đơn đang mở của shop…";
+
+  return (
+    <ReasonDialog
+      title={`Khoá gian hàng ${shop.name}?`}
+      description={`${SUSPEND_BASE} ${note}`}
+      label="Lý do khoá"
+      placeholder="Bán hàng giả, khách phản ánh nhiều lần…"
+      confirmLabel="Khoá"
+      destructive
+      rule={SHOP_REASON_RULE}
+      pending={suspend.isPending}
+      onSubmit={(reason) => suspend.mutate({ id: shop.id, reason }, { onSuccess: onClose })}
+      onClose={onClose}
+    />
+  );
 }

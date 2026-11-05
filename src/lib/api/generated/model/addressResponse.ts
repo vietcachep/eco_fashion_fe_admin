@@ -7,6 +7,13 @@
  */
 
 export interface AddressResponse {
+  addressSystem?: string;
+  /** @nullable */
+  ghnProvinceId?: number | null;
+  /** @nullable */
+  ghnDistrictId?: number | null;
+  /** @nullable */
+  ghnWardCode?: string | null;
   id: string;
   recipientName: string;
   phone: string;

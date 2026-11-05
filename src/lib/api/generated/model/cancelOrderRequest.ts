@@ -5,7 +5,12 @@
  * Backend sàn thương mại điện tử đa ngành hàng — web bán hàng + web quản trị. Mọi response theo envelope ApiResponse.
  * OpenAPI spec version: 0.1.0
  */
+import type { CancelOrderRequestReasonCode } from './cancelOrderRequestReasonCode';
 
 export interface CancelOrderRequest {
-  reason: string;
+  /** Mã lý do (thiếu ⇒ other) */
+  reasonCode?: CancelOrderRequestReasonCode;
+  /** Lý do tự do (hiển thị cho shop) */
+  reason?: string;
+  note?: string;
 }

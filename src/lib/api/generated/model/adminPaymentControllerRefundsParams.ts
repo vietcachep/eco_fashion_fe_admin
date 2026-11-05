@@ -5,6 +5,7 @@
  * Backend sàn thương mại điện tử đa ngành hàng — web bán hàng + web quản trị. Mọi response theo envelope ApiResponse.
  * OpenAPI spec version: 0.1.0
  */
+import type { AdminPaymentControllerRefundsStatus } from './adminPaymentControllerRefundsStatus';
 
 export type AdminPaymentControllerRefundsParams = {
 /**
@@ -16,9 +17,13 @@ page?: number;
  * @maximum 100
  */
 size?: number;
-status?: string;
+status?: AdminPaymentControllerRefundsStatus;
 /**
- * Chỉ dữ liệu thuộc gian hàng này (sàn xem theo từng shop)
+ * Chỉ hoàn tiền của đơn thuộc gian hàng này
  */
 shopId?: string;
+/**
+ * true = chỉ khoản đang CHỜ chuyển tay (thiếu tài khoản nhận / không qua cổng / chưa cấu hình payout / PayOS treo bất thường); false/bỏ trống = không lọc
+ */
+needsManual?: boolean;
 };

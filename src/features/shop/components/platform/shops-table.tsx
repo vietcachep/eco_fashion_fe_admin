@@ -20,7 +20,7 @@ import { ROUTES } from "@/lib/constants";
 import { formatDate, formatNumber } from "@/lib/format";
 import type { AdminShopSummaryResponse } from "@/lib/api/generated/model";
 import { useListState } from "@/hooks/use-list-state";
-import { formatCommissionRate, ShopIdentity, ShopStatusBadge } from "@/features/shop/components/platform/shop-cells";
+import { formatCommissionRate, ShopBankStatusBadge, ShopIdentity, ShopStatusBadge } from "@/features/shop/components/platform/shop-cells";
 import {
   ShopActionDialogs,
   useShopActionItems,
@@ -106,7 +106,17 @@ export function ShopsTable() {
         cell: ({ row }) => <ShopIdentity id={row.original.id} name={row.original.name} code={row.original.code} logoUrl={row.original.logoUrl} />,
       },
       { id: "owner", header: "Chủ shop", cell: ({ row }) => <ShopOwnerCell name={row.original.ownerName} email={row.original.ownerEmail} /> },
-      { id: "status", header: "Trạng thái", cell: ({ row }) => <ShopStatusBadge status={row.original.status} /> },
+      {
+        id: "status",
+        header: "Trạng thái",
+        cell: ({ row }) => (
+          <div className="flex flex-wrap items-center gap-1">
+            <ShopStatusBadge status={row.original.status} />
+            {/* PLAN-0040 5.2: TK ngân hàng chờ quản lý xác minh → kỳ chi trả của shop đang bị giữ. */}
+            {row.original.bankStatus === "pending_verification" ? <ShopBankStatusBadge status={row.original.bankStatus} /> : null}
+          </div>
+        ),
+      },
       { id: "commission", header: "Hoa hồng", cell: ({ row }) => formatCommissionRate(row.original.commissionRate) },
       { id: "products", header: "Sản phẩm", cell: ({ row }) => formatNumber(row.original.totalProducts) },
       {

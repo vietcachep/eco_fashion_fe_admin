@@ -5,8 +5,15 @@
  * Backend sàn thương mại điện tử đa ngành hàng — web bán hàng + web quản trị. Mọi response theo envelope ApiResponse.
  * OpenAPI spec version: 0.1.0
  */
+import type { AdminShopResponseBankStatus } from './adminShopResponseBankStatus';
+import type { ShopShippingAddressRequest } from './shopShippingAddressRequest';
 
 export interface AdminShopResponse {
+  shippingCarrierEnabled?: boolean;
+  /** @nullable */
+  shippingPickup?: ShopShippingAddressRequest | null;
+  /** @nullable */
+  shippingReturn?: ShopShippingAddressRequest | null;
   id: string;
   code: string;
   slug: string;
@@ -40,6 +47,15 @@ export interface AdminShopResponse {
      * @nullable
      */
   bankAccountNumberMasked?: string | null;
+  /** Xác minh TK ngân hàng: `pending_verification` = tên chủ TK lệch tên chủ shop — kỳ chi trả bị giữ (held) cho tới khi quản lý sàn xác minh */
+  bankStatus: AdminShopResponseBankStatus;
+  /**
+     * Lúc quản lý sàn xác minh TK (null = chưa xác minh tay). Từ mốc này mới đếm số giờ giữ chi trả sau đổi TK
+     * @nullable
+     */
+  bankVerifiedAt?: string | null;
+  /** Số giờ sàn tạm giữ chi trả sau khi đổi TK ngân hàng (setting `payout.bank_change_hold_hours`) — FE hiển thị đúng con số này, không ghi cứng */
+  bankChangeHoldHours: number;
   createdAt: string;
   updatedAt: string;
   /**

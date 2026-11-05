@@ -10,7 +10,7 @@ export default function OrdersPage() {
   return (
     <PermissionGuard permission={PERMISSIONS.orderRead}>
       <div className="flex flex-col gap-4">
-        <PageHeader title="Đơn hàng" description="Giám sát đơn theo từng gian hàng — shop tự xác nhận, đóng gói, giao; sàn chỉ huỷ khi có tranh chấp" />
+        <PageHeader title="Đơn hàng" description="Tìm đơn toàn sàn theo mã đơn, mã nhóm DHN… hoặc email khách — shop tự xác nhận, đóng gói, giao; sàn chỉ huỷ khi có tranh chấp" />
         <OrdersTable />
       </div>
     </PermissionGuard>

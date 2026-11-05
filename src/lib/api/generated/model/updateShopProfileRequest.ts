@@ -5,8 +5,12 @@
  * Backend sàn thương mại điện tử đa ngành hàng — web bán hàng + web quản trị. Mọi response theo envelope ApiResponse.
  * OpenAPI spec version: 0.1.0
  */
+import type { ShopShippingAddressRequest } from './shopShippingAddressRequest';
 
 export interface UpdateShopProfileRequest {
+  shippingCarrierEnabled?: boolean;
+  shippingPickup?: ShopShippingAddressRequest;
+  shippingReturn?: ShopShippingAddressRequest;
   name?: string;
   /** @nullable */
   logoUrl?: string | null;
@@ -20,4 +24,6 @@ export interface UpdateShopProfileRequest {
   bankAccountNumber?: string;
   /** Tên chủ tài khoản (2-120 ký tự) */
   bankAccountName?: string;
+  /** Mật khẩu hiện tại của người đang thao tác — BẮT BUỘC khi thay đổi mã ngân hàng / số tài khoản / tên chủ tài khoản (chống chiếm phiên đổi nơi nhận tiền); không cần khi chỉ sửa hồ sơ */
+  currentPassword?: string;
 }

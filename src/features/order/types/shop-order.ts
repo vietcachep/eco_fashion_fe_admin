@@ -1,8 +1,12 @@
 import type {
+  DeliveryFailedRequestReasonCode,
   OrderResponse,
+  ShopCancelOrderRequestReasonCode,
   ShopOrderSummaryResponse,
+  ShopUpdateOrderStatusRequestCarrier,
   ShopUpdateOrderStatusRequestStatus,
 } from "@/lib/api/generated/model";
+import type { CarrierOrderFields } from "@/types/shipping";
 
 /*
  * Kiểu riêng cho cổng nhà cung cấp (GET /shop/orders/**). Dòng danh sách dùng
@@ -22,7 +26,7 @@ export interface OrderVoucher {
  * đã sync khai `shopPromotion` là chuỗi mã (bản cũ). Hook chuẩn hoá cả hai về
  * OrderVoucher để màn hình không phải đoán — đổi spec không làm vỡ UI.
  */
-export type ShopOrderDetail = Omit<OrderResponse, "promotion" | "shopPromotion"> & {
+export type ShopOrderDetail = Omit<OrderResponse, "promotion" | "shopPromotion"> & CarrierOrderFields & {
   promotion: OrderVoucher | null;
   shopPromotion: OrderVoucher | null;
 };
@@ -46,6 +50,66 @@ export const VENDOR_ACTION_LABEL: Record<ShopUpdateOrderStatusRequestStatus, str
   shipping: "Giao cho vận chuyển",
   delivered: "Đã giao thành công",
 };
+
+// PLAN-0040 3.6 — giao có hãng + mã vận đơn (backend CARRIERS / TRACKING_CODE_PATTERN, order.constants.ts)
+/* Thứ tự hiện trong ô chọn hãng; tên hiển thị ở `CARRIER_LABEL` (lib/labels.ts). Backend không có endpoint danh mục hãng. */
+export const CARRIER_CODES = [
+  "ghn",
+  "ghtk",
+  "viettel_post",
+  "jnt",
+  "spx",
+  "ahamove",
+  "ninja_van",
+  "vnpost",
+  "other",
+] as const satisfies ReadonlyArray<ShopUpdateOrderStatusRequestCarrier>;
+
+export function isCarrierCode(value: string): value is ShopUpdateOrderStatusRequestCarrier {
+  return (CARRIER_CODES as ReadonlyArray<string>).includes(value);
+}
+
+/* Hãng KHÔNG có mẫu link tra cứu: shop tự nhập `trackingUrl` (https, tuỳ chọn). Hãng có mẫu thì backend tự sinh link. */
+const CARRIERS_WITHOUT_TEMPLATE: ReadonlyArray<string> = ["other", "ahamove"];
+export function carrierNeedsTrackingUrl(carrier: string): boolean {
+  return CARRIERS_WITHOUT_TEMPLATE.includes(carrier);
+}
+
+/* Mã vận đơn: 4–40 ký tự chữ / số / gạch ngang, không khoảng trắng (không thể mang HTML hay URL độc vào thông báo / email). */
+export const TRACKING_CODE_PATTERN = /^[A-Za-z0-9-]{4,40}$/;
+
+// PLAN-0040 3.1 — huỷ đơn của shop
+/* Mã lý do shop được chọn khi huỷ (backend SHOP_CANCEL_REASONS) — thứ tự = thứ tự hiện trong ô chọn. */
+export const SHOP_CANCEL_REASON_CODES = [
+  "out_of_stock",
+  "price_error",
+  "cannot_contact",
+  "customer_request",
+  "other",
+] as const satisfies ReadonlyArray<ShopCancelOrderRequestReasonCode>;
+
+/*
+ * Việc huỷ này có bị +1 điểm vi phạm không — chép từ backend `shopCancelViolation` (foundation/cancel.rules.ts); một đơn tối đa MỘT điểm.
+ * Trả câu giải thích cho cảnh báo trong hộp thoại, null = không bị tính. Chỉ để cảnh báo trước: điểm do backend ghi (bất đồng bộ, vài giây).
+ */
+export function shopCancelPenalty(input: { reasonCode: string; status: string; hadRejectedRequest: boolean }): string | null {
+  if (input.reasonCode === "out_of_stock") return "huỷ vì hết hàng";
+  if (input.reasonCode === "price_error") return "huỷ vì sai giá niêm yết";
+  if (input.hadRejectedRequest) return "huỷ đơn sau khi đã từ chối yêu cầu huỷ của khách";
+  if (input.status === "packing" && input.reasonCode !== "customer_request") return "huỷ đơn đã đóng gói";
+  return null;
+}
+
+// PLAN-0040 3.7 — giao không thành công
+/* Lý do báo giao không thành công (backend DELIVERY_FAILED_REASONS); nhãn ở `DELIVERY_FAILED_REASON_LABEL`. */
+export const DELIVERY_FAILED_REASON_CODES = [
+  "refused",
+  "unreachable",
+  "wrong_address",
+  "lost",
+  "damaged",
+  "other",
+] as const satisfies ReadonlyArray<DeliveryFailedRequestReasonCode>;
 
 /* Thứ tự tab trạng thái trên màn danh sách (khoá trùng ShopOrderSummaryResponse để lấy số đơn). */
 export const SHOP_ORDER_STATUS_TABS = [

@@ -7,16 +7,21 @@
  */
 
 /**
- * carried = net âm (không chi), settled = net 0
+ * unknown = gửi lệnh nhưng không rõ kết quả (KHÔNG chi lại / KHÔNG đánh dấu tay — dùng Kiểm tra với PayOS) · awaiting_approval = vượt hạn mức tự chi, chờ duyệt · held = shop bị khoá / đang giữ · deferred = dưới mức tối thiểu, dồn kỳ sau · carried = net âm (không chi) · settled = net 0
  */
 export type ShopPayoutResponseStatus = typeof ShopPayoutResponseStatus[keyof typeof ShopPayoutResponseStatus];
 
 
 export const ShopPayoutResponseStatus = {
   pending: 'pending',
+  awaiting_approval: 'awaiting_approval',
   processing: 'processing',
   paid: 'paid',
   failed: 'failed',
+  unknown: 'unknown',
+  held: 'held',
+  deferred: 'deferred',
+  merged: 'merged',
   carried: 'carried',
   settled: 'settled',
 } as const;

@@ -9,8 +9,10 @@ import type { ShopPayoutLineResponseKind } from './shopPayoutLineResponseKind';
 
 export interface ShopPayoutLineResponse {
   id: string;
-  /** sale: mã đơn · refund: mã dòng hoàn tiền (RF-…) */
+  /** Mã ĐƠN của dòng — sale: đơn đã bán · refund: đơn bị hoàn tiền (PLAN-0022; trước đây là mã dòng RF-…). Dòng hoàn tiền cũ không khớp được thì còn mã RF-… (xem lineKey). */
   orderCode: string;
+  /** Khoá kỹ thuật của dòng (duy nhất toàn bảng) — sale: mã đơn · refund: "RF-" + 26 hex đầu của id hoàn tiền */
+  lineKey: string;
   kind: ShopPayoutLineResponseKind;
   /** Tiền hàng (sale) hoặc tiền hoàn (refund) (VND) */
   gross: string;

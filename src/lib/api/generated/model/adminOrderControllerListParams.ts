@@ -19,7 +19,7 @@ page?: number;
 size?: number;
 status?: AdminOrderControllerListStatus;
 /**
- * Mã đơn / tên / SĐT người nhận
+ * Mã đơn con (DH…) / mã nhóm (DHN…) / tên / SĐT người nhận / email khách (nhập đủ email). Không cần chọn shop.
  */
 q?: string;
 paymentStatus?: string;

@@ -15,9 +15,12 @@ import { ROUTES } from "@/lib/constants";
 import { formatDateTime, formatNumber } from "@/lib/format";
 import { ORDER_PAYMENT_STATUS, ORDER_STATUS, PAYMENT_METHOD_LABEL, statusMeta, paymentMethodLabel } from "@/lib/labels";
 import { useListState } from "@/hooks/use-list-state";
-import { ShopScope } from "@/features/shop/components/platform/shop-scope";
+import { ShopFilter } from "@/features/shop/components/platform/shop-filter";
+import { useNow } from "@/features/order/hooks/use-now";
 import { useAdminOrders } from "@/features/order/hooks/use-orders";
 import type { OrderSummaryResponse } from "@/features/order/types/order";
+import { CancelRequestChip } from "@/features/order/components/orders-common/cancel-request-chip";
+import { OrderDueByStatus } from "@/features/order/components/orders-common/order-due";
 
 const STATUS_TABS = [
   { key: "", label: "Tất cả" },
@@ -35,14 +38,14 @@ const PAGE_SIZE = 15;
 const LOAD_ERROR = "Không tải được danh sách đơn.";
 const DEFAULTS = { status: "", paymentStatus: "", paymentMethodCode: "", shopId: "" };
 
-/* Danh sách đơn: lọc trạng thái đơn / thanh toán / phương thức, tìm mã đơn / tên / SĐT. */
+/*
+ * Danh sách đơn TOÀN SÀN (PLAN-0040 4.2): không bắt chọn gian hàng trước — CSKH gõ thẳng mã đơn con (DH…), mã nhóm của lần đặt (DHN…, ra mọi đơn con
+ * của nhóm) hoặc email khách (nhập đủ) là ra. Lọc theo gian hàng là tuỳ chọn (ô lọc bên trên). Lọc trạng thái đơn / thanh toán /
+ * phương thức; cột "Hạn shop" đếm ngược hạn xác nhận / giao (quá hạn tô đỏ), nhãn "Khách yêu cầu huỷ" báo đơn đóng gói có yêu cầu huỷ đang chờ.
+ */
 export function OrdersTable() {
-  // Sàn: chọn gian hàng trước, bảng chỉ hiện đơn con của shop đó.
-  return <ShopScope noun="đơn hàng">{() => <OrdersList />}</ShopScope>;
-}
-
-function OrdersList() {
   const { filters, setFilter, search, setSearch, keyword, pageIndex, setPageIndex, page } = useListState(DEFAULTS);
+  const now = useNow();
   const { data, isLoading, isError, error } = useAdminOrders({
     keyword,
     status: filters.status,
@@ -103,8 +106,18 @@ function OrdersList() {
         header: "Trạng thái",
         cell: ({ row }) => {
           const m = statusMeta(ORDER_STATUS, row.original.status);
-          return <StatusBadge tone={m.tone}>{row.original.statusLabel || m.label}</StatusBadge>;
+          return (
+            <div className="flex flex-col items-start gap-1">
+              <StatusBadge tone={m.tone}>{row.original.statusLabel || m.label}</StatusBadge>
+              <CancelRequestChip status={row.original.cancelRequestStatus} />
+            </div>
+          );
         },
+      },
+      {
+        id: "due",
+        header: "Hạn shop",
+        cell: ({ row }) => <OrderDueByStatus order={row.original} now={now} compact />,
       },
       {
         accessorKey: "createdAt",
@@ -124,7 +137,7 @@ function OrdersList() {
         ),
       },
     ],
-    [],
+    [now],
   );
 
   if (isForbiddenError(error)) return <ApiErrorState error={error} fallback={LOAD_ERROR} />;
@@ -133,6 +146,7 @@ function OrdersList() {
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <FilterTabs tabs={STATUS_TABS} value={filters.status} onChange={(v) => setFilter("status", v)} />
+        <ShopFilter value={filters.shopId} onChange={(v) => setFilter("shopId", v)} />
         <NativeSelect aria-label="Thanh toán" className="w-40" value={filters.paymentStatus} onChange={(e) => setFilter("paymentStatus", e.target.value)}>
           <option value="">Mọi thanh toán</option>
           {Object.entries(ORDER_PAYMENT_STATUS).map(([k, v]) => (
@@ -155,7 +169,7 @@ function OrdersList() {
         columns={columns}
         data={data?.content ?? []}
         loading={isLoading}
-        searchPlaceholder="Mã đơn / tên / SĐT người nhận…"
+        searchPlaceholder="Mã đơn / DHN… (mã nhóm) / email khách / tên / SĐT…"
         searchValue={search}
         onSearchChange={setSearch}
         serverPagination={{

@@ -6,7 +6,7 @@ import { customInstance } from "@/lib/api/mutator";
 import { apiErrorMessage } from "@/lib/api-error";
 import { invalidateByPath } from "@/lib/query-invalidate";
 import { asPage } from "@/types/common";
-import type { DepositRequestInput, ShopWallet, WalletDeposit, WalletSummary, WalletTransaction } from "@/features/shop/types/wallet";
+import type { ShopWallet, WalletDeposit, WalletSummary, WalletTransaction } from "@/features/shop/types/wallet";
 
 /*
  * Ví đặt cọc COD (PLAN-0020). Gọi thẳng qua mutator vì client Orval sinh từ spec trước khi có các route này
@@ -31,27 +31,6 @@ export function useMyWalletTransactions(page: number, size: number) {
     queryFn: () => get<unknown>(`${SHOP_PATH}/transactions`, { page, size }),
     select: (r) => asPage<WalletTransaction>(r),
     placeholderData: keepPreviousData,
-  });
-}
-
-export function useMyDeposits(page: number, size: number) {
-  return useQuery({
-    queryKey: [`${SHOP_PATH}/deposit-requests`, page, size],
-    queryFn: () => get<unknown>(`${SHOP_PATH}/deposit-requests`, { page, size }),
-    select: (r) => asPage<WalletDeposit>(r),
-    placeholderData: keepPreviousData,
-  });
-}
-
-export function useRequestDeposit() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (body: DepositRequestInput) => post<WalletDeposit>(`${SHOP_PATH}/deposit-requests`, body),
-    onSuccess: () => {
-      invalidateByPath(qc, SHOP_PATH);
-      toast.success("Đã gửi yêu cầu nộp cọc — chờ sàn đối chiếu và duyệt.");
-    },
-    onError: (e) => toast.error(apiErrorMessage(e, "Gửi yêu cầu nộp cọc thất bại.")),
   });
 }
 

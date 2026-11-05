@@ -49,6 +49,12 @@ export function apiErrorCode(err: unknown): string | undefined {
   return errorBody(err)?.error?.code;
 }
 
+// PLAN-0040 5.3 — giá trị `error.details[key]` của lỗi nghiệp vụ (vd SHOP_BANK_PASSWORD_INVALID kèm
+// `googleLinked = "true"`). Backend luôn gửi chuỗi nên so sánh với "true", không ép boolean.
+export function apiErrorDetail(err: unknown, key: string): string | undefined {
+  return errorBody(err)?.error?.details?.[key];
+}
+
 /* requestId để người dùng báo lại khi gặp lỗi lạ. */
 export function apiRequestId(err: unknown): string | undefined {
   return errorBody(err)?.requestId;

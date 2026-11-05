@@ -11,4 +11,12 @@ export interface ContactRequest {
   email: string;
   phone?: string;
   message: string;
+  /** Gửi cho GIAN HÀNG này (hỏi về sản phẩm / đơn của shop); bỏ trống = gửi SÀN */
+  shopId?: string;
+  /** Thay cho shopId khi web chỉ biết slug gian hàng (trang sản phẩm / trang shop) */
+  shopSlug?: string;
+  /** Mã đơn đang hỏi (ngữ cảnh cho người trả lời) */
+  orderCode?: string;
+  /** Tên sản phẩm đang hỏi (ngữ cảnh cho người trả lời) */
+  productName?: string;
 }

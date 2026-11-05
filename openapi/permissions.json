@@ -99,13 +99,13 @@
     "code": "product.product.create",
     "module": "product",
     "description": "Tạo sản phẩm",
-    "deprecated": false
+    "deprecated": true
   },
   {
     "code": "product.product.update",
     "module": "product",
     "description": "Sửa sản phẩm, biến thể, ảnh, giá",
-    "deprecated": false
+    "deprecated": true
   },
   {
     "code": "product.product.publish",
@@ -117,7 +117,7 @@
     "code": "product.product.delete",
     "module": "product",
     "description": "Xoá mềm sản phẩm",
-    "deprecated": false
+    "deprecated": true
   },
   {
     "code": "product.inventory.read",
@@ -129,12 +129,24 @@
     "code": "product.inventory.receive",
     "module": "product",
     "description": "Lập phiếu nhập kho",
-    "deprecated": false
+    "deprecated": true
   },
   {
     "code": "product.inventory.adjust",
     "module": "product",
     "description": "Điều chỉnh / kiểm kê tồn kho",
+    "deprecated": true
+  },
+  {
+    "code": "payment.cod.confirm",
+    "module": "payment",
+    "description": "Xác nhận tiền COD hãng đã nộp về sàn",
+    "deprecated": false
+  },
+  {
+    "code": "shipping.simulator.use",
+    "module": "shipping",
+    "description": "Giả lập vận chuyển trong môi trường demo",
     "deprecated": false
   },
   {
@@ -147,7 +159,7 @@
     "code": "order.order.status.update",
     "module": "order",
     "description": "Xác nhận / đóng gói / giao / hoàn tất đơn",
-    "deprecated": false
+    "deprecated": true
   },
   {
     "code": "order.order.cancel",
@@ -158,13 +170,13 @@
   {
     "code": "order.return.read",
     "module": "order",
-    "description": "Xem yêu cầu đổi trả",
+    "description": "Xem yêu cầu đổi trả của mọi gian hàng",
     "deprecated": false
   },
   {
     "code": "order.return.process",
     "module": "order",
-    "description": "Duyệt / từ chối / hoàn tất đổi trả",
+    "description": "Phân xử yêu cầu đổi trả đã chuyển lên sàn (hoàn tiền / từ chối lần cuối)",
     "deprecated": false
   },
   {
@@ -176,7 +188,7 @@
   {
     "code": "payment.transfer.confirm",
     "module": "payment",
-    "description": "Xác nhận chuyển khoản (đối soát)",
+    "description": "Xác nhận chuyển khoản (LỊCH SỬ — PLAN-0018 đã bỏ chuyển khoản tay, không còn endpoint dùng mã này)",
     "deprecated": false
   },
   {
@@ -225,7 +237,7 @@
     "code": "review.review.reply",
     "module": "review",
     "description": "Trả lời đánh giá thay cửa hàng",
-    "deprecated": false
+    "deprecated": true
   },
   {
     "code": "system.setting.read",
@@ -255,6 +267,18 @@
     "code": "system.notification.send",
     "module": "system",
     "description": "Gửi thông báo tới khách",
+    "deprecated": false
+  },
+  {
+    "code": "system.contact.read",
+    "module": "system",
+    "description": "Xem tin khách gửi SÀN (form Liên hệ) và giám sát tin gửi các gian hàng",
+    "deprecated": false
+  },
+  {
+    "code": "system.contact.reply",
+    "module": "system",
+    "description": "Trả lời tin khách gửi SÀN (tin gửi shop do shop tự trả lời)",
     "deprecated": false
   },
   {
@@ -422,7 +446,13 @@
   {
     "code": "shop.order.update",
     "module": "shop",
-    "description": "Xác nhận / đóng gói / giao / huỷ đơn của gian hàng mình",
+    "description": "Xác nhận / đóng gói / giao đơn của gian hàng mình (gồm gia hạn hạn giao)",
+    "deprecated": false
+  },
+  {
+    "code": "shop.order.cancel",
+    "module": "shop",
+    "description": "Huỷ đơn của gian hàng mình, chấp nhận / từ chối yêu cầu huỷ của khách",
     "deprecated": false
   },
   {
@@ -456,9 +486,33 @@
     "deprecated": false
   },
   {
+    "code": "shop.contact.read",
+    "module": "shop",
+    "description": "Xem tin nhắn khách gửi gian hàng mình (hỏi sản phẩm / đơn)",
+    "deprecated": false
+  },
+  {
+    "code": "shop.contact.reply",
+    "module": "shop",
+    "description": "Trả lời tin nhắn khách gửi gian hàng mình",
+    "deprecated": false
+  },
+  {
     "code": "shop.payout.read",
     "module": "shop",
     "description": "Xem các kỳ đối soát / chi trả của gian hàng mình",
+    "deprecated": false
+  },
+  {
+    "code": "shop.return.read",
+    "module": "shop",
+    "description": "Xem yêu cầu đổi trả của gian hàng mình",
+    "deprecated": false
+  },
+  {
+    "code": "shop.return.process",
+    "module": "shop",
+    "description": "Duyệt / từ chối / xác nhận đã nhận lại hàng đổi trả và báo giao không thành công của gian hàng mình",
     "deprecated": false
   },
   {
@@ -471,6 +525,12 @@
     "code": "supplier.payout.process",
     "module": "supplier",
     "description": "Chạy kỳ đối soát và chi trả cho gian hàng",
+    "deprecated": false
+  },
+  {
+    "code": "supplier.payout.approve",
+    "module": "supplier",
+    "description": "Duyệt kỳ chi trả vượt hạn mức tự chi trước khi gửi PayOS",
     "deprecated": false
   },
   {
@@ -492,39 +552,15 @@
     "deprecated": false
   },
   {
-    "code": "supplier.wallet.adjust",
-    "module": "supplier",
-    "description": "Chỉnh tay số dư ví đặt cọc COD của gian hàng (có lý do) — chỉ Admin, vì tự cộng / trừ tiền không cần chứng từ",
-    "deprecated": false
-  },
-  {
-    "code": "shop.contact.read",
-    "module": "shop",
-    "description": "Xem tin nhắn khách gửi gian hàng mình (hỏi sản phẩm / đơn)",
-    "deprecated": false
-  },
-  {
-    "code": "shop.contact.reply",
-    "module": "shop",
-    "description": "Trả lời tin nhắn khách gửi gian hàng mình",
-    "deprecated": false
-  },
-  {
     "code": "supplier.wallet.approve",
     "module": "supplier",
     "description": "Đối chiếu và duyệt / từ chối khoản nộp cọc COD của gian hàng (không chỉnh được số dư)",
     "deprecated": false
   },
   {
-    "code": "system.contact.read",
-    "module": "system",
-    "description": "Xem tin khách gửi SÀN (form Liên hệ) và giám sát tin gửi các gian hàng",
-    "deprecated": false
-  },
-  {
-    "code": "system.contact.reply",
-    "module": "system",
-    "description": "Trả lời tin khách gửi SÀN (tin gửi shop do shop tự trả lời)",
+    "code": "supplier.wallet.adjust",
+    "module": "supplier",
+    "description": "Chỉnh tay số dư ví đặt cọc COD của gian hàng (có lý do) — chỉ Admin, vì tự cộng / trừ tiền không cần chứng từ",
     "deprecated": false
   }
 ]

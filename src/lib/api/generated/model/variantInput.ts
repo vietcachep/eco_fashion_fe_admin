@@ -8,6 +8,34 @@
 import type { VariantOptionInput } from './variantOptionInput';
 
 export interface VariantInput {
+  /**
+     * Khối lượng gram; null dùng mặc định vận chuyển
+     * @minimum 1
+     * @maximum 50000
+     * @nullable
+     */
+  weightGram?: number | null;
+  /**
+     * Chiều dài cm; null dùng mặc định vận chuyển
+     * @minimum 1
+     * @maximum 200
+     * @nullable
+     */
+  lengthCm?: number | null;
+  /**
+     * Chiều rộng cm; null dùng mặc định vận chuyển
+     * @minimum 1
+     * @maximum 200
+     * @nullable
+     */
+  widthCm?: number | null;
+  /**
+     * Chiều cao cm; null dùng mặc định vận chuyển
+     * @minimum 1
+     * @maximum 200
+     * @nullable
+     */
+  heightCm?: number | null;
   /** Bắt buộc cho category legacy_fashion; null cho dynamic */
   colorCode?: string;
   /** Bắt buộc cho category legacy_fashion; null cho dynamic */

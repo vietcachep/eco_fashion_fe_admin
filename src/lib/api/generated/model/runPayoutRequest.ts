@@ -11,4 +11,6 @@ export interface RunPayoutRequest {
   periodStart: string;
   /** Cuối kỳ đối soát (không muộn hơn hiện tại; đơn tính theo hạn đổi trả tới mốc này) */
   periodEnd: string;
+  /** Chỉ chạy kỳ cho gian hàng này (bỏ trống = mọi shop) */
+  shopId?: string;
 }

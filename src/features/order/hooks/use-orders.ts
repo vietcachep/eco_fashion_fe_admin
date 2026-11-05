@@ -4,30 +4,24 @@ import { keepPreviousData, useMutation, useQueryClient } from "@tanstack/react-q
 import { toast } from "sonner";
 import {
   adminOrderControllerCancel,
-  adminOrderControllerReturnProcess,
   useAdminOrderControllerGet,
   useAdminOrderControllerList,
-  useAdminOrderControllerReturnGet,
-  useAdminOrderControllerReturnsList,
 } from "@/lib/api/generated/admin-orders/admin-orders";
-import type {
-  ProcessReturnRequest,
-  ReturnRequestResponse,
-} from "@/lib/api/generated/model";
-import { apiErrorMessage } from "@/lib/api-error";
+import type { AdminCancelOrderRequest, AdminOrderControllerListStatus } from "@/lib/api/generated/model";
+import { apiErrorCode, apiErrorMessage } from "@/lib/api-error";
 import { invalidateByPath } from "@/lib/query-invalidate";
 import { asPage } from "@/types/common";
 import type { OrderSummaryResponse } from "@/features/order/types/order";
 
 /*
- * Đơn hàng + đổi trả (khu quản trị). Đổi trạng thái đi lưới STAFF_TRANSITIONS
- * của backend (xem types/order.ts); huỷ thay khách chỉ ở pending/confirmed.
- * Sau mutation invalidate cả đơn, đổi trả, thanh toán (huỷ đơn có thể sinh
- * hoàn tiền) và tồn kho (nhả / trừ hàng giữ).
+ * Đơn hàng (khu quản trị). Sàn CHỈ giám sát: xác nhận / đóng gói / giao là việc của chủ shop (cổng vendor). Sàn huỷ được
+ * đơn chưa giao cho vận chuyển và — khi tranh chấp — cả đơn ĐÓNG GÓI / ĐANG GIAO (bắt buộc lý do ≥ 10 ký tự; đang giao thì không tự
+ * nhập kho). Tìm đơn TOÀN SÀN không cần chọn shop (PLAN-0040 4.2): `q` khớp mã đơn con DH…, mã nhóm DHN…, email khách (nhập đủ), tên / SĐT
+ * người nhận. Đổi trả có hook riêng (use-returns.ts).
+ * Sau huỷ làm mới cả đơn, thanh toán (huỷ đơn đã thu tiền sinh hoàn tiền), đổi trả (không được huỷ khi còn yêu cầu mở), tồn kho và báo cáo.
  */
 const PATH = "/api/v1/admin/orders";
-const RETURNS_PATH = "/api/v1/admin/returns";
-const RELATED = ["/api/v1/admin/payments", "/api/v1/admin/refunds", "/api/v1/admin/inventory", "/api/v1/admin/reports"];
+const RELATED = ["/api/v1/admin/payments", "/api/v1/admin/refunds", "/api/v1/admin/returns", "/api/v1/admin/inventory", "/api/v1/admin/reports"];
 
 export interface AdminOrdersQuery {
   keyword?: string;
@@ -43,7 +37,7 @@ export function useAdminOrders({ keyword, status, paymentStatus, paymentMethodCo
   return useAdminOrderControllerList(
     {
       q: keyword || undefined,
-      status: (status || undefined) as never,
+      status: (status || undefined) as AdminOrderControllerListStatus | undefined,
       paymentStatus: paymentStatus || undefined,
       paymentMethodCode: paymentMethodCode || undefined,
       shopId: shopId || undefined,
@@ -64,43 +58,30 @@ export function useAdminOrder(code: string) {
   return useAdminOrderControllerGet(code, { query: { enabled: !!code, staleTime: 10_000 } });
 }
 
+/* Mã lỗi backend khi đơn còn yêu cầu đổi trả đang mở — không huỷ được cho tới khi yêu cầu đó xử lý xong. */
+const OPEN_RETURN_CODE = "ORDER_HAS_OPEN_RETURN";
+
+/*
+ * Thông điệp lỗi huỷ đơn cho hộp thoại. `ORDER_HAS_OPEN_RETURN` nói rõ việc cần làm (xử lý yêu cầu đổi trả trước); lỗi khác dùng câu của backend.
+ */
+export function cancelOrderErrorMessage(error: unknown, fallback: string): string {
+  if (apiErrorCode(error) === OPEN_RETURN_CODE) {
+    return "Đơn đang có yêu cầu đổi trả chưa xử lý xong nên chưa huỷ được. Hãy xử lý (phân xử / chờ shop xử lý) yêu cầu đổi trả của đơn này trước, rồi huỷ đơn.";
+  }
+  return apiErrorMessage(error, fallback);
+}
+
+/* Lỗi nghiệp vụ hiện ngay trong hộp thoại đang mở (xem CancelOrderDialog) — không toast; chỉ đọc lại đơn vì thường do trạng thái vừa đổi. */
 export function useCancelOrder(code: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (reason: string) => adminOrderControllerCancel(code, { reason }),
+    mutationFn: (body: AdminCancelOrderRequest) => adminOrderControllerCancel(code, body),
     onSuccess: () => {
       invalidateByPath(qc, PATH, ...RELATED);
-      toast.success("Đã huỷ đơn — hàng giữ được nhả, thanh toán (nếu có) chuyển sang hoàn tiền.");
+      toast.success("Đã huỷ đơn. Nếu khách đã thanh toán online, yêu cầu hoàn tiền đã được chuyển cho kế toán.");
     },
-    onError: (e) => toast.error(apiErrorMessage(e, "Huỷ đơn thất bại.")),
-  });
-}
-
-export function useAdminReturns(params: { status?: string; shopId?: string; page: number; size: number }) {
-  return useAdminOrderControllerReturnsList(
-    { status: (params.status || undefined) as never, shopId: params.shopId || undefined, page: params.page, size: params.size },
-    {
-      query: {
-        select: (r) => asPage<ReturnRequestResponse>(r),
-        placeholderData: keepPreviousData,
-        staleTime: 15_000,
-      },
+    onError: () => {
+      invalidateByPath(qc, PATH);
     },
-  );
-}
-
-export function useAdminReturn(id: string) {
-  return useAdminOrderControllerReturnGet(id, { query: { enabled: !!id, staleTime: 10_000 } });
-}
-
-export function useProcessReturn(id: string) {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (body: ProcessReturnRequest) => adminOrderControllerReturnProcess(id, body),
-    onSuccess: (_r, body) => {
-      invalidateByPath(qc, RETURNS_PATH, PATH, ...RELATED);
-      toast.success(body.decision === "approved" ? "Đã duyệt đổi trả — yêu cầu hoàn tiền được tạo." : "Đã từ chối yêu cầu.");
-    },
-    onError: (e) => toast.error(apiErrorMessage(e, "Xử lý đổi trả thất bại.")),
   });
 }

@@ -5,13 +5,20 @@
  * Backend sàn thương mại điện tử đa ngành hàng — web bán hàng + web quản trị. Mọi response theo envelope ApiResponse.
  * OpenAPI spec version: 0.1.0
  */
+import type { CreateReturnRequestReasonCode } from './createReturnRequestReasonCode';
 import type { MediaItemInput } from './mediaItemInput';
+import type { RefundAccountInput } from './refundAccountInput';
 import type { ReturnItemInput } from './returnItemInput';
 
 export interface CreateReturnRequest {
-  reason: string;
+  reasonCode: CreateReturnRequestReasonCode;
+  /** Lý do tự nêu; bỏ trống thì lấy nhãn của reasonCode */
+  reason?: string;
   detail?: string;
-  items: ReturnItemInput[];
-  /** Ảnh/video minh chứng ≥ 1 (upload trước qua POST /uploads/media) */
-  evidence: MediaItemInput[];
+  /** Bắt buộc (≥ 1 dòng) trừ khi reasonCode = not_received (mặc định cả đơn) */
+  items?: ReturnItemInput[];
+  /** Ảnh/video minh chứng ≥ 1, tối đa 8 (upload trước qua POST /uploads/media) — không bắt buộc khi reasonCode = not_received */
+  evidence?: MediaItemInput[];
+  /** Bắt buộc với đơn COD đã thu tiền */
+  refundAccount?: RefundAccountInput;
 }

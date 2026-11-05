@@ -9,6 +9,7 @@ import type { MediaItemInputType } from './mediaItemInputType';
 
 export interface MediaItemInput {
   type: MediaItemInputType;
+  /** URL do POST /uploads/media trả về (chỉ nhận tệp thuộc kho upload của hệ thống) */
   url: string;
   name: string;
 }

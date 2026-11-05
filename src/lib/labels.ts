@@ -11,6 +11,30 @@ export interface StatusMeta {
   tone: StatusTone;
 }
 
+// PLAN-0043: tạo vận đơn và việc hãng lấy kiện là hai mốc riêng.
+export const SHIPMENT_CREATE_STATUS: Record<string, StatusMeta> = {
+  creating: { label: "Đang gửi yêu cầu lấy hàng", tone: "pending" },
+  created: { label: "Hãng đã nhận yêu cầu", tone: "pending" },
+  unknown: { label: "Đang xác minh với hãng", tone: "warning" },
+  failed: { label: "Tạo vận đơn chưa thành công", tone: "danger" },
+};
+export const SHIPMENT_STATUS: Record<string, StatusMeta> = {
+  awaiting_pickup: { label: "Chờ hãng lấy hàng", tone: "pending" },
+  ready_to_pick: { label: "Chờ hãng lấy hàng", tone: "pending" },
+  picking: { label: "Hãng đang đến lấy", tone: "pending" },
+  picked: { label: "Đã bàn giao cho hãng", tone: "success" },
+  in_transit: { label: "Đang vận chuyển", tone: "pending" },
+  delivering: { label: "Đang giao đến khách", tone: "pending" },
+  delivered: { label: "Đã giao thành công", tone: "success" },
+  delivery_fail: { label: "Giao chưa thành công", tone: "warning" },
+  delivery_failed: { label: "Giao chưa thành công", tone: "warning" },
+  returning: { label: "Đang trả về shop", tone: "warning" },
+  returned: { label: "Hàng đã trả về", tone: "neutral" },
+  cancel: { label: "Hãng đã huỷ vận đơn", tone: "neutral" },
+  cancelled: { label: "Đã huỷ vận đơn", tone: "neutral" },
+  lost: { label: "Cần xử lý thất lạc", tone: "danger" },
+};
+
 export const ORDER_STATUS: Record<string, StatusMeta> = {
   pending: { label: "Chờ xác nhận", tone: "warning" },
   confirmed: { label: "Đã xác nhận", tone: "pending" },
@@ -48,17 +72,175 @@ export const REFUND_STATUS: Record<string, StatusMeta> = {
   failed: { label: "Thất bại", tone: "danger" },
 };
 
+// PLAN-0041: khoản nạp cọc ví qua PayOS (backend TOPUP_STATUS). Tông theo bảng §7.2 của plan.
+export const TOPUP_STATUS: Record<string, StatusMeta> = {
+  creating: { label: "Đang khởi tạo", tone: "pending" },
+  pending: { label: "Chờ thanh toán", tone: "warning" },
+  partial: { label: "Đã nhận một phần", tone: "warning" },
+  paid: { label: "Đã nhận đủ", tone: "success" },
+  expired: { label: "Hết hạn", tone: "neutral" },
+  cancelled: { label: "Đã huỷ", tone: "neutral" },
+  failed: { label: "Không tạo được", tone: "danger" },
+};
+
 /* Loại hoàn tiền: hoàn theo đơn (huỷ/đổi trả) khác hoàn khoản khách trả trùng — khoản trùng không đổi trạng thái thanh toán của đơn. */
 export const REFUND_KIND: Record<string, StatusMeta> = {
   order: { label: "Hoàn theo đơn", tone: "neutral" },
   duplicate_payment: { label: "Thanh toán trùng", tone: "warning" },
+  // PLAN-0040 6.2 (AUD-23): hoàn phần tiền lệch — khách trả thừa, hoặc trả thiếu rồi đơn huỷ; không đổi trạng thái thanh toán của đơn.
+  mismatch: { label: "Tiền thanh toán lệch", tone: "warning" },
 };
 
+/*
+ * Máy trạng thái đổi trả (backend RETURN_STATUS, PLAN-0022): shop duyệt/từ chối/nhận hàng, sàn chỉ phân xử `escalated`.
+ * `approved` = shop đã duyệt, hàng CHƯA về (khách chưa/đang gửi); `received` = hàng đã về VÀ khoản hoàn đã được tạo bên payment.
+ */
 export const RETURN_STATUS: Record<string, StatusMeta> = {
-  requested: { label: "Chờ duyệt", tone: "warning" },
-  approved: { label: "Đã duyệt", tone: "pending" },
-  rejected: { label: "Từ chối", tone: "danger" },
+  requested: { label: "Chờ shop duyệt", tone: "warning" },
+  approved: { label: "Chờ nhận hàng trả", tone: "pending" },
+  received: { label: "Đang hoàn tiền", tone: "pending" },
   refunded: { label: "Đã hoàn tiền", tone: "success" },
+  rejected: { label: "Từ chối", tone: "danger" },
+  escalated: { label: "Chờ sàn phân xử", tone: "warning" },
+  cancelled: { label: "Khách đã rút", tone: "neutral" },
+  expired: { label: "Hết hạn gửi hàng", tone: "neutral" },
+};
+
+/* Lý do khách chọn khi tạo yêu cầu (backend RETURN_REASON_LABEL). */
+export const RETURN_REASON_LABEL: Record<string, string> = {
+  defective: "Hàng bị lỗi",
+  wrong_item: "Giao sai hàng",
+  not_as_described: "Không đúng mô tả",
+  damaged_shipping: "Hư hỏng khi vận chuyển",
+  size_issue: "Không vừa kích cỡ",
+  changed_mind: "Đổi ý, không muốn mua nữa",
+  not_received: "Chưa nhận được hàng",
+  other: "Lý do khác",
+};
+
+/* Vì sao yêu cầu lên sàn (`escalateSource`) — CSKH nhìn vào là biết ai cần giải trình. */
+export const RETURN_ESCALATE_SOURCE_LABEL: Record<string, string> = {
+  customer: "Khách khiếu nại sau khi shop từ chối",
+  shop_timeout: "Shop quá hạn duyệt",
+  shop_receive_timeout: "Shop quá hạn xác nhận nhận hàng",
+  shop_not_matching: "Shop báo hàng trả không khớp",
+};
+
+/* Ngắn gọn cho cột bảng. */
+export const RETURN_ESCALATE_SOURCE_SHORT: Record<string, string> = {
+  customer: "Khách khiếu nại",
+  shop_timeout: "Shop quá hạn duyệt",
+  shop_receive_timeout: "Shop quá hạn nhận hàng",
+  shop_not_matching: "Hàng không khớp",
+};
+
+/* Bước đang chờ và hạn của nó (`deadlineKind`). */
+export const RETURN_DEADLINE_LABEL: Record<string, string> = {
+  shop_respond: "Hạn shop duyệt / từ chối",
+  ship_back: "Hạn khách gửi hàng trả",
+  shop_receive: "Hạn shop xác nhận nhận hàng",
+  escalate: "Hạn khách khiếu nại",
+};
+
+export const RETURN_RECEIVED_CONDITION_LABEL: Record<string, string> = {
+  ok: "Đúng hàng",
+  not_matching: "Không khớp",
+};
+
+export const RETURN_RESOLVE_DECISION_LABEL: Record<string, string> = {
+  refund: "Hoàn tiền cho khách",
+  reject: "Từ chối lần cuối",
+};
+
+/* Lý do shop báo giao không thành công (backend DELIVERY_FAILED_LABEL). */
+export const DELIVERY_FAILED_REASON_LABEL: Record<string, string> = {
+  refused: "Khách từ chối nhận hàng",
+  unreachable: "Không liên lạc được với khách",
+  wrong_address: "Sai địa chỉ / không tìm thấy địa chỉ giao",
+  lost: "Hàng thất lạc trong vận chuyển",
+  damaged: "Hàng hư hỏng trong vận chuyển",
+  other: "Lý do khác",
+};
+
+// PLAN-0040 Tầng 3 — huỷ đơn & hạn chót (backend order.constants.ts: CANCEL_SOURCE_LABEL / CANCEL_REASON_LABEL / CANCEL_REQUEST_STATUS)
+/* Ai huỷ đơn (`cancelledBy`). */
+export const CANCELLED_BY_LABEL: Record<string, string> = {
+  customer: "Khách hàng",
+  shop: "Gian hàng",
+  platform: "Sàn FITLY",
+  system: "Hệ thống",
+};
+
+/* Mã lý do huỷ (`cancelReasonCode`) của cả bốn bên — một bảng vì đơn nào cũng chỉ có một mã. */
+export const CANCEL_REASON_LABEL: Record<string, string> = {
+  changed_mind: "Đổi ý, không muốn mua nữa",
+  wrong_address: "Nhập sai địa chỉ / thông tin nhận hàng",
+  found_cheaper: "Tìm được nơi bán giá tốt hơn",
+  slow_confirm: "Shop xác nhận đơn quá chậm",
+  out_of_stock: "Hết hàng",
+  price_error: "Sai giá niêm yết",
+  cannot_contact: "Không liên lạc được với khách",
+  customer_request: "Theo yêu cầu của khách",
+  dispute: "Tranh chấp",
+  fraud: "Nghi ngờ gian lận",
+  other: "Lý do khác",
+  payment_expired: "Quá hạn thanh toán",
+  shop_confirm_timeout: "Shop không xác nhận đơn đúng hạn",
+  shop_ship_timeout: "Shop không giao hàng đúng hạn",
+  shop_suspended: "Gian hàng bị tạm khoá",
+};
+
+/* Yêu cầu huỷ đơn đang đóng gói của khách (`cancelRequest.status`). */
+export const CANCEL_REQUEST_STATUS: Record<string, StatusMeta> = {
+  pending: { label: "Chờ shop xử lý", tone: "warning" },
+  accepted: { label: "Shop đã chấp nhận", tone: "success" },
+  rejected: { label: "Shop đã từ chối", tone: "danger" },
+  auto_accepted: { label: "Tự chấp nhận (shop quá hạn)", tone: "neutral" },
+};
+
+/* Hãng vận chuyển (backend CARRIERS — danh mục cố định, `order.constants.ts`). */
+export const CARRIER_LABEL: Record<string, string> = {
+  ghn: "Giao Hàng Nhanh (GHN)",
+  ghtk: "Giao Hàng Tiết Kiệm (GHTK)",
+  viettel_post: "Viettel Post",
+  jnt: "J&T Express",
+  spx: "Shopee Express (SPX)",
+  ahamove: "Ahamove",
+  ninja_van: "Ninja Van",
+  vnpost: "VNPost",
+  other: "Hãng khác",
+};
+
+/* Khoản hoàn mới nhất của đơn (`order.refund`) — nhìn từ phía đơn hàng, không phải phía kế toán. */
+export const ORDER_REFUND_STATUS: Record<string, StatusMeta> = {
+  requested: { label: "Chờ hoàn tiền", tone: "pending" },
+  processing: { label: "Đang hoàn tiền", tone: "pending" },
+  failed: { label: "Hoàn tiền chưa thành công", tone: "warning" },
+  done: { label: "Đã hoàn tiền", tone: "success" },
+};
+
+/*
+ * PLAN-0040 6.2: cách chi khoản hoàn (`RefundResponse.method` = gateway | manual_transfer — KHÔNG phải mã phương thức thanh toán nên
+ * không dùng `paymentMethodLabel`). Hoàn của đơn COD luôn là `manual_transfer`: tiền mặt chưa chắc đã thu nên không bao giờ tự chi.
+ */
+export const REFUND_METHOD_LABEL: Record<string, string> = {
+  gateway: "Qua PayOS",
+  manual_transfer: "Chuyển khoản tay",
+};
+
+/* Trạng thái lệnh chi PayOS của khoản hoàn (`gatewayStatus`); null = chưa gửi lệnh / hoàn tay. */
+export const REFUND_GATEWAY_STATUS: Record<string, StatusMeta> = {
+  submitted: { label: "PayOS đã nhận lệnh", tone: "pending" },
+  processing: { label: "PayOS đang xử lý", tone: "pending" },
+  succeeded: { label: "PayOS đã chuyển", tone: "success" },
+  failed: { label: "PayOS báo lỗi", tone: "danger" },
+};
+
+/* Nguồn tài khoản nhận hoàn (`payeeSource`): ưu tiên tài khoản ĐÃ trả tiền, sau đó khách khai. */
+export const REFUND_PAYEE_SOURCE_LABEL: Record<string, string> = {
+  payer: "TK đã thanh toán",
+  customer: "Khách khai",
+  none: "Chưa có",
 };
 
 export const PRODUCT_STATUS: Record<string, StatusMeta> = {
@@ -115,14 +297,48 @@ export const SHOP_STATUS: Record<string, StatusMeta> = {
   rejected: { label: "Từ chối", tone: "neutral" },
 };
 
+// PLAN-0040 5.2: xác minh tài khoản ngân hàng của shop (`bankStatus`). pending_verification = tên chủ TK lệch họ tên chủ shop,
+// kỳ chi trả bị giữ tới khi quản lý sàn xác minh. `verified` gồm cả tên khớp lẫn quản lý đã xác minh tay (`bankVerifiedAt`).
+export const SHOP_BANK_STATUS: Record<string, StatusMeta> = {
+  verified: { label: "Đã xác minh", tone: "success" },
+  pending_verification: { label: "Chờ sàn xác minh", tone: "warning" },
+};
+
+// PLAN-0040 6.4: loại điểm vi phạm xử lý đơn của shop. Màn hiện `kindLabel` do backend trả; bảng này chỉ cấp TÔNG màu + nhãn dự phòng
+// (nhóm quá hạn = đỏ, nhóm shop tự huỷ/từ chối = vàng).
+export const SHOP_VIOLATION_KIND: Record<string, StatusMeta> = {
+  confirm_timeout: { label: "Quá hạn xác nhận đơn", tone: "danger" },
+  ship_timeout: { label: "Quá hạn giao hàng", tone: "danger" },
+  cancel_out_of_stock: { label: "Huỷ đơn vì hết hàng", tone: "warning" },
+  cancel_price_error: { label: "Huỷ đơn vì sai giá", tone: "warning" },
+  cancel_packing: { label: "Huỷ đơn đã đóng gói", tone: "warning" },
+  reject_then_cancel: { label: "Từ chối yêu cầu huỷ của khách rồi tự huỷ đơn", tone: "warning" },
+};
+
 /* Kỳ đối soát (payout) — backend `PAYOUT_STATUS`: carried = net âm (không chi), settled = net 0. */
 export const SHOP_PAYOUT_STATUS: Record<string, StatusMeta> = {
   pending: { label: "Chờ chi", tone: "warning" },
   processing: { label: "Đang chi", tone: "pending" },
   paid: { label: "Đã chi", tone: "success" },
   failed: { label: "Chi lỗi", tone: "danger" },
+  // PLAN-0026
+  awaiting_approval: { label: "Chờ duyệt", tone: "warning" },
+  unknown: { label: "Không rõ kết quả — kiểm tra PayOS", tone: "danger" },
+  held: { label: "Đang giữ", tone: "warning" },
+  deferred: { label: "Chờ dồn kỳ sau (dưới mức tối thiểu)", tone: "neutral" },
+  // PLAN-0040 6.2 (AUD-23): kỳ `deferred` đã được cộng sang kỳ sau — chỉ để tra cứu, không thao tác được.
+  merged: { label: "Đã dồn sang kỳ sau", tone: "neutral" },
   carried: { label: "Mang nợ sang kỳ sau", tone: "neutral" },
   settled: { label: "Không phát sinh", tone: "neutral" },
+};
+
+/* PLAN-0040 6.2: kết quả lệnh chi PayOS của kỳ (`gatewayStatus`); null = chưa gửi lệnh / chi tay. */
+export const PAYOUT_GATEWAY_STATUS: Record<string, StatusMeta> = {
+  submitted: { label: "PayOS đã nhận lệnh", tone: "pending" },
+  succeeded: { label: "PayOS đã chuyển", tone: "success" },
+  failed: { label: "PayOS từ chối chắc chắn", tone: "danger" },
+  not_received: { label: "PayOS chưa nhận lệnh", tone: "warning" },
+  unknown: { label: "Không rõ kết quả", tone: "danger" },
 };
 
 /*
@@ -132,6 +348,9 @@ export const SHOP_PAYOUT_STATUS: Record<string, StatusMeta> = {
 export const VENDOR_PAYOUT_STATUS: Record<string, StatusMeta> = {
   ...SHOP_PAYOUT_STATUS,
   failed: { label: "Đang xử lý lại", tone: "warning" },
+  // Vendor không cần biết chi tiết cổng: kỳ chưa rõ kết quả / chờ duyệt đều hiện là "đang xử lý".
+  unknown: { label: "Đang xử lý", tone: "pending" },
+  awaiting_approval: { label: "Đang xử lý", tone: "pending" },
 };
 
 export const SHOP_MEMBER_ROLE_LABEL: Record<string, string> = {

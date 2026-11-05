@@ -5,8 +5,10 @@
  * Backend sàn thương mại điện tử đa ngành hàng — web bán hàng + web quản trị. Mọi response theo envelope ApiResponse.
  * OpenAPI spec version: 0.1.0
  */
+import type { OrderControllerSummaryPaymentMethodCode } from './orderControllerSummaryPaymentMethodCode';
 
 export type OrderControllerSummaryParams = {
+paymentMethodCode?: OrderControllerSummaryPaymentMethodCode;
 voucherCode?: string;
 /**
  * Nhiều mã cách nhau dấu phẩy: tối đa 1 mã sàn + 1 mã gian hàng cho mỗi shop trong giỏ

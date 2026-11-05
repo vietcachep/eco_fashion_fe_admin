@@ -16,7 +16,6 @@ export const UpdateUserByAdminRequestRoleCode = {
   admin: 'admin',
   manager: 'manager',
   sales: 'sales',
-  warehouse: 'warehouse',
   accountant: 'accountant',
   marketing: 'marketing',
 } as const;

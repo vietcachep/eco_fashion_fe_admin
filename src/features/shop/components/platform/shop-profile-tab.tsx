@@ -1,21 +1,20 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DetailList } from "@/components/shared/detail-list";
 import { formatDateTime, formatNumber } from "@/lib/format";
 import type { AdminShopResponse } from "@/lib/api/generated/model";
 import { formatCommissionRate } from "@/features/shop/components/platform/shop-cells";
+import { ShopBankCard } from "@/features/shop/components/platform/shop-bank-card";
 import { ShopRegistrationCard } from "@/features/shop/components/platform/shop-registration-card";
-import { bankNameByBin } from "@/features/shop/types/bank-list";
 
 /*
  * Tab "Hồ sơ" ở chi tiết shop: thông tin gian hàng + TÀI KHOẢN NGÂN HÀNG với số tài khoản ĐẦY ĐỦ
  * (`GET /admin/shops/:id` chỉ trả `bankAccountNumber` cho nhân viên sàn; vendor chỉ thấy bản che).
- * Đây là tài khoản nhận tiền khi sàn chi kỳ đối soát — kế toán đối chiếu trước khi chuyển.
+ * Đây là tài khoản nhận tiền khi sàn chi kỳ đối soát — kế toán đối chiếu trước khi chuyển. Phần ngân hàng
+ * (trạng thái xác minh, so tên chủ shop ↔ chủ TK, nút "Xác minh tài khoản") nằm ở `ShopBankCard`.
  */
 export function ShopProfileTab({ shop }: { shop: AdminShopResponse }) {
-  const hasBank = !!(shop.bankCode || shop.bankAccountName || shop.bankAccountNumber);
-
   return (
     <div className="grid gap-4 lg:grid-cols-3">
       <ShopRegistrationCard shopId={shop.id} />
@@ -54,27 +53,7 @@ export function ShopProfileTab({ shop }: { shop: AdminShopResponse }) {
         </CardContent>
       </Card>
 
-      <Card className="self-start">
-        <CardHeader>
-          <CardTitle className="text-base">Tài khoản ngân hàng</CardTitle>
-          <CardDescription>Tài khoản nhận tiền khi sàn chi kỳ đối soát. Chỉ nhân viên sàn thấy đầy đủ số tài khoản.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {hasBank ? (
-            <DetailList
-              rows={[
-                { label: "Ngân hàng", value: shop.bankCode ? `${bankNameByBin(shop.bankCode) ?? "Ngân hàng khác"} (BIN ${shop.bankCode})` : "—" },
-                { label: "Chủ tài khoản", value: shop.bankAccountName ?? "—" },
-                { label: "Số tài khoản", value: <span className="font-mono tracking-wide">{shop.bankAccountNumber ?? shop.bankAccountNumberMasked ?? "—"}</span> },
-              ]}
-            />
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              Shop chưa khai báo tài khoản ngân hàng — kỳ đối soát có tiền phải chi sẽ không chi tự động được cho tới khi shop bổ sung.
-            </p>
-          )}
-        </CardContent>
-      </Card>
+      <ShopBankCard shop={shop} />
     </div>
   );
 }

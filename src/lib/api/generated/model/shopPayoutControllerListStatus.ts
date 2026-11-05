@@ -11,9 +11,14 @@ export type ShopPayoutControllerListStatus = typeof ShopPayoutControllerListStat
 
 export const ShopPayoutControllerListStatus = {
   pending: 'pending',
+  awaiting_approval: 'awaiting_approval',
   processing: 'processing',
   paid: 'paid',
   failed: 'failed',
+  unknown: 'unknown',
+  held: 'held',
+  deferred: 'deferred',
+  merged: 'merged',
   carried: 'carried',
   settled: 'settled',
 } as const;

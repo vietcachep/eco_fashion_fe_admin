@@ -7,11 +7,14 @@ import {
   Megaphone,
   Package,
   Settings,
+  ShieldAlert, // PLAN-0040 6.4 (menu "Điểm vi phạm")
   ShoppingBag,
   Store,
+  Undo2,
   Users,
   Wallet,
   Warehouse,
+  Truck,
 } from "lucide-react";
 import type { PermissionCode } from "@/lib/permission-codes.generated";
 
@@ -51,6 +54,10 @@ export const ROUTES = {
   order: {
     orders: "/order/orders",
     returns: "/order/returns",
+  },
+  shipping: {
+    shipments: "/shipping/shipments",
+    simulator: "/shipping/simulator",
   },
   payment: {
     payments: "/payment/payments",
@@ -111,6 +118,7 @@ export const ROUTES = {
     inventoryReceipts: "/vendor/inventory/receipts",
     inventoryReceiptNew: "/vendor/inventory/receipts/new",
     orders: "/vendor/orders",
+    returns: "/vendor/returns",
     reports: "/vendor/reports",
     promotions: "/vendor/promotions",
     promotionNew: "/vendor/promotions/new",
@@ -118,6 +126,9 @@ export const ROUTES = {
     contacts: "/vendor/contacts",
     payouts: "/vendor/payouts",
     wallet: "/vendor/wallet",
+    // PLAN-0041: PayOS quay về trang này sau khi chủ shop thanh toán link nạp cọc.
+    walletPayosReturn: "/vendor/wallet/payos-return",
+    violations: "/vendor/violations", // PLAN-0040 6.4
   },
 } as const;
 
@@ -161,6 +172,8 @@ export const PERMISSIONS = {
   returnProcess: "order.return.process",
   // payment
   paymentRead: "payment.payment.read",
+  carrierCodConfirm: "payment.cod.confirm",
+  shippingSimulate: "shipping.simulator.use",
   transferConfirm: "payment.transfer.confirm",
   refundCreate: "payment.refund.create",
   refundProcess: "payment.refund.process",
@@ -201,6 +214,8 @@ export const PERMISSIONS = {
   supplierShopCommission: "supplier.shop.commission",
   supplierPayoutRead: "supplier.payout.read",
   supplierPayoutProcess: "supplier.payout.process",
+  // PLAN-0040 6.2: duyệt kỳ chi vượt hạn mức tự chi (kế toán + admin)
+  supplierPayoutApprove: "supplier.payout.approve",
   supplierWalletRead: "supplier.wallet.read",
   supplierWalletApprove: "supplier.wallet.approve",
   supplierWalletAdjust: "supplier.wallet.adjust",
@@ -217,6 +232,11 @@ export const PERMISSIONS = {
   shopStaffRemove: "shop.staff.remove",
   shopOrderRead: "shop.order.read",
   shopOrderUpdate: "shop.order.update",
+  // PLAN-0040 3.1: huỷ đơn / chấp nhận-từ chối yêu cầu huỷ của khách (trước đây dùng shop.order.update); nhân viên chỉ có khi chủ shop giao
+  shopOrderCancel: "shop.order.cancel",
+  // đổi trả của shop: read = xem; process = duyệt / từ chối / xác nhận nhận hàng (báo giao không thành công đã chuyển sang shop.order.update — PLAN-0031 §2.4)
+  shopReturnRead: "shop.return.read",
+  shopReturnProcess: "shop.return.process",
   shopInventoryRead: "shop.inventory.read",
   shopInventoryManage: "shop.inventory.manage",
   shopPromotionRead: "shop.promotion.read",
@@ -336,6 +356,15 @@ export const SIDEBAR_NAV: NavGroup[] = [
             href: ROUTES.system.contacts,
             permission: PERMISSIONS.contactRead,
           },
+        ],
+      },
+      {
+        id: "shipping",
+        title: "Vận chuyển",
+        icon: Truck,
+        children: [
+          { title: "Danh sách vận đơn", href: ROUTES.shipping.shipments, permission: PERMISSIONS.orderRead },
+          { title: "GHN giả lập", href: ROUTES.shipping.simulator, permission: PERMISSIONS.shippingSimulate },
         ],
       },
       {
@@ -616,6 +645,21 @@ export const VENDOR_NAV: NavGroup[] = [
         title: "Đơn hàng",
         icon: ShoppingBag,
         href: ROUTES.vendor.orders,
+        permission: PERMISSIONS.shopOrderRead,
+      },
+      {
+        id: "vendor-return",
+        title: "Đổi trả",
+        icon: Undo2,
+        href: ROUTES.vendor.returns,
+        permission: PERMISSIONS.shopReturnRead,
+      },
+      // PLAN-0040 6.4: điểm vi phạm xử lý đơn (GET /shop/violations) — cùng quyền xem đơn của shop.
+      {
+        id: "vendor-violation",
+        title: "Điểm vi phạm",
+        icon: ShieldAlert,
+        href: ROUTES.vendor.violations,
         permission: PERMISSIONS.shopOrderRead,
       },
     ],

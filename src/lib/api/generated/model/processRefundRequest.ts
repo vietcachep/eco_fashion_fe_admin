@@ -7,7 +7,9 @@
  */
 
 export interface ProcessRefundRequest {
-  /** Mã tham chiếu chuyển khoản / giao dịch hoàn (bắt buộc khi hoàn tay). */
+  /** Mã giao dịch chuyển khoản (bắt buộc khi hoàn tay — đơn COD khi chưa cấu hình payout, thiếu tài khoản nhận, refund lịch sử qua cổng cũ): ghi sổ, KHÔNG gọi cổng. 4–120 ký tự chữ-số và `. _ : / # -`, DUY NHẤT toàn hệ thống (trùng ⇒ 409 REFUND_PROVIDER_REF_DUPLICATE), không mở đầu bằng `payos-refund:`. */
   providerRef?: string;
   note?: string;
+  /** Chỉ dùng khi hoàn tay một khoản có lệnh chi PayOS ở trạng thái KHÔNG RÕ mà hệ thống KHÔNG tra được PayOS: kế toán xác nhận đã đối chiếu trên bảng điều khiển PayOS và lệnh CHƯA chạy. PayOS tra được và ĐÃ nhận lệnh ⇒ luôn bị chặn 409. */
+  confirmGatewayNotExecuted?: boolean;
 }

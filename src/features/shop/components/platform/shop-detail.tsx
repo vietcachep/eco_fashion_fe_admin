@@ -12,7 +12,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { PERMISSIONS, ROUTES } from "@/lib/constants";
 import type { AdminShopResponse } from "@/lib/api/generated/model";
 import { usePermission } from "@/hooks/use-permission";
-import { ShopStatusBadge } from "@/features/shop/components/platform/shop-cells";
+import { ShopBankStatusBadge, ShopStatusBadge } from "@/features/shop/components/platform/shop-cells";
 import {
   ShopActionDialogs,
   useShopActionItems,
@@ -21,11 +21,12 @@ import {
 } from "@/features/shop/components/platform/shop-actions";
 import { ShopPayoutsTab } from "@/features/shop/components/platform/shop-payouts-tab";
 import { ShopProfileTab } from "@/features/shop/components/platform/shop-profile-tab";
+import { ShopViolationsTab } from "@/features/shop/components/violations/shop-violations-tab";
 import { useAdminShop } from "@/features/shop/hooks/use-admin-shops";
 
 const LOAD_ERROR = "Không tải được gian hàng.";
 
-type TabKey = "profile" | "payouts";
+type TabKey = "profile" | "violations" | "payouts";
 
 /* Nút thao tác ở đầu trang — cùng bộ thao tác với menu "⋯" ở danh sách (xem shop-actions). */
 function ShopHeaderActions({ shop, onAction }: { shop: AdminShopResponse; onAction: (kind: ShopActionKind) => void }) {
@@ -47,8 +48,9 @@ function ShopHeaderActions({ shop, onAction }: { shop: AdminShopResponse; onActi
 }
 
 /*
- * Chi tiết MỘT gian hàng (sàn xem, quyền supplier.shop.read) gồm hai tab: Hồ sơ (kèm tài khoản
- * ngân hàng đầy đủ) và Đối soát. Tab hiện tại nằm ở `?tab=`; tab đối soát chỉ hiện khi có quyền đọc.
+ * Chi tiết MỘT gian hàng (sàn xem, quyền supplier.shop.read) gồm ba tab: Hồ sơ (kèm tài khoản
+ * ngân hàng đầy đủ + xác minh), Vi phạm (điểm xử lý đơn) và Đối soát. Tab hiện tại nằm ở `?tab=`;
+ * tab đối soát chỉ hiện khi có quyền đọc kỳ chi.
  */
 export function ShopDetail({ id }: { id: string }) {
   const router = useRouter();
@@ -69,7 +71,11 @@ export function ShopDetail({ id }: { id: string }) {
     );
   }
 
-  const tabs: FilterTab[] = [{ key: "profile", label: "Hồ sơ" }];
+  // Tab "Vi phạm" (PLAN-0040 6.4) cùng quyền supplier.shop.read với cả trang nên luôn hiện; "Đối soát" cần thêm quyền đọc kỳ chi.
+  const tabs: FilterTab[] = [
+    { key: "profile", label: "Hồ sơ" },
+    { key: "violations", label: "Vi phạm" },
+  ];
   if (canPayout) tabs.push({ key: "payouts", label: "Đối soát" });
   const requested = searchParams.get("tab");
   const tab = (tabs.some((t) => t.key === requested) ? requested : "profile") as TabKey;
@@ -80,6 +86,8 @@ export function ShopDetail({ id }: { id: string }) {
         {/* Bọc flex-wrap: vài nút thao tác + badge phải xuống dòng được ở 390px. */}
         <div className="flex flex-wrap items-center gap-2">
           <ShopStatusBadge status={shop.status} />
+          {/* PLAN-0040 5.2: báo ngay ở đầu trang khi TK ngân hàng đang chờ xác minh (kỳ chi trả đang bị giữ). */}
+          {shop.bankStatus === "pending_verification" ? <ShopBankStatusBadge status={shop.bankStatus} /> : null}
           <Button variant="outline" nativeButton={false} render={<Link href={ROUTES.shop.shops} />}>
             <ArrowLeftIcon className="size-4" />
             Danh sách
@@ -93,6 +101,7 @@ export function ShopDetail({ id }: { id: string }) {
       ) : null}
 
       {tab === "profile" ? <ShopProfileTab shop={shop} /> : null}
+      {tab === "violations" ? <ShopViolationsTab shopId={shop.id} /> : null}
       {tab === "payouts" ? <ShopPayoutsTab shopId={shop.id} shopName={shop.name} /> : null}
 
       <ShopActionDialogs action={action} onClose={() => setAction(null)} />

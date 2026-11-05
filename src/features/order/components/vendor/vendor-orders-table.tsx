@@ -16,10 +16,14 @@ import { ROUTES } from "@/lib/constants";
 import { formatDateTime, formatNumber } from "@/lib/format";
 import { ORDER_STATUS, statusMeta } from "@/lib/labels";
 import { useListState } from "@/hooks/use-list-state";
+import { useNow } from "@/features/order/hooks/use-now";
 import { useShopAwaitingConfirmCount, useShopOrders, useShopOrderSummary } from "@/features/order/hooks/use-shop-orders";
 import type { OrderSummaryResponse } from "@/features/order/types/order";
 import { isActionablePending, isAwaitingOnlinePayment, SHOP_ORDER_STATUS_TABS } from "@/features/order/types/shop-order";
+import { pendingDue } from "@/features/order/types/order";
 import { ShopPaymentBadge } from "@/features/order/components/vendor/shop-payment-badge";
+import { CancelRequestChip } from "@/features/order/components/orders-common/cancel-request-chip";
+import { OrderDueByStatus } from "@/features/order/components/orders-common/order-due";
 
 const PAGE_SIZE = 15;
 const LOAD_ERROR = "Không tải được danh sách đơn hàng.";
@@ -44,8 +48,12 @@ function itemSummary(o: OrderSummaryResponse): string {
   return `${o.firstItemName ?? "—"}${o.itemCount > 1 ? ` +${o.itemCount - 1} sản phẩm khác` : ""}`;
 }
 
-/* Gợi ý cho đơn chờ xác nhận: đơn đã trả/COD shop làm được ngay, đơn online chưa trả phải chờ khách. */
+/*
+ * Gợi ý cần làm: khách đang yêu cầu huỷ đơn đóng gói (shop phải chấp nhận / từ chối trước hạn); đơn chờ xác nhận đã trả/COD shop làm được ngay,
+ * đơn online chưa trả phải chờ khách.
+ */
 function UrgencyChip({ order }: { order: OrderSummaryResponse }) {
+  if (order.cancelRequestStatus === "pending") return <CancelRequestChip status={order.cancelRequestStatus} />;
   if (isActionablePending(order)) {
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
@@ -61,7 +69,7 @@ function UrgencyChip({ order }: { order: OrderSummaryResponse }) {
 }
 
 /* Thẻ đơn cho màn hẹp (< md): cả thẻ là link tới chi tiết. */
-function OrderCard({ order: o }: { order: OrderSummaryResponse }) {
+function OrderCard({ order: o, now }: { order: OrderSummaryResponse; now: number }) {
   const status = statusMeta(ORDER_STATUS, o.status);
   return (
     <Link href={detailHref(o.code)} className="flex flex-col gap-2.5 rounded-xl border bg-card p-3 transition-colors hover:bg-muted/50">
@@ -86,6 +94,11 @@ function OrderCard({ order: o }: { order: OrderSummaryResponse }) {
         <ShopPaymentBadge method={o.paymentMethodCode} status={o.paymentStatus} />
         <UrgencyChip order={o} />
       </div>
+      {pendingDue(o) ? (
+        <div className="border-t pt-2">
+          <OrderDueByStatus order={o} now={now} compact />
+        </div>
+      ) : null}
     </Link>
   );
 }
@@ -117,13 +130,15 @@ function OrderCardsSkeleton() {
  * Danh sách đơn con của shop — tab trạng thái kèm số đơn (GET /shop/orders/summary),
  * tìm mã đơn / tên / SĐT người nhận. Backend chỉ lọc theo trạng thái + từ khoá
  * (không lọc theo phương thức thanh toán) nên màn không có bộ lọc đó; thanh toán
- * hiện thành badge từng dòng. Bảng ở ≥ md, thẻ ở màn hẹp.
+ * hiện thành badge từng dòng. Cột "Hạn xác nhận / giao" đếm ngược (quá hạn tô đỏ) và nhãn "Khách yêu cầu huỷ" giúp shop biết đơn nào cần làm
+ * trước (PLAN-0027). Bảng ở ≥ md, thẻ ở màn hẹp.
  */
 export function VendorOrdersTable() {
   const { filters, setFilter, search, setSearch, keyword, pageIndex, setPageIndex, page } = useListState(DEFAULTS);
   const { data, isLoading, isError, error } = useShopOrders({ keyword, status: filters.status, page, size: PAGE_SIZE });
   const summary = useShopOrderSummary();
   const awaiting = useShopAwaitingConfirmCount();
+  const now = useNow();
 
   const tabs: FilterTab[] = useMemo(() => {
     const counts = summary.data;
@@ -189,6 +204,12 @@ export function VendorOrdersTable() {
         },
       },
       {
+        // Hạn shop phải đáp ứng (backend tính — FE không tự suy): chờ xác nhận → hạn xác nhận, xác nhận / đóng gói → hạn giao; đơn cũ chưa có hạn → "—".
+        id: "due",
+        header: "Hạn xác nhận / giao",
+        cell: ({ row }) => <OrderDueByStatus order={row.original} now={now} compact />,
+      },
+      {
         id: "actions",
         header: () => <span className="sr-only">Thao tác</span>,
         cell: ({ row }) => (
@@ -200,7 +221,7 @@ export function VendorOrdersTable() {
         ),
       },
     ],
-    [],
+    [now],
   );
 
   if (isForbiddenError(error)) return <ApiErrorState error={error} fallback={LOAD_ERROR} />;
@@ -264,7 +285,7 @@ export function VendorOrdersTable() {
         {isLoading ? (
           <OrderCardsSkeleton />
         ) : rows.length ? (
-          rows.map((o) => <OrderCard key={o.code} order={o} />)
+          rows.map((o) => <OrderCard key={o.code} order={o} now={now} />)
         ) : (
           <p className="rounded-xl border border-dashed py-10 text-center text-sm text-muted-foreground">Không có đơn hàng nào.</p>
         )}

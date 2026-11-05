@@ -6,6 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
+/**
+ * Chỉ còn `cod` (shipper thu hộ cho sàn) hoặc `payos`
+ */
 export type CreateOrderRequestPaymentMethodCode = typeof CreateOrderRequestPaymentMethodCode[keyof typeof CreateOrderRequestPaymentMethodCode];
 
 

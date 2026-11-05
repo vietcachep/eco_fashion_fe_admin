@@ -2,20 +2,21 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeftIcon, ImageIcon, PrinterIcon, XCircleIcon } from "lucide-react";
+import { ArrowLeftIcon, CalendarClockIcon, ImageIcon, PackageCheckIcon, PackageXIcon, PrinterIcon, XCircleIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ApiErrorState } from "@/components/shared/api-error-state";
 import { DetailList } from "@/components/shared/detail-list";
 import { PageHeader } from "@/components/shared/page-header";
-import { PermissionGate } from "@/components/shared/permission-gate";
 import { StatusBadge } from "@/components/shared/status-badge";
 import type { ShopUpdateOrderStatusRequestStatus } from "@/lib/api/generated/model";
 import { PERMISSIONS, ROUTES } from "@/lib/constants";
 import { formatDateTime, formatNumber } from "@/lib/format";
-import { ORDER_STATUS, statusMeta, paymentMethodLabel } from "@/lib/labels";
+import { CANCELLED_BY_LABEL, DELIVERY_FAILED_REASON_LABEL, ORDER_STATUS, statusMeta, paymentMethodLabel } from "@/lib/labels";
 import { cn } from "@/lib/utils";
+import { usePermission } from "@/hooks/use-permission";
+import { useNow } from "@/features/order/hooks/use-now";
 import { useShopOrder } from "@/features/order/hooks/use-shop-orders";
 import {
   isActionablePending,
@@ -29,6 +30,15 @@ import { ShopPaymentBadge } from "@/features/order/components/vendor/shop-paymen
 import { ShopOrderStatusDialog } from "@/features/order/components/vendor/shop-order-status-dialog";
 import { ShopCancelOrderDialog } from "@/features/order/components/vendor/shop-cancel-order-dialog";
 import { ShopOrderPrintSlip } from "@/features/order/components/vendor/shop-order-print-slip";
+import { ShopDeliveryFailedDialog } from "@/features/order/components/vendor/shop-delivery-failed-dialog";
+import { ShopExtendShipDialog } from "@/features/order/components/vendor/shop-extend-ship-dialog";
+import { ShopGoodsReturnedDialog } from "@/features/order/components/vendor/shop-goods-returned-dialog";
+import { CancelRequestPanel } from "@/features/order/components/vendor/cancel-request-panel";
+import { OrderRefundBadge } from "@/features/order/components/orders/order-refund-badge";
+import { OrderCancelCard } from "@/features/order/components/orders-common/order-cancel-info";
+import { OrderDueByStatus } from "@/features/order/components/orders-common/order-due";
+import { shippingRows } from "@/features/order/components/orders-common/order-shipping-rows";
+import { VendorShippingPanel } from "@/features/order/components/vendor/vendor-shipping-panel";
 
 const LOAD_ERROR = "Không tải được đơn hàng.";
 
@@ -43,6 +53,9 @@ interface StepInfo {
 /* Việc shop cần làm tiếp theo ở từng trạng thái — nói rõ VÌ SAO nút bị khoá với đơn online chưa trả. */
 function stepInfo(o: ShopOrderDetail): StepInfo {
   const isCod = o.paymentMethodCode === "cod";
+  if (o.fulfilmentMode === "carrier" && (o.status === "packing" || o.status === "shipping")) {
+    return { title: o.status === "packing" ? "Chuẩn bị để hãng lấy hàng" : "Hãng đang xử lý vận chuyển", description: "Đóng gói và yêu cầu GHN lấy hàng ở khung vận chuyển. Hãng sẽ xác nhận lấy kiện và cập nhật hành trình; shop không cần đánh dấu giao thành công.", tone: "info" };
+  }
   switch (o.status) {
     case "pending":
       if (isAwaitingOnlinePayment(o)) {
@@ -64,13 +77,24 @@ function stepInfo(o: ShopOrderDetail): StepInfo {
     case "confirmed":
       return { title: "Chuẩn bị hàng", description: "Hàng đã được trừ kho. Bắt đầu đóng gói, in phiếu đóng gói để kèm vào kiện.", tone: "info" };
     case "packing":
-      return { title: "Đang đóng gói", description: "Đóng gói xong thì giao cho đơn vị vận chuyển; có thể nhập link theo dõi (https) cho khách.", tone: "info" };
+      if (o.cancelRequest?.status === "pending") {
+        return {
+          title: "Khách yêu cầu huỷ đơn — cần xử lý",
+          description: "Khách muốn huỷ khi đơn đang đóng gói. Chấp nhận hoặc từ chối ở khung bên dưới trước hạn; quá hạn hệ thống tự chấp nhận và huỷ đơn.",
+          tone: "warning",
+        };
+      }
+      return {
+        title: "Đang đóng gói",
+        description: "Đóng gói xong thì giao cho đơn vị vận chuyển: chọn hãng vận chuyển và nhập mã vận đơn (bắt buộc) để khách theo dõi được hành trình.",
+        tone: "info",
+      };
     case "shipping":
       return {
         title: "Đang giao hàng",
         description: isCod
-          ? "Khi khách nhận hàng, bấm \"Đã giao thành công\" và xác nhận shipper đã thu tiền mặt và nộp về sàn — sàn sẽ tự trừ hoa hồng và chi trả cho shop sau hạn đổi trả."
-          : "Khi khách nhận hàng, bấm \"Đã giao thành công\".",
+          ? "Khi khách nhận hàng, bấm \"Đã giao thành công\" và xác nhận đã thu tiền mặt — shop giữ tiền mặt, sàn tự trừ hoa hồng của đơn khỏi ví cọc COD (đơn COD không vào kỳ chi trả). Giao không được (khách từ chối, không liên lạc được, thất lạc…) thì bấm \"Giao không thành công\"."
+          : "Khi khách nhận hàng, bấm \"Đã giao thành công\". Giao không được (khách từ chối, không liên lạc được, thất lạc…) thì bấm \"Giao không thành công\".",
         tone: "info",
       };
     case "delivered":
@@ -78,12 +102,31 @@ function stepInfo(o: ShopOrderDetail): StepInfo {
     case "completed":
       return { title: "Đơn đã hoàn tất", description: "Doanh thu đã được ghi nhận vào báo cáo của shop.", tone: "done" };
     case "cancelled":
-      return { title: "Đơn đã huỷ", description: o.cancelReason ? `Lý do: ${o.cancelReason}` : "Hàng giữ đã được nhả về kho.", tone: "danger" };
+      return cancelledStep(o);
     case "returned":
-      return { title: "Đơn đã được trả hàng", description: "Hàng trả về đã được sàn xử lý theo yêu cầu đổi trả của khách.", tone: "done" };
+      return { title: "Đơn đã được trả hàng", description: "Shop đã xác nhận nhận lại hàng trả và khách được hoàn tiền theo yêu cầu đổi trả.", tone: "done" };
     default:
       return { title: statusMeta(ORDER_STATUS, o.status).label, description: "", tone: "info" };
   }
+}
+
+/* Đơn đã huỷ: nói rõ AI huỷ & vì sao; đơn huỷ do giao không thành công thì nói thêm hàng đã về kho chưa (nút "Hàng đã về kho" nằm ở khung này). */
+function cancelledStep(o: ShopOrderDetail): StepInfo {
+  if (o.deliveryFailedAt) {
+    const reason = (o.deliveryFailedReason && DELIVERY_FAILED_REASON_LABEL[o.deliveryFailedReason]) || o.deliveryFailedReason || "giao không thành công";
+    const stock = o.goodsReturnedAt
+      ? `Hàng đã nhập kho lại lúc ${formatDateTime(o.goodsReturnedAt)}.`
+      : o.canConfirmGoodsReturned
+        ? "Hàng chưa nhập kho: khi nhận lại hàng, bấm \"Hàng đã về kho\" để cộng lại tồn kho (trong 30 ngày kể từ lúc báo)."
+        : "Hàng chưa được nhập kho lại.";
+    return { title: "Giao không thành công — đơn đã huỷ", description: `${reason}. ${stock}`, tone: "danger" };
+  }
+  const by = o.cancelledBy ? CANCELLED_BY_LABEL[o.cancelledBy] : null;
+  return {
+    title: by ? `Đơn đã được huỷ bởi ${by.toLowerCase()}` : "Đơn đã huỷ",
+    description: o.cancelReason ? `Lý do: ${o.cancelReason}` : "Hàng giữ đã được nhả về kho.",
+    tone: "danger",
+  };
 }
 
 const STEP_TONE: Record<StepInfo["tone"], string> = {
@@ -119,13 +162,20 @@ function DetailSkeleton() {
  * Chi tiết đơn của shop: việc cần làm tiếp theo, dòng hàng (ảnh · biến thể · SKU),
  * tiền (voucher shop / voucher sàn tách riêng), người nhận, lịch sử trạng thái.
  * Backend đã che thông tin thanh toán chi tiết của khách (mã giao dịch, thẻ,
- * link thanh toán) nên màn chỉ hiện phương thức + trạng thái. Nút ghi gate
- * `shop.order.update`; nút hợp lệ lấy từ lưới VENDOR_TRANSITIONS của backend.
+ * link thanh toán) nên màn chỉ hiện phương thức + trạng thái. Nút chuyển trạng thái / gia hạn / giao thất bại / hàng về kho gate
+ * `shop.order.update`; huỷ đơn + xử lý yêu cầu huỷ gate `shop.order.cancel` (PLAN-0027). Nút hợp lệ lấy từ lưới VENDOR_TRANSITIONS
+ * của backend và các cờ `canCancel` / `canConfirmGoodsReturned` của response.
  */
 export function VendorOrderDetail({ code }: { code: string }) {
   const { data: o, isPending, error } = useShopOrder(code);
+  const now = useNow();
+  const canUpdate = usePermission(PERMISSIONS.shopOrderUpdate);
+  const canCancelPermission = usePermission(PERMISSIONS.shopOrderCancel);
   const [statusDialog, setStatusDialog] = useState<{ next: ShopUpdateOrderStatusRequestStatus | null; open: boolean }>({ next: null, open: false });
   const [cancelOpen, setCancelOpen] = useState(false);
+  const [failedOpen, setFailedOpen] = useState(false);
+  const [extendOpen, setExtendOpen] = useState(false);
+  const [returnedOpen, setReturnedOpen] = useState(false);
 
   if (error) return <ApiErrorState error={error} fallback={LOAD_ERROR} />;
   if (isPending || !o) return <DetailSkeleton />;
@@ -136,14 +186,28 @@ export function VendorOrderDetail({ code }: { code: string }) {
   const blocked = isAwaitingOnlinePayment(o);
   const isCod = o.paymentMethodCode === "cod";
   const paidOnline = !isCod && (o.paymentStatus === "paid" || o.paymentStatus === "partially_refunded");
-  const canAct = !!next || o.canCancel;
   const showShopDiscount = hasMoney(o.shopDiscount) || !!o.shopPromotion;
   const showPlatformDiscount = hasMoney(o.platformDiscount) || !!o.promotion;
+
+  // Gia hạn giao: một lần, đơn đã xác nhận / đóng gói và CHƯA quá hạn (quá hạn backend từ chối ORDER_SHIP_OVERDUE nên không mời bấm).
+  const extendable =
+    (o.status === "confirmed" || o.status === "packing") && !o.shipExtended && !!o.shipDueAt && new Date(o.shipDueAt).getTime() > now;
+  // Mỗi nút gắn đúng quyền của nó: update (chuyển trạng thái · gia hạn · giao thất bại · hàng về kho) tách khỏi cancel (huỷ đơn · xử lý yêu cầu huỷ).
+  const carrierManaged = o.fulfilmentMode === "carrier";
+  const showNext = canUpdate && !!next && !(carrierManaged && (next === "shipping" || next === "delivered"));
+  const showExtend = canUpdate && extendable;
+  const showFailed = canUpdate && !carrierManaged && o.status === "shipping";
+  const showReturned = canUpdate && !carrierManaged && o.canConfirmGoodsReturned;
+  const showCancel = canCancelPermission && o.canCancel;
+  const hasAction = showNext || showExtend || showFailed || showReturned || showCancel;
+  // Có việc để làm ở trạng thái này nhưng người xem thiếu quyền → nói rõ thay vì để khung trống.
+  const hasPossibleAction = (!!next && !(carrierManaged && (next === "shipping" || next === "delivered"))) || extendable || (!carrierManaged && (o.status === "shipping" || o.canConfirmGoodsReturned)) || o.canCancel;
 
   return (
     <div className="flex flex-col gap-4">
       <PageHeader title={`Đơn ${o.code}`} description={`Đặt lúc ${formatDateTime(o.createdAt)} · ${formatNumber(o.items.length)} dòng hàng`}>
         <StatusBadge tone={status.tone}>{o.statusLabel || status.label}</StatusBadge>
+        {o.shipExtended ? <StatusBadge tone="neutral">Đã gia hạn giao</StatusBadge> : null}
         <Button variant="outline" nativeButton={false} render={<Link href={ROUTES.vendor.orders} />}>
           <ArrowLeftIcon className="size-4" />
           <span className="hidden sm:inline">Danh sách</span>
@@ -159,28 +223,49 @@ export function VendorOrderDetail({ code }: { code: string }) {
         <div className="min-w-0 text-sm">
           <p className="font-semibold">{step.title}</p>
           {step.description ? <p className="pt-0.5 text-muted-foreground">{step.description}</p> : null}
+          <div className="pt-1.5">
+            <OrderDueByStatus order={o} now={now} />
+          </div>
         </div>
-        {canAct ? (
+        {hasPossibleAction ? (
           <div className="flex shrink-0 flex-wrap gap-2">
-            <PermissionGate
-              permission={PERMISSIONS.shopOrderUpdate}
-              fallback={<p className="text-xs text-muted-foreground">Bạn chỉ có quyền xem đơn.</p>}
-            >
-              {next ? (
-                <Button disabled={blocked} onClick={() => setStatusDialog({ next, open: true })}>
-                  {VENDOR_ACTION_LABEL[next]}
-                </Button>
-              ) : null}
-              {o.canCancel ? (
-                <Button variant="destructive" onClick={() => setCancelOpen(true)}>
-                  <XCircleIcon className="size-4" />
-                  Huỷ đơn
-                </Button>
-              ) : null}
-            </PermissionGate>
+            {showNext && next ? (
+              <Button disabled={blocked} onClick={() => setStatusDialog({ next, open: true })}>
+                {VENDOR_ACTION_LABEL[next]}
+              </Button>
+            ) : null}
+            {showExtend ? (
+              <Button variant="outline" onClick={() => setExtendOpen(true)}>
+                <CalendarClockIcon className="size-4" />
+                Gia hạn giao hàng
+              </Button>
+            ) : null}
+            {/* Lối thoát cho đơn kẹt `shipping`: từ PLAN-0031 §2.4 dùng quyền `shop.order.update` (trước là shop.return.process). */}
+            {showFailed ? (
+              <Button variant="outline" onClick={() => setFailedOpen(true)}>
+                <PackageXIcon className="size-4" />
+                Giao không thành công
+              </Button>
+            ) : null}
+            {showReturned ? (
+              <Button onClick={() => setReturnedOpen(true)}>
+                <PackageCheckIcon className="size-4" />
+                Hàng đã về kho
+              </Button>
+            ) : null}
+            {showCancel ? (
+              <Button variant="destructive" onClick={() => setCancelOpen(true)}>
+                <XCircleIcon className="size-4" />
+                Huỷ đơn
+              </Button>
+            ) : null}
+            {!hasAction ? <p className="text-xs text-muted-foreground">Bạn chỉ có quyền xem đơn.</p> : null}
           </div>
         ) : null}
       </div>
+
+      {o.cancelRequest ? <CancelRequestPanel code={o.code} request={o.cancelRequest} paidOnline={paidOnline} now={now} /> : null}
+      {carrierManaged ? <VendorShippingPanel order={o} /> : null}
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="flex flex-col gap-4 lg:col-span-2">
@@ -298,17 +383,7 @@ export function VendorOrderDetail({ code }: { code: string }) {
                   },
                   { label: "Địa chỉ", value: o.shippingAddress },
                   { label: "Ghi chú khách", value: o.customerNote || "—" },
-                  {
-                    label: "Theo dõi",
-                    value:
-                      o.trackingUrl && o.trackingUrl.startsWith("https://") ? (
-                        <a href={o.trackingUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                          Mở link vận chuyển
-                        </a>
-                      ) : (
-                        "—"
-                      ),
-                  },
+                  ...shippingRows(o),
                 ]}
               />
             </CardContent>
@@ -324,14 +399,15 @@ export function VendorOrderDetail({ code }: { code: string }) {
                   { label: "Phương thức", value: paymentMethodLabel(o.paymentMethodCode) },
                   {
                     label: "Trạng thái",
-                    value: <ShopPaymentBadge method={o.paymentMethodCode} status={o.paymentStatus} showMethod={false} />,
+                    value: <ShopPaymentBadge method={o.paymentMethodCode} status={o.paymentStatus} carrierCodStatus={o.carrierCodStatus} showMethod={false} />,
                   },
                   ...(blocked && o.paymentExpiresAt ? [{ label: "Hạn thanh toán", value: formatDateTime(o.paymentExpiresAt) }] : []),
+                  ...(o.refund ? [{ label: "Hoàn tiền", value: <OrderRefundBadge refund={o.refund} /> }] : []),
                 ]}
               />
               {isCod && o.paymentStatus !== "paid" ? (
                 <p className="rounded-lg bg-muted/60 p-2.5 text-xs text-muted-foreground">
-                  Đơn COD: thu <b className="text-foreground">{o.total.display}</b> tiền mặt khi giao hàng.
+                  {carrierManaged ? <>GHN thu hộ <b className="text-foreground">{o.total.display}</b> khi giao hàng; shop không tự thu tiền. {o.carrierCodStatus === "collected_pending_remittance" ? "Hãng đã thu, sàn đang đối chiếu tiền về." : ""}</> : <>Đơn COD: thu <b className="text-foreground">{o.total.display}</b> tiền mặt khi giao hàng.</>}
                 </p>
               ) : null}
               {paidOnline ? (
@@ -344,6 +420,8 @@ export function VendorOrderDetail({ code }: { code: string }) {
               ) : null}
             </CardContent>
           </Card>
+
+          <OrderCancelCard order={o} />
         </div>
       </div>
 
@@ -354,7 +432,18 @@ export function VendorOrderDetail({ code }: { code: string }) {
         isCod={isCod}
         onOpenChange={(open) => setStatusDialog((s) => ({ ...s, open }))}
       />
-      <ShopCancelOrderDialog code={o.code} paidOnline={paidOnline} open={cancelOpen} onOpenChange={setCancelOpen} />
+      <ShopCancelOrderDialog
+        code={o.code}
+        status={o.status}
+        paidOnline={paidOnline}
+        hadRejectedRequest={o.cancelRequest?.status === "rejected"}
+        carrierManaged={carrierManaged}
+        open={cancelOpen}
+        onOpenChange={setCancelOpen}
+      />
+      <ShopDeliveryFailedDialog code={o.code} paidOnline={paidOnline} open={failedOpen} onOpenChange={setFailedOpen} />
+      <ShopExtendShipDialog code={o.code} shipDueAt={o.shipDueAt} open={extendOpen} onOpenChange={setExtendOpen} />
+      <ShopGoodsReturnedDialog code={o.code} open={returnedOpen} onOpenChange={setReturnedOpen} />
       <ShopOrderPrintSlip order={o} />
     </div>
   );

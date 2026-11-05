@@ -21,7 +21,7 @@ rating?: number;
 status?: AdminReviewControllerListStatus;
 q?: string;
 /**
- * Chỉ dữ liệu thuộc gian hàng này (sàn xem theo từng shop)
+ * Chỉ đánh giá về sản phẩm của gian hàng này
  */
 shopId?: string;
 };

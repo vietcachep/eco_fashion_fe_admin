@@ -5,6 +5,7 @@
  * Backend sàn thương mại điện tử đa ngành hàng — web bán hàng + web quản trị. Mọi response theo envelope ApiResponse.
  * OpenAPI spec version: 0.1.0
  */
+import type { AdminSystemControllerContactsScope } from './adminSystemControllerContactsScope';
 import type { AdminSystemControllerContactsStatus } from './adminSystemControllerContactsStatus';
 
 export type AdminSystemControllerContactsParams = {
@@ -18,4 +19,12 @@ page?: number;
  */
 size?: number;
 status?: AdminSystemControllerContactsStatus;
+/**
+ * platform = tin gửi sàn (mặc định) · shops = tin gửi các gian hàng (sàn chỉ giám sát)
+ */
+scope?: AdminSystemControllerContactsScope;
+/**
+ * Chỉ tin gửi gian hàng này
+ */
+shopId?: string;
 };

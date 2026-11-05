@@ -8,6 +8,7 @@ Trình duyệt ──/api/*──▶ Next.js Route Handler (app/api/[...path]) �
 ```
 
 Toàn bộ màn nằm sau `AuthGuard` (route group `(dashboard)`); trang công khai chỉ có login / quên mật khẩu.
+Module `shipping` (PLAN-0043/FE PLAN-0007) thêm danh sách vận đơn và simulator; chi tiết đơn dùng khối trình bày thuần `components/shared/carrier-shipment-card.tsx`, kiểu dùng chung `types/shipping.ts` tái xuất từ OpenAPI. Hook order/shop tự bọc fetcher Orval cần dùng, không import internals feature shipping; query key theo URL tương thích invalidation.
 Đây là app CLIENT-side sau đăng nhập: page.tsx là Server Component mỏng chỉ render component feature;
 dữ liệu tải ở client qua TanStack Query.
 

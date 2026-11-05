@@ -62,14 +62,25 @@ function PaymentsList() {
       {
         id: "amount",
         header: "Số tiền",
-        cell: ({ row }) => (
-          <div className="leading-tight">
-            <p className="font-medium">{row.original.amount.display}</p>
-            {Number(row.original.refundedAmount.amount) > 0 ? (
-              <p className="text-xs text-muted-foreground">hoàn {row.original.refundedAmount.display}</p>
-            ) : null}
-          </div>
-        ),
+        cell: ({ row }) => {
+          const p = row.original;
+          // PLAN-0040 (PLAN-0025 §2.4): PayOS cộng dồn từng khoản vào `receivedAmount`. Khác số cần thanh toán = trả thiếu (chưa `paid`) hoặc trả thừa
+          // (phần thừa được hoàn `mismatch`) — kế toán cần thấy ngay để đối chiếu; đã nhận 0 hoặc khớp thì không cần nói thêm.
+          const received = p.receivedAmount ? Number(p.receivedAmount.amount) : 0;
+          const needed = Number(p.amount.amount);
+          const off = received > 0 && received !== needed;
+          return (
+            <div className="leading-tight">
+              <p className="font-medium">{p.amount.display}</p>
+              {off && p.receivedAmount ? (
+                <p className="text-xs font-medium text-amber-700 dark:text-amber-300">
+                  đã nhận {p.receivedAmount.display} / cần {p.amount.display} · {received < needed ? "trả thiếu" : "trả thừa"}
+                </p>
+              ) : null}
+              {Number(p.refundedAmount.amount) > 0 ? <p className="text-xs text-muted-foreground">hoàn {p.refundedAmount.display}</p> : null}
+            </div>
+          );
+        },
       },
       {
         id: "ref",

@@ -20,7 +20,9 @@ const GROUPS: Array<{ title: string; items: Array<{ code: string; label: string 
     title: "Đơn hàng",
     items: [
       { code: "shop.order.read", label: "Xem đơn hàng" },
-      { code: "shop.order.update", label: "Xác nhận / đóng gói / giao / huỷ đơn" },
+      { code: "shop.order.update", label: "Xác nhận / đóng gói / giao / gia hạn giao hàng" },
+      // PLAN-0040 3.1: huỷ đơn + xử lý yêu cầu huỷ của khách tách khỏi `shop.order.update` (chủ shop có sẵn, nhân viên chỉ khi được giao)
+      { code: "shop.order.cancel", label: "Huỷ đơn / chấp nhận–từ chối yêu cầu huỷ của khách" },
     ],
   },
   {

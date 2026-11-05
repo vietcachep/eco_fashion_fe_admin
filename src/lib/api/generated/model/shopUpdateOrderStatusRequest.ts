@@ -5,12 +5,17 @@
  * Backend sàn thương mại điện tử đa ngành hàng — web bán hàng + web quản trị. Mọi response theo envelope ApiResponse.
  * OpenAPI spec version: 0.1.0
  */
+import type { ShopUpdateOrderStatusRequestCarrier } from './shopUpdateOrderStatusRequestCarrier';
 import type { ShopUpdateOrderStatusRequestStatus } from './shopUpdateOrderStatusRequestStatus';
 
 export interface ShopUpdateOrderStatusRequest {
   /** Trạng thái tiếp theo cho phép */
   status: ShopUpdateOrderStatusRequestStatus;
-  /** URL theo dõi vận chuyển (chỉ https) */
+  /** Hãng vận chuyển — BẮT BUỘC khi status = shipping */
+  carrier?: ShopUpdateOrderStatusRequestCarrier;
+  /** Mã vận đơn (4–40 ký tự: chữ, số, dấu gạch ngang) — BẮT BUỘC khi status = shipping */
+  trackingCode?: string;
+  /** URL theo dõi vận chuyển (chỉ https) — chỉ dùng khi hãng không có mẫu link (other, ahamove) */
   trackingUrl?: string;
   /** Ghi chú */
   note?: string;

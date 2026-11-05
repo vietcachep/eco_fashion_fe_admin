@@ -24,6 +24,8 @@ import type {
   AdminPaymentControllerListParams,
   AdminPaymentControllerRefundsParams,
   ProcessRefundRequest,
+  RefundPayeeRevealResponse,
+  RefundResponse,
   SetMethodActiveRequest
 } from '../model';
 
@@ -403,6 +405,9 @@ export function useAdminPaymentControllerGet<TData = Awaited<ReturnType<typeof a
 
 
 
+/**
+ * @summary Danh sách hoàn tiền (lọc status / shopId / needsManual): có tài khoản nhận (che số), nguồn tài khoản, trạng thái lệnh chi PayOS, cờ chờ chuyển tay, yêu cầu đổi trả gốc. Phần tử là RefundResponse.
+ */
 export const adminPaymentControllerRefunds = (
     params?: AdminPaymentControllerRefundsParams,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
@@ -472,6 +477,9 @@ export function useAdminPaymentControllerRefunds<TData = Awaited<ReturnType<type
  params?: AdminPaymentControllerRefundsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminPaymentControllerRefunds>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Danh sách hoàn tiền (lọc status / shopId / needsManual): có tài khoản nhận (che số), nguồn tài khoản, trạng thái lệnh chi PayOS, cờ chờ chuyển tay, yêu cầu đổi trả gốc. Phần tử là RefundResponse.
+ */
 
 export function useAdminPaymentControllerRefunds<TData = Awaited<ReturnType<typeof adminPaymentControllerRefunds>>, TError = unknown>(
  params?: AdminPaymentControllerRefundsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminPaymentControllerRefunds>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
@@ -491,7 +499,99 @@ export function useAdminPaymentControllerRefunds<TData = Awaited<ReturnType<type
 
 
 /**
- * @summary Thực hiện hoàn tiền: PayOS hoặc ghi nhận đã chuyển tay (providerRef). Refund `processing` quá 10 phút chưa có providerRef được chiếm lại; đã có providerRef chỉ ghi sổ (không gọi cổng).
+ * @summary Xem SỐ TÀI KHOẢN ĐẦY ĐỦ nhận hoàn để chuyển khoản tay (ưu tiên tài khoản đã trả tiền, sau đó khách khai). Dữ liệu nhạy cảm: mỗi lần xem ghi audit REFUND_PAYEE_VIEWED (không ghi số), Cache-Control: no-store. Chỉ khi refund còn mở (requested/processing/failed): đã hoàn xong ⇒ 409 PAYMENT_INVALID_STATE; chưa có tài khoản ⇒ 404 PAYMENT_REFUND_PAYEE_NOT_FOUND.
+ */
+export const adminPaymentControllerPayee = (
+    id: string,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<RefundPayeeRevealResponse>(
+      {url: `/api/v1/admin/refunds/${id}/payee`, method: 'GET', signal
+    },
+      options);
+    }
+
+
+
+
+export const getAdminPaymentControllerPayeeQueryKey = (id: string,) => {
+    return [
+    `/api/v1/admin/refunds/${id}/payee`
+    ] as const;
+    }
+
+
+export const getAdminPaymentControllerPayeeQueryOptions = <TData = Awaited<ReturnType<typeof adminPaymentControllerPayee>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminPaymentControllerPayee>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAdminPaymentControllerPayeeQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof adminPaymentControllerPayee>>> = ({ signal }) => adminPaymentControllerPayee(id, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof adminPaymentControllerPayee>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type AdminPaymentControllerPayeeQueryResult = NonNullable<Awaited<ReturnType<typeof adminPaymentControllerPayee>>>
+export type AdminPaymentControllerPayeeQueryError = unknown
+
+
+export function useAdminPaymentControllerPayee<TData = Awaited<ReturnType<typeof adminPaymentControllerPayee>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminPaymentControllerPayee>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminPaymentControllerPayee>>,
+          TError,
+          Awaited<ReturnType<typeof adminPaymentControllerPayee>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAdminPaymentControllerPayee<TData = Awaited<ReturnType<typeof adminPaymentControllerPayee>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminPaymentControllerPayee>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminPaymentControllerPayee>>,
+          TError,
+          Awaited<ReturnType<typeof adminPaymentControllerPayee>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAdminPaymentControllerPayee<TData = Awaited<ReturnType<typeof adminPaymentControllerPayee>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminPaymentControllerPayee>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Xem SỐ TÀI KHOẢN ĐẦY ĐỦ nhận hoàn để chuyển khoản tay (ưu tiên tài khoản đã trả tiền, sau đó khách khai). Dữ liệu nhạy cảm: mỗi lần xem ghi audit REFUND_PAYEE_VIEWED (không ghi số), Cache-Control: no-store. Chỉ khi refund còn mở (requested/processing/failed): đã hoàn xong ⇒ 409 PAYMENT_INVALID_STATE; chưa có tài khoản ⇒ 404 PAYMENT_REFUND_PAYEE_NOT_FOUND.
+ */
+
+export function useAdminPaymentControllerPayee<TData = Awaited<ReturnType<typeof adminPaymentControllerPayee>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminPaymentControllerPayee>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAdminPaymentControllerPayeeQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Thực hiện hoàn tiền: PayOS payout khi đủ điều kiện (tài khoản đã trả tiền → tài khoản khách khai) hoặc ghi nhận đã chuyển tay (providerRef, duy nhất). PayOS "đã nhận lệnh" KHÔNG phải xong: refund giữ `processing` (gatewayStatus submitted) tới khi PayOS báo thành công thật (job đối soát/bấm lại) — thất bại ⇒ `failed` chạy lại được. Đã gửi lệnh thì không gửi lại. Refund `processing` quá 10 phút chưa gửi lệnh được chiếm lại; đã có providerRef chỉ ghi sổ (không gọi cổng).
  */
 export const adminPaymentControllerProcess = (
     id: string,
@@ -500,7 +600,7 @@ export const adminPaymentControllerProcess = (
 ) => {
 
 
-      return customInstance<void>(
+      return customInstance<RefundResponse>(
       {url: `/api/v1/admin/refunds/${id}/process`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: processRefundRequest, signal
@@ -570,7 +670,7 @@ export function useAdminPaymentControllerProcess<TData = Awaited<ReturnType<type
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Thực hiện hoàn tiền: PayOS hoặc ghi nhận đã chuyển tay (providerRef). Refund `processing` quá 10 phút chưa có providerRef được chiếm lại; đã có providerRef chỉ ghi sổ (không gọi cổng).
+ * @summary Thực hiện hoàn tiền: PayOS payout khi đủ điều kiện (tài khoản đã trả tiền → tài khoản khách khai) hoặc ghi nhận đã chuyển tay (providerRef, duy nhất). PayOS "đã nhận lệnh" KHÔNG phải xong: refund giữ `processing` (gatewayStatus submitted) tới khi PayOS báo thành công thật (job đối soát/bấm lại) — thất bại ⇒ `failed` chạy lại được. Đã gửi lệnh thì không gửi lại. Refund `processing` quá 10 phút chưa gửi lệnh được chiếm lại; đã có providerRef chỉ ghi sổ (không gọi cổng).
  */
 
 export function useAdminPaymentControllerProcess<TData = Awaited<ReturnType<typeof adminPaymentControllerProcess>>, TError = unknown>(
@@ -592,7 +692,7 @@ export function useAdminPaymentControllerProcess<TData = Awaited<ReturnType<type
 
 
 /**
- * @summary Hoàn tất GHI SỔ cho refund mà cổng ĐÃ chi (processing + providerRef) nhưng ghi sổ lỗi. KHÔNG gọi cổng; idempotent (chỉ ghi sổ một lần).
+ * @summary Hoàn tất GHI SỔ cho refund mà tiền ĐÃ đi (processing + providerRef — PayOS đã xác nhận hoặc nhập tay) nhưng ghi sổ lỗi. KHÔNG gọi cổng; idempotent (chỉ ghi sổ một lần).
  */
 export const adminPaymentControllerRetryFinalize = (
     id: string,
@@ -600,7 +700,7 @@ export const adminPaymentControllerRetryFinalize = (
 ) => {
 
 
-      return customInstance<void>(
+      return customInstance<RefundResponse>(
       {url: `/api/v1/admin/refunds/${id}/retry-finalize`, method: 'POST', signal
     },
       options);
@@ -663,7 +763,7 @@ export function useAdminPaymentControllerRetryFinalize<TData = Awaited<ReturnTyp
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Hoàn tất GHI SỔ cho refund mà cổng ĐÃ chi (processing + providerRef) nhưng ghi sổ lỗi. KHÔNG gọi cổng; idempotent (chỉ ghi sổ một lần).
+ * @summary Hoàn tất GHI SỔ cho refund mà tiền ĐÃ đi (processing + providerRef — PayOS đã xác nhận hoặc nhập tay) nhưng ghi sổ lỗi. KHÔNG gọi cổng; idempotent (chỉ ghi sổ một lần).
  */
 
 export function useAdminPaymentControllerRetryFinalize<TData = Awaited<ReturnType<typeof adminPaymentControllerRetryFinalize>>, TError = unknown>(

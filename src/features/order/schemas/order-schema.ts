@@ -1,28 +1,20 @@
 import { z } from "zod";
+import { ADMIN_CANCEL_REASON_CODES, IN_TRANSIT_CANCEL_MIN_REASON } from "@/features/order/types/order";
 
-export const updateStatusSchema = z.object({
-  status: z.enum(["confirmed", "packing", "shipping", "delivered", "completed"]),
-  trackingUrl: z
-    .string()
-    .trim()
-    .refine((v) => v === "" || /^https?:\/\//.test(v), "Link theo dõi phải bắt đầu bằng http(s)://"),
-  note: z.string().trim().max(500, "Tối đa 500 ký tự"),
-});
-export type UpdateStatusInput = z.infer<typeof updateStatusSchema>;
-
-export const cancelOrderSchema = z.object({
-  reason: z.string().trim().min(3, "Nhập lý do huỷ").max(300, "Tối đa 300 ký tự"),
-});
-export type CancelOrderInput = z.infer<typeof cancelOrderSchema>;
-
-export const processReturnSchema = z
-  .object({
-    decision: z.enum(["approved", "rejected"]),
-    rejectReason: z.string().trim().max(300),
-    refundAmount: z.union([z.number().int().min(0), z.nan()]).optional(),
-  })
-  .refine((v) => v.decision !== "rejected" || v.rejectReason.length >= 3, {
-    path: ["rejectReason"],
-    message: "Nhập lý do từ chối",
+/*
+ * Huỷ đơn thay khách (backend AdminCancelOrderRequest: `reason` @Length(3, 255) + `reasonCode` dispute | fraud | other). Đơn ĐANG GIAO
+ * hoặc ĐANG ĐÓNG GÓI huỷ khi tranh chấp phải có lý do rõ (≥ 10 ký tự, backend 400 nếu ngắn hơn) nên schema là hàm theo ngữ cảnh —
+ * dialog biết đơn đang ở trạng thái nào.
+ */
+export function buildCancelOrderSchema(strict: boolean) {
+  const min = strict ? IN_TRANSIT_CANCEL_MIN_REASON : 3;
+  return z.object({
+    reasonCode: z.enum(ADMIN_CANCEL_REASON_CODES),
+    reason: z
+      .string()
+      .trim()
+      .min(min, strict ? `Đơn đang đóng gói / đang giao cần lý do rõ ràng (tối thiểu ${min} ký tự)` : "Nhập lý do huỷ")
+      .max(255, "Tối đa 255 ký tự"),
   });
-export type ProcessReturnInput = z.infer<typeof processReturnSchema>;
+}
+export type CancelOrderInput = z.infer<ReturnType<typeof buildCancelOrderSchema>>;

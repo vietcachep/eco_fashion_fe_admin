@@ -20,7 +20,8 @@ const ITEMS: Array<{
   { key: "awaitingPayment", label: "Đơn chờ thanh toán", href: `${ROUTES.order.orders}?paymentStatus=unpaid` },
   { key: "packing", label: "Đang đóng gói", href: `${ROUTES.order.orders}?status=packing` },
   { key: "shipping", label: "Đang giao", href: `${ROUTES.order.orders}?status=shipping` },
-  { key: "returnsRequested", label: "Đổi trả chờ duyệt", href: `${ROUTES.order.returns}?status=requested` },
+  // Shop tự duyệt đổi trả; hàng đợi của sàn là các ca chờ phân xử (khiếu nại / shop quá hạn) — PLAN-0022.
+  { key: "returnsRequested", label: "Đổi trả chờ sàn phân xử", href: `${ROUTES.order.returns}?status=escalated` },
   { key: "refundsRequested", label: "Hoàn tiền chờ xử lý", href: `${ROUTES.payment.refunds}?status=requested` },
 ];
 

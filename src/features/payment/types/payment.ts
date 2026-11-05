@@ -23,22 +23,13 @@ export interface PaymentResponse {
   cardBrand: string | null;
   cardLast4: string | null;
   refundedAmount: Money;
+  /**
+   * PLAN-0040 (PLAN-0025 §2.4): tổng tiền PayOS đã nhận cho giao dịch này, cộng dồn từng khoản — khác `amount` khi khách trả thiếu / thừa.
+   * Hợp đồng (docs/06_FE_CONTRACT.md) nói response có trường này nhưng `PaymentService.toPayment` của backend chưa trả — nên khai TUỲ CHỌN và UI
+   * chỉ hiện khi có (xem báo cáo Admin-A).
+   */
+  receivedAmount?: Money;
   paidAt: string | null;
   expiresAt: string | null;
   createdAt: string;
-}
-
-export interface RefundResponse {
-  id: string;
-  orderCode: string;
-  amount: Money;
-  status: string;
-  method: string;
-  reason: string | null;
-  note: string | null;
-  providerRef: string | null;
-  processedAt: string | null;
-  createdAt: string;
-  /* order = hoàn theo đơn · duplicate_payment = hoàn khoản khách trả trùng (đơn vẫn giữ trạng thái đã thanh toán). */
-  kind: string;
 }

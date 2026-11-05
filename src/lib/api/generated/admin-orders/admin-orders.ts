@@ -21,14 +21,10 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AdminCancelOrderRequest,
   AdminOrderControllerListParams,
-  AdminOrderControllerReturnsListParams,
-  CancelOrderRequest,
   OrderResponse,
-  PageResponse,
-  ProcessReturnRequest,
-  ReturnRequestResponse,
-  UpdateOrderStatusRequest
+  PageResponse
 } from '../model';
 
 import { customInstance } from '../../mutator';
@@ -227,109 +223,11 @@ export function useAdminOrderControllerGet<TData = Awaited<ReturnType<typeof adm
 
 
 /**
- * @summary confirmed (trừ kho) → packing → shipping (trackingUrl) → delivered (COD thu tiền) → completed
+ * @summary Huỷ đơn thay khách (pending/confirmed; đơn ĐANG GIAO khi tranh chấp — bắt buộc lý do ≥ 10 ký tự, không tự nhập kho, hoàn tiền nếu đã thu online)
  */
-export const adminOrderControllerStatus = (
-    code: string,
-    updateOrderStatusRequest: UpdateOrderStatusRequest,
- options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
-) => {
-
-
-      return customInstance<OrderResponse>(
-      {url: `/api/v1/admin/orders/${code}/status`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: updateOrderStatusRequest, signal
-    },
-      options);
-    }
-
-
-
-
-export const getAdminOrderControllerStatusQueryKey = (code: string,
-    updateOrderStatusRequest?: UpdateOrderStatusRequest,) => {
-    return [
-    'PUT', `/api/v1/admin/orders/${code}/status`, updateOrderStatusRequest
-    ] as const;
-    }
-
-
-export const getAdminOrderControllerStatusQueryOptions = <TData = Awaited<ReturnType<typeof adminOrderControllerStatus>>, TError = unknown>(code: string,
-    updateOrderStatusRequest: UpdateOrderStatusRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerStatus>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAdminOrderControllerStatusQueryKey(code,updateOrderStatusRequest);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof adminOrderControllerStatus>>> = ({ signal }) => adminOrderControllerStatus(code,updateOrderStatusRequest, requestOptions, signal);
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: code !== null && code !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerStatus>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AdminOrderControllerStatusQueryResult = NonNullable<Awaited<ReturnType<typeof adminOrderControllerStatus>>>
-export type AdminOrderControllerStatusQueryError = unknown
-
-
-export function useAdminOrderControllerStatus<TData = Awaited<ReturnType<typeof adminOrderControllerStatus>>, TError = unknown>(
- code: string,
-    updateOrderStatusRequest: UpdateOrderStatusRequest, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerStatus>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminOrderControllerStatus>>,
-          TError,
-          Awaited<ReturnType<typeof adminOrderControllerStatus>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAdminOrderControllerStatus<TData = Awaited<ReturnType<typeof adminOrderControllerStatus>>, TError = unknown>(
- code: string,
-    updateOrderStatusRequest: UpdateOrderStatusRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerStatus>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminOrderControllerStatus>>,
-          TError,
-          Awaited<ReturnType<typeof adminOrderControllerStatus>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAdminOrderControllerStatus<TData = Awaited<ReturnType<typeof adminOrderControllerStatus>>, TError = unknown>(
- code: string,
-    updateOrderStatusRequest: UpdateOrderStatusRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerStatus>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary confirmed (trừ kho) → packing → shipping (trackingUrl) → delivered (COD thu tiền) → completed
- */
-
-export function useAdminOrderControllerStatus<TData = Awaited<ReturnType<typeof adminOrderControllerStatus>>, TError = unknown>(
- code: string,
-    updateOrderStatusRequest: UpdateOrderStatusRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerStatus>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAdminOrderControllerStatusQueryOptions(code,updateOrderStatusRequest,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
 export const adminOrderControllerCancel = (
     code: string,
-    cancelOrderRequest: CancelOrderRequest,
+    adminCancelOrderRequest: AdminCancelOrderRequest,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
 
@@ -337,7 +235,7 @@ export const adminOrderControllerCancel = (
       return customInstance<OrderResponse>(
       {url: `/api/v1/admin/orders/${code}/cancel`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: cancelOrderRequest, signal
+      data: adminCancelOrderRequest, signal
     },
       options);
     }
@@ -346,24 +244,24 @@ export const adminOrderControllerCancel = (
 
 
 export const getAdminOrderControllerCancelQueryKey = (code: string,
-    cancelOrderRequest?: CancelOrderRequest,) => {
+    adminCancelOrderRequest?: AdminCancelOrderRequest,) => {
     return [
-    'POST', `/api/v1/admin/orders/${code}/cancel`, cancelOrderRequest
+    'POST', `/api/v1/admin/orders/${code}/cancel`, adminCancelOrderRequest
     ] as const;
     }
 
 
 export const getAdminOrderControllerCancelQueryOptions = <TData = Awaited<ReturnType<typeof adminOrderControllerCancel>>, TError = unknown>(code: string,
-    cancelOrderRequest: CancelOrderRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerCancel>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+    adminCancelOrderRequest: AdminCancelOrderRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerCancel>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getAdminOrderControllerCancelQueryKey(code,cancelOrderRequest);
+  const queryKey =  queryOptions?.queryKey ?? getAdminOrderControllerCancelQueryKey(code,adminCancelOrderRequest);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof adminOrderControllerCancel>>> = ({ signal }) => adminOrderControllerCancel(code,cancelOrderRequest, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof adminOrderControllerCancel>>> = ({ signal }) => adminOrderControllerCancel(code,adminCancelOrderRequest, requestOptions, signal);
 
 
 
@@ -378,7 +276,7 @@ export type AdminOrderControllerCancelQueryError = unknown
 
 export function useAdminOrderControllerCancel<TData = Awaited<ReturnType<typeof adminOrderControllerCancel>>, TError = unknown>(
  code: string,
-    cancelOrderRequest: CancelOrderRequest, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerCancel>>, TError, TData>> & Pick<
+    adminCancelOrderRequest: AdminCancelOrderRequest, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerCancel>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof adminOrderControllerCancel>>,
           TError,
@@ -389,7 +287,7 @@ export function useAdminOrderControllerCancel<TData = Awaited<ReturnType<typeof 
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useAdminOrderControllerCancel<TData = Awaited<ReturnType<typeof adminOrderControllerCancel>>, TError = unknown>(
  code: string,
-    cancelOrderRequest: CancelOrderRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerCancel>>, TError, TData>> & Pick<
+    adminCancelOrderRequest: AdminCancelOrderRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerCancel>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof adminOrderControllerCancel>>,
           TError,
@@ -400,291 +298,20 @@ export function useAdminOrderControllerCancel<TData = Awaited<ReturnType<typeof 
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useAdminOrderControllerCancel<TData = Awaited<ReturnType<typeof adminOrderControllerCancel>>, TError = unknown>(
  code: string,
-    cancelOrderRequest: CancelOrderRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerCancel>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+    adminCancelOrderRequest: AdminCancelOrderRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerCancel>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Huỷ đơn thay khách (pending/confirmed; đơn ĐANG GIAO khi tranh chấp — bắt buộc lý do ≥ 10 ký tự, không tự nhập kho, hoàn tiền nếu đã thu online)
+ */
 
 export function useAdminOrderControllerCancel<TData = Awaited<ReturnType<typeof adminOrderControllerCancel>>, TError = unknown>(
  code: string,
-    cancelOrderRequest: CancelOrderRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerCancel>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+    adminCancelOrderRequest: AdminCancelOrderRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerCancel>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getAdminOrderControllerCancelQueryOptions(code,cancelOrderRequest,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export const adminOrderControllerReturnsList = (
-    params?: AdminOrderControllerReturnsListParams,
- options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
-) => {
-
-
-      return customInstance<PageResponse>(
-      {url: `/api/v1/admin/returns`, method: 'GET',
-        params, signal
-    },
-      options);
-    }
-
-
-
-
-export const getAdminOrderControllerReturnsListQueryKey = (params?: AdminOrderControllerReturnsListParams,) => {
-    return [
-    `/api/v1/admin/returns`, ...(params ? [params] : [])
-    ] as const;
-    }
-
-
-export const getAdminOrderControllerReturnsListQueryOptions = <TData = Awaited<ReturnType<typeof adminOrderControllerReturnsList>>, TError = unknown>(params?: AdminOrderControllerReturnsListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerReturnsList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAdminOrderControllerReturnsListQueryKey(params);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof adminOrderControllerReturnsList>>> = ({ signal }) => adminOrderControllerReturnsList(params, requestOptions, signal);
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerReturnsList>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AdminOrderControllerReturnsListQueryResult = NonNullable<Awaited<ReturnType<typeof adminOrderControllerReturnsList>>>
-export type AdminOrderControllerReturnsListQueryError = unknown
-
-
-export function useAdminOrderControllerReturnsList<TData = Awaited<ReturnType<typeof adminOrderControllerReturnsList>>, TError = unknown>(
- params: undefined |  AdminOrderControllerReturnsListParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerReturnsList>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminOrderControllerReturnsList>>,
-          TError,
-          Awaited<ReturnType<typeof adminOrderControllerReturnsList>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAdminOrderControllerReturnsList<TData = Awaited<ReturnType<typeof adminOrderControllerReturnsList>>, TError = unknown>(
- params?: AdminOrderControllerReturnsListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerReturnsList>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminOrderControllerReturnsList>>,
-          TError,
-          Awaited<ReturnType<typeof adminOrderControllerReturnsList>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAdminOrderControllerReturnsList<TData = Awaited<ReturnType<typeof adminOrderControllerReturnsList>>, TError = unknown>(
- params?: AdminOrderControllerReturnsListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerReturnsList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useAdminOrderControllerReturnsList<TData = Awaited<ReturnType<typeof adminOrderControllerReturnsList>>, TError = unknown>(
- params?: AdminOrderControllerReturnsListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerReturnsList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAdminOrderControllerReturnsListQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export const adminOrderControllerReturnGet = (
-    id: string,
- options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
-) => {
-
-
-      return customInstance<ReturnRequestResponse>(
-      {url: `/api/v1/admin/returns/${id}`, method: 'GET', signal
-    },
-      options);
-    }
-
-
-
-
-export const getAdminOrderControllerReturnGetQueryKey = (id: string,) => {
-    return [
-    `/api/v1/admin/returns/${id}`
-    ] as const;
-    }
-
-
-export const getAdminOrderControllerReturnGetQueryOptions = <TData = Awaited<ReturnType<typeof adminOrderControllerReturnGet>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerReturnGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAdminOrderControllerReturnGetQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof adminOrderControllerReturnGet>>> = ({ signal }) => adminOrderControllerReturnGet(id, requestOptions, signal);
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerReturnGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AdminOrderControllerReturnGetQueryResult = NonNullable<Awaited<ReturnType<typeof adminOrderControllerReturnGet>>>
-export type AdminOrderControllerReturnGetQueryError = unknown
-
-
-export function useAdminOrderControllerReturnGet<TData = Awaited<ReturnType<typeof adminOrderControllerReturnGet>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerReturnGet>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminOrderControllerReturnGet>>,
-          TError,
-          Awaited<ReturnType<typeof adminOrderControllerReturnGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAdminOrderControllerReturnGet<TData = Awaited<ReturnType<typeof adminOrderControllerReturnGet>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerReturnGet>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminOrderControllerReturnGet>>,
-          TError,
-          Awaited<ReturnType<typeof adminOrderControllerReturnGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAdminOrderControllerReturnGet<TData = Awaited<ReturnType<typeof adminOrderControllerReturnGet>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerReturnGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-
-export function useAdminOrderControllerReturnGet<TData = Awaited<ReturnType<typeof adminOrderControllerReturnGet>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerReturnGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAdminOrderControllerReturnGetQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-/**
- * @summary Duyệt (hoàn tiền + hàng về kho) / từ chối (có lý do)
- */
-export const adminOrderControllerReturnProcess = (
-    id: string,
-    processReturnRequest: ProcessReturnRequest,
- options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
-) => {
-
-
-      return customInstance<ReturnRequestResponse>(
-      {url: `/api/v1/admin/returns/${id}/process`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: processReturnRequest, signal
-    },
-      options);
-    }
-
-
-
-
-export const getAdminOrderControllerReturnProcessQueryKey = (id: string,
-    processReturnRequest?: ProcessReturnRequest,) => {
-    return [
-    'POST', `/api/v1/admin/returns/${id}/process`, processReturnRequest
-    ] as const;
-    }
-
-
-export const getAdminOrderControllerReturnProcessQueryOptions = <TData = Awaited<ReturnType<typeof adminOrderControllerReturnProcess>>, TError = unknown>(id: string,
-    processReturnRequest: ProcessReturnRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerReturnProcess>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAdminOrderControllerReturnProcessQueryKey(id,processReturnRequest);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof adminOrderControllerReturnProcess>>> = ({ signal }) => adminOrderControllerReturnProcess(id,processReturnRequest, requestOptions, signal);
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerReturnProcess>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AdminOrderControllerReturnProcessQueryResult = NonNullable<Awaited<ReturnType<typeof adminOrderControllerReturnProcess>>>
-export type AdminOrderControllerReturnProcessQueryError = unknown
-
-
-export function useAdminOrderControllerReturnProcess<TData = Awaited<ReturnType<typeof adminOrderControllerReturnProcess>>, TError = unknown>(
- id: string,
-    processReturnRequest: ProcessReturnRequest, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerReturnProcess>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminOrderControllerReturnProcess>>,
-          TError,
-          Awaited<ReturnType<typeof adminOrderControllerReturnProcess>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAdminOrderControllerReturnProcess<TData = Awaited<ReturnType<typeof adminOrderControllerReturnProcess>>, TError = unknown>(
- id: string,
-    processReturnRequest: ProcessReturnRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerReturnProcess>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminOrderControllerReturnProcess>>,
-          TError,
-          Awaited<ReturnType<typeof adminOrderControllerReturnProcess>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAdminOrderControllerReturnProcess<TData = Awaited<ReturnType<typeof adminOrderControllerReturnProcess>>, TError = unknown>(
- id: string,
-    processReturnRequest: ProcessReturnRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerReturnProcess>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Duyệt (hoàn tiền + hàng về kho) / từ chối (có lý do)
- */
-
-export function useAdminOrderControllerReturnProcess<TData = Awaited<ReturnType<typeof adminOrderControllerReturnProcess>>, TError = unknown>(
- id: string,
-    processReturnRequest: ProcessReturnRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminOrderControllerReturnProcess>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAdminOrderControllerReturnProcessQueryOptions(id,processReturnRequest,options)
+  const queryOptions = getAdminOrderControllerCancelQueryOptions(code,adminCancelOrderRequest,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

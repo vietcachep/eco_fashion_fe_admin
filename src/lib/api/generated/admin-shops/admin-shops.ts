@@ -24,10 +24,16 @@ import type {
   AdminShopControllerListParams,
   AdminShopResponse,
   AdminShopSummaryResponse,
+  AdminShopViolationControllerListParams,
   PageResponse,
   RejectShopRequest,
+  ShopDirectoryControllerListParams,
+  ShopDirectoryItemResponse,
+  ShopOpenOrdersSummaryResponse,
+  ShopViolationSummaryResponse,
   SuspendShopRequest,
-  UpdateCommissionRequest
+  UpdateCommissionRequest,
+  VerifyShopBankRequest
 } from '../model';
 
 import { customInstance } from '../../mutator';
@@ -532,6 +538,107 @@ export function useAdminShopControllerReject<TData = Awaited<ReturnType<typeof a
 
 
 /**
+ * @summary Xác minh tài khoản ngân hàng đang chờ (tên chủ TK lệch tên chủ shop) — từ lúc này mới đếm số giờ giữ chi trả sau đổi TK
+ */
+export const adminShopControllerVerifyBank = (
+    id: string,
+    verifyShopBankRequest: VerifyShopBankRequest,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<AdminShopResponse>(
+      {url: `/api/v1/admin/shops/${id}/bank/verify`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: verifyShopBankRequest, signal
+    },
+      options);
+    }
+
+
+
+
+export const getAdminShopControllerVerifyBankQueryKey = (id: string,
+    verifyShopBankRequest?: VerifyShopBankRequest,) => {
+    return [
+    'POST', `/api/v1/admin/shops/${id}/bank/verify`, verifyShopBankRequest
+    ] as const;
+    }
+
+
+export const getAdminShopControllerVerifyBankQueryOptions = <TData = Awaited<ReturnType<typeof adminShopControllerVerifyBank>>, TError = unknown>(id: string,
+    verifyShopBankRequest: VerifyShopBankRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminShopControllerVerifyBank>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAdminShopControllerVerifyBankQueryKey(id,verifyShopBankRequest);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof adminShopControllerVerifyBank>>> = ({ signal }) => adminShopControllerVerifyBank(id,verifyShopBankRequest, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof adminShopControllerVerifyBank>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type AdminShopControllerVerifyBankQueryResult = NonNullable<Awaited<ReturnType<typeof adminShopControllerVerifyBank>>>
+export type AdminShopControllerVerifyBankQueryError = unknown
+
+
+export function useAdminShopControllerVerifyBank<TData = Awaited<ReturnType<typeof adminShopControllerVerifyBank>>, TError = unknown>(
+ id: string,
+    verifyShopBankRequest: VerifyShopBankRequest, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminShopControllerVerifyBank>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminShopControllerVerifyBank>>,
+          TError,
+          Awaited<ReturnType<typeof adminShopControllerVerifyBank>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAdminShopControllerVerifyBank<TData = Awaited<ReturnType<typeof adminShopControllerVerifyBank>>, TError = unknown>(
+ id: string,
+    verifyShopBankRequest: VerifyShopBankRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminShopControllerVerifyBank>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminShopControllerVerifyBank>>,
+          TError,
+          Awaited<ReturnType<typeof adminShopControllerVerifyBank>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAdminShopControllerVerifyBank<TData = Awaited<ReturnType<typeof adminShopControllerVerifyBank>>, TError = unknown>(
+ id: string,
+    verifyShopBankRequest: VerifyShopBankRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminShopControllerVerifyBank>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Xác minh tài khoản ngân hàng đang chờ (tên chủ TK lệch tên chủ shop) — từ lúc này mới đếm số giờ giữ chi trả sau đổi TK
+ */
+
+export function useAdminShopControllerVerifyBank<TData = Awaited<ReturnType<typeof adminShopControllerVerifyBank>>, TError = unknown>(
+ id: string,
+    verifyShopBankRequest: VerifyShopBankRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminShopControllerVerifyBank>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAdminShopControllerVerifyBankQueryOptions(id,verifyShopBankRequest,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
  * @summary Sửa % hoa hồng của một gian hàng (không hồi tố đơn cũ)
  */
 export const adminShopControllerUpdateCommission = (
@@ -621,6 +728,475 @@ export function useAdminShopControllerUpdateCommission<TData = Awaited<ReturnTyp
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getAdminShopControllerUpdateCommissionQueryOptions(id,updateCommissionRequest,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Danh bạ gian hàng gọn (id, mã, tên, logo, trạng thái, số sản phẩm) để chọn shop ở các màn giám sát
+ */
+export const shopDirectoryControllerList = (
+    params?: ShopDirectoryControllerListParams,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<PageResponse>(
+      {url: `/api/v1/admin/shop-directory`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopDirectoryControllerListQueryKey = (params?: ShopDirectoryControllerListParams,) => {
+    return [
+    `/api/v1/admin/shop-directory`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getShopDirectoryControllerListQueryOptions = <TData = Awaited<ReturnType<typeof shopDirectoryControllerList>>, TError = unknown>(params?: ShopDirectoryControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopDirectoryControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopDirectoryControllerListQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopDirectoryControllerList>>> = ({ signal }) => shopDirectoryControllerList(params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopDirectoryControllerList>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopDirectoryControllerListQueryResult = NonNullable<Awaited<ReturnType<typeof shopDirectoryControllerList>>>
+export type ShopDirectoryControllerListQueryError = unknown
+
+
+export function useShopDirectoryControllerList<TData = Awaited<ReturnType<typeof shopDirectoryControllerList>>, TError = unknown>(
+ params: undefined |  ShopDirectoryControllerListParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopDirectoryControllerList>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopDirectoryControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof shopDirectoryControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopDirectoryControllerList<TData = Awaited<ReturnType<typeof shopDirectoryControllerList>>, TError = unknown>(
+ params?: ShopDirectoryControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopDirectoryControllerList>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopDirectoryControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof shopDirectoryControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopDirectoryControllerList<TData = Awaited<ReturnType<typeof shopDirectoryControllerList>>, TError = unknown>(
+ params?: ShopDirectoryControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopDirectoryControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Danh bạ gian hàng gọn (id, mã, tên, logo, trạng thái, số sản phẩm) để chọn shop ở các màn giám sát
+ */
+
+export function useShopDirectoryControllerList<TData = Awaited<ReturnType<typeof shopDirectoryControllerList>>, TError = unknown>(
+ params?: ShopDirectoryControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopDirectoryControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopDirectoryControllerListQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Một gian hàng trong danh bạ
+ */
+export const shopDirectoryControllerGet = (
+    id: string,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<ShopDirectoryItemResponse>(
+      {url: `/api/v1/admin/shop-directory/${id}`, method: 'GET', signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopDirectoryControllerGetQueryKey = (id: string,) => {
+    return [
+    `/api/v1/admin/shop-directory/${id}`
+    ] as const;
+    }
+
+
+export const getShopDirectoryControllerGetQueryOptions = <TData = Awaited<ReturnType<typeof shopDirectoryControllerGet>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopDirectoryControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopDirectoryControllerGetQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopDirectoryControllerGet>>> = ({ signal }) => shopDirectoryControllerGet(id, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopDirectoryControllerGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopDirectoryControllerGetQueryResult = NonNullable<Awaited<ReturnType<typeof shopDirectoryControllerGet>>>
+export type ShopDirectoryControllerGetQueryError = unknown
+
+
+export function useShopDirectoryControllerGet<TData = Awaited<ReturnType<typeof shopDirectoryControllerGet>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopDirectoryControllerGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopDirectoryControllerGet>>,
+          TError,
+          Awaited<ReturnType<typeof shopDirectoryControllerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopDirectoryControllerGet<TData = Awaited<ReturnType<typeof shopDirectoryControllerGet>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopDirectoryControllerGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopDirectoryControllerGet>>,
+          TError,
+          Awaited<ReturnType<typeof shopDirectoryControllerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopDirectoryControllerGet<TData = Awaited<ReturnType<typeof shopDirectoryControllerGet>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopDirectoryControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Một gian hàng trong danh bạ
+ */
+
+export function useShopDirectoryControllerGet<TData = Awaited<ReturnType<typeof shopDirectoryControllerGet>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopDirectoryControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopDirectoryControllerGetQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Tổng điểm vi phạm xử lý đơn của gian hàng trong 30 ngày + ngưỡng nhắc khoá
+ */
+export const adminShopViolationControllerSummary = (
+    id: string,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<ShopViolationSummaryResponse>(
+      {url: `/api/v1/admin/shops/${id}/violations/summary`, method: 'GET', signal
+    },
+      options);
+    }
+
+
+
+
+export const getAdminShopViolationControllerSummaryQueryKey = (id: string,) => {
+    return [
+    `/api/v1/admin/shops/${id}/violations/summary`
+    ] as const;
+    }
+
+
+export const getAdminShopViolationControllerSummaryQueryOptions = <TData = Awaited<ReturnType<typeof adminShopViolationControllerSummary>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminShopViolationControllerSummary>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAdminShopViolationControllerSummaryQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof adminShopViolationControllerSummary>>> = ({ signal }) => adminShopViolationControllerSummary(id, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof adminShopViolationControllerSummary>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type AdminShopViolationControllerSummaryQueryResult = NonNullable<Awaited<ReturnType<typeof adminShopViolationControllerSummary>>>
+export type AdminShopViolationControllerSummaryQueryError = unknown
+
+
+export function useAdminShopViolationControllerSummary<TData = Awaited<ReturnType<typeof adminShopViolationControllerSummary>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminShopViolationControllerSummary>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminShopViolationControllerSummary>>,
+          TError,
+          Awaited<ReturnType<typeof adminShopViolationControllerSummary>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAdminShopViolationControllerSummary<TData = Awaited<ReturnType<typeof adminShopViolationControllerSummary>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminShopViolationControllerSummary>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminShopViolationControllerSummary>>,
+          TError,
+          Awaited<ReturnType<typeof adminShopViolationControllerSummary>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAdminShopViolationControllerSummary<TData = Awaited<ReturnType<typeof adminShopViolationControllerSummary>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminShopViolationControllerSummary>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Tổng điểm vi phạm xử lý đơn của gian hàng trong 30 ngày + ngưỡng nhắc khoá
+ */
+
+export function useAdminShopViolationControllerSummary<TData = Awaited<ReturnType<typeof adminShopViolationControllerSummary>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminShopViolationControllerSummary>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAdminShopViolationControllerSummaryQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Lịch sử điểm vi phạm xử lý đơn của gian hàng (mới nhất trước)
+ */
+export const adminShopViolationControllerList = (
+    id: string,
+    params?: AdminShopViolationControllerListParams,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<PageResponse>(
+      {url: `/api/v1/admin/shops/${id}/violations`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getAdminShopViolationControllerListQueryKey = (id: string,
+    params?: AdminShopViolationControllerListParams,) => {
+    return [
+    `/api/v1/admin/shops/${id}/violations`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getAdminShopViolationControllerListQueryOptions = <TData = Awaited<ReturnType<typeof adminShopViolationControllerList>>, TError = unknown>(id: string,
+    params?: AdminShopViolationControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminShopViolationControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAdminShopViolationControllerListQueryKey(id,params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof adminShopViolationControllerList>>> = ({ signal }) => adminShopViolationControllerList(id,params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof adminShopViolationControllerList>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type AdminShopViolationControllerListQueryResult = NonNullable<Awaited<ReturnType<typeof adminShopViolationControllerList>>>
+export type AdminShopViolationControllerListQueryError = unknown
+
+
+export function useAdminShopViolationControllerList<TData = Awaited<ReturnType<typeof adminShopViolationControllerList>>, TError = unknown>(
+ id: string,
+    params: undefined |  AdminShopViolationControllerListParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminShopViolationControllerList>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminShopViolationControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof adminShopViolationControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAdminShopViolationControllerList<TData = Awaited<ReturnType<typeof adminShopViolationControllerList>>, TError = unknown>(
+ id: string,
+    params?: AdminShopViolationControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminShopViolationControllerList>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminShopViolationControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof adminShopViolationControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAdminShopViolationControllerList<TData = Awaited<ReturnType<typeof adminShopViolationControllerList>>, TError = unknown>(
+ id: string,
+    params?: AdminShopViolationControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminShopViolationControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Lịch sử điểm vi phạm xử lý đơn của gian hàng (mới nhất trước)
+ */
+
+export function useAdminShopViolationControllerList<TData = Awaited<ReturnType<typeof adminShopViolationControllerList>>, TError = unknown>(
+ id: string,
+    params?: AdminShopViolationControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminShopViolationControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAdminShopViolationControllerListQueryOptions(id,params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Số đơn đang mở của gian hàng theo trạng thái (pending/confirmed tự huỷ + hoàn khi khoá; packing/shipping do CSKH quyết)
+ */
+export const adminShopViolationControllerOpenOrders = (
+    id: string,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<ShopOpenOrdersSummaryResponse>(
+      {url: `/api/v1/admin/shops/${id}/open-orders-summary`, method: 'GET', signal
+    },
+      options);
+    }
+
+
+
+
+export const getAdminShopViolationControllerOpenOrdersQueryKey = (id: string,) => {
+    return [
+    `/api/v1/admin/shops/${id}/open-orders-summary`
+    ] as const;
+    }
+
+
+export const getAdminShopViolationControllerOpenOrdersQueryOptions = <TData = Awaited<ReturnType<typeof adminShopViolationControllerOpenOrders>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminShopViolationControllerOpenOrders>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAdminShopViolationControllerOpenOrdersQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof adminShopViolationControllerOpenOrders>>> = ({ signal }) => adminShopViolationControllerOpenOrders(id, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof adminShopViolationControllerOpenOrders>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type AdminShopViolationControllerOpenOrdersQueryResult = NonNullable<Awaited<ReturnType<typeof adminShopViolationControllerOpenOrders>>>
+export type AdminShopViolationControllerOpenOrdersQueryError = unknown
+
+
+export function useAdminShopViolationControllerOpenOrders<TData = Awaited<ReturnType<typeof adminShopViolationControllerOpenOrders>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminShopViolationControllerOpenOrders>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminShopViolationControllerOpenOrders>>,
+          TError,
+          Awaited<ReturnType<typeof adminShopViolationControllerOpenOrders>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAdminShopViolationControllerOpenOrders<TData = Awaited<ReturnType<typeof adminShopViolationControllerOpenOrders>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminShopViolationControllerOpenOrders>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminShopViolationControllerOpenOrders>>,
+          TError,
+          Awaited<ReturnType<typeof adminShopViolationControllerOpenOrders>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAdminShopViolationControllerOpenOrders<TData = Awaited<ReturnType<typeof adminShopViolationControllerOpenOrders>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminShopViolationControllerOpenOrders>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Số đơn đang mở của gian hàng theo trạng thái (pending/confirmed tự huỷ + hoàn khi khoá; packing/shipping do CSKH quyết)
+ */
+
+export function useAdminShopViolationControllerOpenOrders<TData = Awaited<ReturnType<typeof adminShopViolationControllerOpenOrders>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminShopViolationControllerOpenOrders>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAdminShopViolationControllerOpenOrdersQueryOptions(id,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

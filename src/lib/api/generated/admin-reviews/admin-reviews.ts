@@ -22,8 +22,7 @@ import type {
 
 import type {
   AdminReviewControllerListParams,
-  ModerateRequest,
-  ReplyRequest
+  ModerateRequest
 } from '../model';
 
 import { customInstance } from '../../mutator';
@@ -225,107 +224,6 @@ export function useAdminReviewControllerModerate<TData = Awaited<ReturnType<type
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getAdminReviewControllerModerateQueryOptions(id,moderateRequest,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-/**
- * @summary Nhân viên sàn trả lời thay cửa hàng (một trả lời / đánh giá, gọi lại = sửa); hiện công khai dưới tên "Sàn FITLY", không lộ họ tên nhân viên
- */
-export const adminReviewControllerReply = (
-    id: string,
-    replyRequest: ReplyRequest,
- options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
-) => {
-
-
-      return customInstance<void>(
-      {url: `/api/v1/admin/reviews/${id}/reply`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: replyRequest, signal
-    },
-      options);
-    }
-
-
-
-
-export const getAdminReviewControllerReplyQueryKey = (id: string,
-    replyRequest?: ReplyRequest,) => {
-    return [
-    'POST', `/api/v1/admin/reviews/${id}/reply`, replyRequest
-    ] as const;
-    }
-
-
-export const getAdminReviewControllerReplyQueryOptions = <TData = Awaited<ReturnType<typeof adminReviewControllerReply>>, TError = unknown>(id: string,
-    replyRequest: ReplyRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminReviewControllerReply>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAdminReviewControllerReplyQueryKey(id,replyRequest);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof adminReviewControllerReply>>> = ({ signal }) => adminReviewControllerReply(id,replyRequest, requestOptions, signal);
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof adminReviewControllerReply>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AdminReviewControllerReplyQueryResult = NonNullable<Awaited<ReturnType<typeof adminReviewControllerReply>>>
-export type AdminReviewControllerReplyQueryError = unknown
-
-
-export function useAdminReviewControllerReply<TData = Awaited<ReturnType<typeof adminReviewControllerReply>>, TError = unknown>(
- id: string,
-    replyRequest: ReplyRequest, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminReviewControllerReply>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminReviewControllerReply>>,
-          TError,
-          Awaited<ReturnType<typeof adminReviewControllerReply>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAdminReviewControllerReply<TData = Awaited<ReturnType<typeof adminReviewControllerReply>>, TError = unknown>(
- id: string,
-    replyRequest: ReplyRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminReviewControllerReply>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminReviewControllerReply>>,
-          TError,
-          Awaited<ReturnType<typeof adminReviewControllerReply>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAdminReviewControllerReply<TData = Awaited<ReturnType<typeof adminReviewControllerReply>>, TError = unknown>(
- id: string,
-    replyRequest: ReplyRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminReviewControllerReply>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Nhân viên sàn trả lời thay cửa hàng (một trả lời / đánh giá, gọi lại = sửa); hiện công khai dưới tên "Sàn FITLY", không lộ họ tên nhân viên
- */
-
-export function useAdminReviewControllerReply<TData = Awaited<ReturnType<typeof adminReviewControllerReply>>, TError = unknown>(
- id: string,
-    replyRequest: ReplyRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminReviewControllerReply>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAdminReviewControllerReplyQueryOptions(id,replyRequest,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

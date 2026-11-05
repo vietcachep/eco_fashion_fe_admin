@@ -1,18 +1,21 @@
 "use client";
 
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   adminShopControllerApprove,
   adminShopControllerReject,
   adminShopControllerSuspend,
   adminShopControllerUpdateCommission,
+  adminShopControllerVerifyBank,
   useAdminShopControllerGet,
   useAdminShopControllerList,
+  useAdminShopViolationControllerOpenOrders,
+  useShopDirectoryControllerGet,
+  useShopDirectoryControllerList,
 } from "@/lib/api/generated/admin-shops/admin-shops";
-import type { AdminShopControllerListStatus, AdminShopSummaryResponse } from "@/lib/api/generated/model";
-import { customInstance } from "@/lib/api/mutator";
-import { apiErrorMessage } from "@/lib/api-error";
+import type { AdminShopControllerListStatus, AdminShopSummaryResponse, ShopDirectoryItemResponse } from "@/lib/api/generated/model";
+import { apiErrorCode, apiErrorMessage } from "@/lib/api-error";
 import { invalidateByPath } from "@/lib/query-invalidate";
 import { asPage } from "@/types/common";
 
@@ -113,35 +116,60 @@ export function useUpdateShopCommission() {
 }
 
 /*
+ * PLAN-0040 5.2 — xác minh tài khoản ngân hàng đang chờ (`bankStatus = pending_verification`: tên chủ TK lệch họ tên chủ shop).
+ * Gửi kèm số TK ĐẦY ĐỦ quản lý đang nhìn trên màn: nếu chủ shop vừa đổi sang TK khác backend trả 409 SHOP_BANK_CHANGED_SINCE
+ * (tránh xác minh nhầm TK mới) → làm mới dữ liệu để quản lý xem lại. 409 SHOP_BANK_NOT_PENDING = đã được xác minh (đồng nghiệp bấm
+ * trước / bấm hai lần). Xác minh xong kỳ chi trả đang `held` của shop đổi lý do/hạn giữ → làm mới cả danh sách kỳ đối soát.
+ */
+const PAYOUTS_PATH = "/api/v1/admin/payouts";
+
+export function useVerifyShopBank() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { id: string; bankAccountNumber?: string }) =>
+      adminShopControllerVerifyBank(v.id, { bankAccountNumber: v.bankAccountNumber }),
+    onSuccess: (shop) => {
+      invalidateByPath(qc, PATH, PAYOUTS_PATH);
+      toast.success(`Đã xác minh tài khoản ngân hàng. Chi trả của shop còn tạm giữ ${shop.bankChangeHoldHours} giờ kể từ bây giờ.`);
+    },
+    onError: (e) => {
+      const code = apiErrorCode(e);
+      if (code === "SHOP_BANK_CHANGED_SINCE") {
+        invalidateByPath(qc, PATH);
+        toast.warning("Chủ shop vừa đổi tài khoản ngân hàng — đã tải lại thông tin mới, hãy xem lại rồi xác minh.");
+        return;
+      }
+      if (code === "SHOP_BANK_NOT_PENDING") {
+        invalidateByPath(qc, PATH, PAYOUTS_PATH);
+        toast.info("Tài khoản này không còn chờ xác minh (có thể đã được xác minh xong). Đã tải lại thông tin.");
+        return;
+      }
+      toast.error(apiErrorMessage(e, "Xác minh tài khoản thất bại."));
+    },
+  });
+}
+
+/*
+ * PLAN-0040 6.4 — số đơn đang mở của shop cho hộp thoại KHOÁ shop: pending/confirmed sẽ tự huỷ + hoàn tiền, packing/shipping do CSKH
+ * huỷ tay. `staleTime: 0` vì con số này đổi từng phút và người quản lý quyết định dựa vào nó; hộp thoại chỉ mount khi mở nên không
+ * gây request thừa.
+ */
+export function useShopOpenOrders(id: string) {
+  return useAdminShopViolationControllerOpenOrders(id, { query: { enabled: !!id, staleTime: 0 } });
+}
+
+/*
  * Danh bạ gian hàng gọn cho các màn giám sát của sàn (cổng chọn shop): chỉ cần quyền XEM nghiệp vụ đang mở (đơn, sản phẩm, thanh toán…),
  * không cần quyền quản lý shop — nên nhân viên CSKH / kế toán cũng chọn được shop.
  */
-export interface ShopDirectoryItem {
-  id: string;
-  code: string;
-  name: string;
-  logoUrl: string | null;
-  status: string;
-  totalProducts: number;
-}
-
-const DIRECTORY_PATH = "/api/v1/admin/shop-directory";
-
 export function useShopDirectory(params: { keyword?: string; page: number; size: number }) {
-  return useQuery({
-    queryKey: [DIRECTORY_PATH, params],
-    queryFn: () => customInstance<unknown>({ url: DIRECTORY_PATH, method: "GET", params: { q: params.keyword || undefined, page: params.page, size: params.size } }),
-    select: (r) => asPage<ShopDirectoryItem>(r),
-    placeholderData: keepPreviousData,
-    staleTime: 30_000,
-  });
+  return useShopDirectoryControllerList(
+    { q: params.keyword || undefined, page: params.page, size: params.size },
+    // Orval khai trang `PageResponse` không schema phần tử → ép về trang có kiểu ở đây (điểm ép kiểu duy nhất).
+    { query: { select: (r) => asPage<ShopDirectoryItemResponse>(r), placeholderData: keepPreviousData, staleTime: 30_000 } },
+  );
 }
 
 export function useShopDirectoryItem(id: string) {
-  return useQuery({
-    queryKey: [DIRECTORY_PATH, id],
-    queryFn: () => customInstance<ShopDirectoryItem>({ url: `${DIRECTORY_PATH}/${id}`, method: "GET" }),
-    enabled: !!id,
-    staleTime: 60_000,
-  });
+  return useShopDirectoryControllerGet(id, { query: { enabled: !!id, staleTime: 60_000 } });
 }

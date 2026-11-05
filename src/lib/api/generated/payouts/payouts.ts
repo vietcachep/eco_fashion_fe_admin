@@ -21,9 +21,13 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  CreatePayoutHoldRequest,
   MarkPaidRequest,
   PayosBalanceResponse,
+  PayoutHoldResponse,
+  ReleasePayoutHoldResponse,
   RunPayoutRequest,
+  ShopPayoutControllerListHoldsParams,
   ShopPayoutControllerListMineParams,
   ShopPayoutControllerListParams,
   ShopPayoutDetailResponse,
@@ -227,6 +231,285 @@ export function useShopPayoutControllerRun<TData = Awaited<ReturnType<typeof sho
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getShopPayoutControllerRunQueryOptions(runPayoutRequest,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Giữ tay tiền chi trả của một shop (có lý do): kỳ mới của shop vào held, kỳ pending/awaiting_approval chuyển held ngay. Mỗi shop tối đa một lệnh giữ (trùng ⇒ 409 PAYOUT_HOLD_EXISTS).
+ */
+export const shopPayoutControllerCreateHold = (
+    createPayoutHoldRequest: CreatePayoutHoldRequest,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<PayoutHoldResponse>(
+      {url: `/api/v1/admin/payouts/holds`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: createPayoutHoldRequest, signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopPayoutControllerCreateHoldQueryKey = (createPayoutHoldRequest?: CreatePayoutHoldRequest,) => {
+    return [
+    'POST', `/api/v1/admin/payouts/holds`, createPayoutHoldRequest
+    ] as const;
+    }
+
+
+export const getShopPayoutControllerCreateHoldQueryOptions = <TData = Awaited<ReturnType<typeof shopPayoutControllerCreateHold>>, TError = unknown>(createPayoutHoldRequest: CreatePayoutHoldRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerCreateHold>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopPayoutControllerCreateHoldQueryKey(createPayoutHoldRequest);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopPayoutControllerCreateHold>>> = ({ signal }) => shopPayoutControllerCreateHold(createPayoutHoldRequest, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerCreateHold>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopPayoutControllerCreateHoldQueryResult = NonNullable<Awaited<ReturnType<typeof shopPayoutControllerCreateHold>>>
+export type ShopPayoutControllerCreateHoldQueryError = unknown
+
+
+export function useShopPayoutControllerCreateHold<TData = Awaited<ReturnType<typeof shopPayoutControllerCreateHold>>, TError = unknown>(
+ createPayoutHoldRequest: CreatePayoutHoldRequest, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerCreateHold>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopPayoutControllerCreateHold>>,
+          TError,
+          Awaited<ReturnType<typeof shopPayoutControllerCreateHold>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopPayoutControllerCreateHold<TData = Awaited<ReturnType<typeof shopPayoutControllerCreateHold>>, TError = unknown>(
+ createPayoutHoldRequest: CreatePayoutHoldRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerCreateHold>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopPayoutControllerCreateHold>>,
+          TError,
+          Awaited<ReturnType<typeof shopPayoutControllerCreateHold>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopPayoutControllerCreateHold<TData = Awaited<ReturnType<typeof shopPayoutControllerCreateHold>>, TError = unknown>(
+ createPayoutHoldRequest: CreatePayoutHoldRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerCreateHold>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Giữ tay tiền chi trả của một shop (có lý do): kỳ mới của shop vào held, kỳ pending/awaiting_approval chuyển held ngay. Mỗi shop tối đa một lệnh giữ (trùng ⇒ 409 PAYOUT_HOLD_EXISTS).
+ */
+
+export function useShopPayoutControllerCreateHold<TData = Awaited<ReturnType<typeof shopPayoutControllerCreateHold>>, TError = unknown>(
+ createPayoutHoldRequest: CreatePayoutHoldRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerCreateHold>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopPayoutControllerCreateHoldQueryOptions(createPayoutHoldRequest,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Danh sách lệnh giữ: có shopId = lịch sử của shop đó; bỏ trống = các lệnh ĐANG hiệu lực
+ */
+export const shopPayoutControllerListHolds = (
+    params: ShopPayoutControllerListHoldsParams,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<PayoutHoldResponse[]>(
+      {url: `/api/v1/admin/payouts/holds`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopPayoutControllerListHoldsQueryKey = (params?: ShopPayoutControllerListHoldsParams,) => {
+    return [
+    `/api/v1/admin/payouts/holds`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getShopPayoutControllerListHoldsQueryOptions = <TData = Awaited<ReturnType<typeof shopPayoutControllerListHolds>>, TError = unknown>(params: ShopPayoutControllerListHoldsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerListHolds>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopPayoutControllerListHoldsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopPayoutControllerListHolds>>> = ({ signal }) => shopPayoutControllerListHolds(params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerListHolds>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopPayoutControllerListHoldsQueryResult = NonNullable<Awaited<ReturnType<typeof shopPayoutControllerListHolds>>>
+export type ShopPayoutControllerListHoldsQueryError = unknown
+
+
+export function useShopPayoutControllerListHolds<TData = Awaited<ReturnType<typeof shopPayoutControllerListHolds>>, TError = unknown>(
+ params: ShopPayoutControllerListHoldsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerListHolds>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopPayoutControllerListHolds>>,
+          TError,
+          Awaited<ReturnType<typeof shopPayoutControllerListHolds>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopPayoutControllerListHolds<TData = Awaited<ReturnType<typeof shopPayoutControllerListHolds>>, TError = unknown>(
+ params: ShopPayoutControllerListHoldsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerListHolds>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopPayoutControllerListHolds>>,
+          TError,
+          Awaited<ReturnType<typeof shopPayoutControllerListHolds>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopPayoutControllerListHolds<TData = Awaited<ReturnType<typeof shopPayoutControllerListHolds>>, TError = unknown>(
+ params: ShopPayoutControllerListHoldsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerListHolds>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Danh sách lệnh giữ: có shopId = lịch sử của shop đó; bỏ trống = các lệnh ĐANG hiệu lực
+ */
+
+export function useShopPayoutControllerListHolds<TData = Awaited<ReturnType<typeof shopPayoutControllerListHolds>>, TError = unknown>(
+ params: ShopPayoutControllerListHoldsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerListHolds>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopPayoutControllerListHoldsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Mở lệnh giữ tay: các kỳ held của shop không còn lý do giữ nào khác về pending / đi tiếp
+ */
+export const shopPayoutControllerReleaseHold = (
+    id: string,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<ReleasePayoutHoldResponse>(
+      {url: `/api/v1/admin/payouts/holds/${id}/release`, method: 'POST', signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopPayoutControllerReleaseHoldQueryKey = (id: string,) => {
+    return [
+    'POST', `/api/v1/admin/payouts/holds/${id}/release`
+    ] as const;
+    }
+
+
+export const getShopPayoutControllerReleaseHoldQueryOptions = <TData = Awaited<ReturnType<typeof shopPayoutControllerReleaseHold>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerReleaseHold>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopPayoutControllerReleaseHoldQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopPayoutControllerReleaseHold>>> = ({ signal }) => shopPayoutControllerReleaseHold(id, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerReleaseHold>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopPayoutControllerReleaseHoldQueryResult = NonNullable<Awaited<ReturnType<typeof shopPayoutControllerReleaseHold>>>
+export type ShopPayoutControllerReleaseHoldQueryError = unknown
+
+
+export function useShopPayoutControllerReleaseHold<TData = Awaited<ReturnType<typeof shopPayoutControllerReleaseHold>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerReleaseHold>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopPayoutControllerReleaseHold>>,
+          TError,
+          Awaited<ReturnType<typeof shopPayoutControllerReleaseHold>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopPayoutControllerReleaseHold<TData = Awaited<ReturnType<typeof shopPayoutControllerReleaseHold>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerReleaseHold>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopPayoutControllerReleaseHold>>,
+          TError,
+          Awaited<ReturnType<typeof shopPayoutControllerReleaseHold>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopPayoutControllerReleaseHold<TData = Awaited<ReturnType<typeof shopPayoutControllerReleaseHold>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerReleaseHold>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Mở lệnh giữ tay: các kỳ held của shop không còn lý do giữ nào khác về pending / đi tiếp
+ */
+
+export function useShopPayoutControllerReleaseHold<TData = Awaited<ReturnType<typeof shopPayoutControllerReleaseHold>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerReleaseHold>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopPayoutControllerReleaseHoldQueryOptions(id,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -504,6 +787,282 @@ export function useShopPayoutControllerRetry<TData = Awaited<ReturnType<typeof s
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getShopPayoutControllerRetryQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Duyệt kỳ chi trả vượt hạn mức tự chi (awaiting_approval) ⇒ gửi PayOS
+ */
+export const shopPayoutControllerApprove = (
+    id: string,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<ShopPayoutResponse>(
+      {url: `/api/v1/admin/payouts/${id}/approve`, method: 'POST', signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopPayoutControllerApproveQueryKey = (id: string,) => {
+    return [
+    'POST', `/api/v1/admin/payouts/${id}/approve`
+    ] as const;
+    }
+
+
+export const getShopPayoutControllerApproveQueryOptions = <TData = Awaited<ReturnType<typeof shopPayoutControllerApprove>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerApprove>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopPayoutControllerApproveQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopPayoutControllerApprove>>> = ({ signal }) => shopPayoutControllerApprove(id, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerApprove>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopPayoutControllerApproveQueryResult = NonNullable<Awaited<ReturnType<typeof shopPayoutControllerApprove>>>
+export type ShopPayoutControllerApproveQueryError = unknown
+
+
+export function useShopPayoutControllerApprove<TData = Awaited<ReturnType<typeof shopPayoutControllerApprove>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerApprove>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopPayoutControllerApprove>>,
+          TError,
+          Awaited<ReturnType<typeof shopPayoutControllerApprove>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopPayoutControllerApprove<TData = Awaited<ReturnType<typeof shopPayoutControllerApprove>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerApprove>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopPayoutControllerApprove>>,
+          TError,
+          Awaited<ReturnType<typeof shopPayoutControllerApprove>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopPayoutControllerApprove<TData = Awaited<ReturnType<typeof shopPayoutControllerApprove>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerApprove>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Duyệt kỳ chi trả vượt hạn mức tự chi (awaiting_approval) ⇒ gửi PayOS
+ */
+
+export function useShopPayoutControllerApprove<TData = Awaited<ReturnType<typeof shopPayoutControllerApprove>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerApprove>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopPayoutControllerApproveQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Kiểm tra với PayOS kết quả lệnh chi của kỳ processing/unknown (cập nhật paid / failed / giữ nguyên)
+ */
+export const shopPayoutControllerReconcile = (
+    id: string,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<ShopPayoutResponse>(
+      {url: `/api/v1/admin/payouts/${id}/reconcile`, method: 'POST', signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopPayoutControllerReconcileQueryKey = (id: string,) => {
+    return [
+    'POST', `/api/v1/admin/payouts/${id}/reconcile`
+    ] as const;
+    }
+
+
+export const getShopPayoutControllerReconcileQueryOptions = <TData = Awaited<ReturnType<typeof shopPayoutControllerReconcile>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerReconcile>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopPayoutControllerReconcileQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopPayoutControllerReconcile>>> = ({ signal }) => shopPayoutControllerReconcile(id, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerReconcile>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopPayoutControllerReconcileQueryResult = NonNullable<Awaited<ReturnType<typeof shopPayoutControllerReconcile>>>
+export type ShopPayoutControllerReconcileQueryError = unknown
+
+
+export function useShopPayoutControllerReconcile<TData = Awaited<ReturnType<typeof shopPayoutControllerReconcile>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerReconcile>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopPayoutControllerReconcile>>,
+          TError,
+          Awaited<ReturnType<typeof shopPayoutControllerReconcile>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopPayoutControllerReconcile<TData = Awaited<ReturnType<typeof shopPayoutControllerReconcile>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerReconcile>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopPayoutControllerReconcile>>,
+          TError,
+          Awaited<ReturnType<typeof shopPayoutControllerReconcile>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopPayoutControllerReconcile<TData = Awaited<ReturnType<typeof shopPayoutControllerReconcile>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerReconcile>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Kiểm tra với PayOS kết quả lệnh chi của kỳ processing/unknown (cập nhật paid / failed / giữ nguyên)
+ */
+
+export function useShopPayoutControllerReconcile<TData = Awaited<ReturnType<typeof shopPayoutControllerReconcile>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerReconcile>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopPayoutControllerReconcileQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Mở giữ kỳ held khi lý do giữ đã hết (shop mở khoá / hết thời gian giữ đổi TK)
+ */
+export const shopPayoutControllerRelease = (
+    id: string,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<ShopPayoutResponse>(
+      {url: `/api/v1/admin/payouts/${id}/release`, method: 'POST', signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopPayoutControllerReleaseQueryKey = (id: string,) => {
+    return [
+    'POST', `/api/v1/admin/payouts/${id}/release`
+    ] as const;
+    }
+
+
+export const getShopPayoutControllerReleaseQueryOptions = <TData = Awaited<ReturnType<typeof shopPayoutControllerRelease>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerRelease>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopPayoutControllerReleaseQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopPayoutControllerRelease>>> = ({ signal }) => shopPayoutControllerRelease(id, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerRelease>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopPayoutControllerReleaseQueryResult = NonNullable<Awaited<ReturnType<typeof shopPayoutControllerRelease>>>
+export type ShopPayoutControllerReleaseQueryError = unknown
+
+
+export function useShopPayoutControllerRelease<TData = Awaited<ReturnType<typeof shopPayoutControllerRelease>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerRelease>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopPayoutControllerRelease>>,
+          TError,
+          Awaited<ReturnType<typeof shopPayoutControllerRelease>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopPayoutControllerRelease<TData = Awaited<ReturnType<typeof shopPayoutControllerRelease>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerRelease>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopPayoutControllerRelease>>,
+          TError,
+          Awaited<ReturnType<typeof shopPayoutControllerRelease>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopPayoutControllerRelease<TData = Awaited<ReturnType<typeof shopPayoutControllerRelease>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerRelease>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Mở giữ kỳ held khi lý do giữ đã hết (shop mở khoá / hết thời gian giữ đổi TK)
+ */
+
+export function useShopPayoutControllerRelease<TData = Awaited<ReturnType<typeof shopPayoutControllerRelease>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerRelease>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopPayoutControllerReleaseQueryOptions(id,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

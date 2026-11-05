@@ -13,7 +13,6 @@ export const CreateStaffRequestRoleCode = {
   admin: 'admin',
   manager: 'manager',
   sales: 'sales',
-  warehouse: 'warehouse',
   accountant: 'accountant',
   marketing: 'marketing',
 } as const;

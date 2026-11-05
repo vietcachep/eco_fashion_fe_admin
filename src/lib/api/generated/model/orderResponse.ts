@@ -6,11 +6,22 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { MoneyResponse } from './moneyResponse';
+import type { OrderCancelRequestResponse } from './orderCancelRequestResponse';
 import type { OrderHistoryResponse } from './orderHistoryResponse';
 import type { OrderItemResponse } from './orderItemResponse';
+import type { OrderRefundResponse } from './orderRefundResponse';
+import type { OrderResponseCancelledBy } from './orderResponseCancelledBy';
+import type { OrderResponseCarrier } from './orderResponseCarrier';
 import type { OrderResponsePromotion } from './orderResponsePromotion';
+import type { ShipmentResponse } from './shipmentResponse';
 
 export interface OrderResponse {
+  fulfilmentMode?: string;
+  collectionMode?: string;
+  carrierCodStatus?: string;
+  /** @nullable */
+  shipment?: ShipmentResponse | null;
+  canShip?: boolean;
   id: string;
   code: string;
   status: string;
@@ -55,16 +66,80 @@ export interface OrderResponse {
      * @nullable
      */
   paymentUrl?: string | null;
+  /** Đơn PayOS còn chờ thanh toán nhưng CHƯA tạo được link (PayOS lỗi/chậm lúc đặt) — hiện nút "Thanh toán lại" (POST /payments/payos/retry/:code) */
+  linkRetryable: boolean;
   /** @nullable */
   paymentExpiresAt?: string | null;
   /** @nullable */
   trackingUrl?: string | null;
+  /**
+     * Hãng vận chuyển (ghn | ghtk | viettel_post | jnt | spx | ahamove | ninja_van | vnpost | other)
+     * @nullable
+     */
+  carrier?: OrderResponseCarrier;
+  /**
+     * Tên hãng để hiển thị
+     * @nullable
+     */
+  carrierName?: string | null;
+  /** @nullable */
+  trackingCode?: string | null;
+  /** SHP-13: mã vận đơn này đã dùng cho đơn khác của shop (nghi gian lận) — CHỈ có ý nghĩa ở API shop/sàn; luôn false với khách */
+  trackingReused: boolean;
+  /** @nullable */
+  deliveryFailedAt?: string | null;
+  /** @nullable */
+  deliveryFailedReason?: string | null;
+  /** @nullable */
+  goodsReturnedAt?: string | null;
+  /** Shop xác nhận được "hàng đã về kho" (POST /shop/orders/:code/goods-returned) */
+  canConfirmGoodsReturned: boolean;
   /** @nullable */
   cancelReason?: string | null;
   history: OrderHistoryResponse[];
+  /**
+     * Hạn shop xác nhận đơn (đơn chờ xác nhận)
+     * @nullable
+     */
+  confirmDueAt?: string | null;
+  /**
+     * Hạn shop giao đơn (đơn đã xác nhận / đang đóng gói)
+     * @nullable
+     */
+  shipDueAt?: string | null;
+  /** Shop đã dùng lượt gia hạn giao (chỉ 1 lần) */
+  shipExtended: boolean;
+  /**
+     * Mã lý do huỷ (docs/10 §7)
+     * @nullable
+     */
+  cancelReasonCode?: string | null;
+  /**
+     * Ai huỷ đơn
+     * @nullable
+     */
+  cancelledBy?: OrderResponseCancelledBy;
+  /**
+     * Yêu cầu huỷ của khách (đơn đang đóng gói)
+     * @nullable
+     */
+  cancelRequest?: OrderCancelRequestResponse | null;
+  /** Khách gửi được yêu cầu huỷ (đơn đang đóng gói, chưa có yêu cầu nào) */
+  canRequestCancel: boolean;
+  /** Khách đổi được địa chỉ nhận (chờ xác nhận / đã xác nhận) */
+  canChangeAddress: boolean;
+  /** Khách bấm được "Đã nhận hàng" (đã giao, không có đổi trả đang mở) */
+  canMarkReceived: boolean;
   /** Khách còn huỷ được */
   canCancel: boolean;
   /** Còn trong hạn đổi trả */
   canReturn: boolean;
+  /** Khách báo "chưa nhận hàng" được: đơn đang giao, hoặc vừa báo đã giao trong return.not_received_days (và chưa có yêu cầu đổi trả giữ hết hàng) */
+  canReportNotReceived: boolean;
+  /**
+     * Khoản hoàn tiền mới nhất của đơn (payment)
+     * @nullable
+     */
+  refund?: OrderRefundResponse | null;
   createdAt: string;
 }

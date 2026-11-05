@@ -73,7 +73,7 @@ Không có ngoại lệ "sửa nhanh"; code "tạm" là code vĩnh viễn.
 - Skeleton khớp layout cho mọi màn dữ liệu; không màn trắng, không spinner trơ.
 - Biểu đồ (recharts) tải lười qua `next/dynamic`; icon import lẻ từ lucide.
 - `staleTime` theo bản chất dữ liệu: danh mục/vai 60s–10 phút; đơn/thanh toán 10–15s; insight AI (backend cache
-  1–6h) 10 phút. Không polling trừ dashboard (2 phút) và trạng thái chỉ mục AI (1 phút).
+  1–6h) 10 phút. Không polling trừ dashboard (2 phút) và trạng thái chỉ mục AI (1 phút). Ngoại lệ có chủ đích: trang `/vendor/wallet/payos-return` (kết quả nạp cọc PayOS) hỏi lại 3 giây/lần khi khoản nạp còn chờ, dừng khi sang trạng thái cuối hoặc sau 180 giây — vì PayOS vừa đưa chủ shop về và họ đang chờ kết quả; không mở polling ở chỗ khác.
 - `invalidateByPath(qc, "/api/v1/admin/...")` (lib/query-invalidate.ts) làm mới theo tiền tố URL của Orval
   key — không tự đặt key tay cho endpoint sinh tự động.
 
@@ -176,6 +176,10 @@ Việc lớn (module mới, đổi shell/auth/API layer, màn báo cáo, xuyên 
 `docs/plans/PLAN-XXXX-*.md` theo `docs/plans/PLANS_TEMPLATE.md` TRƯỚC khi code; tick checklist khi làm.
 
 ## Done Definition
+
+### PLAN-0043 — Vận chuyển
+
+Feature `shipping` có danh sách vận đơn và simulator; route trong `ROUTES.shipping`, quyền `shipping.simulator.use` và `payment.cod.confirm` đồng bộ từ catalog. `types/shipping.ts` và `components/shared/carrier-shipment-card.tsx` là hợp đồng/hiển thị dùng chung; order và shop tự bọc endpoint, không import internals shipping. Đơn carrier chỉ cập nhật tiến trình từ hãng; UI không được dùng nút tự giao của đơn self để ghi delivered/restock. Hãng nhận yêu cầu lấy hàng khác mốc picked (đã bàn giao).
 
 - CI tự động: `.github/workflows/ci.yml` chạy `npm run verify` (lint + typecheck + build) cho mọi push lên `main` và mọi PR (client API/mã quyền sinh sẵn được commit nên CI không cần backend). Đẩy workflow lên GitHub cần token có quyền `workflow`.
 - `npm run verify` (lint + typecheck + build) xanh.

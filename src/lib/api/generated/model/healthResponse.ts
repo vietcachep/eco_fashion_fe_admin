@@ -5,11 +5,21 @@
  * Backend sàn thương mại điện tử đa ngành hàng — web bán hàng + web quản trị. Mọi response theo envelope ApiResponse.
  * OpenAPI spec version: 0.1.0
  */
+import type { HealthResponseDatabase } from './healthResponseDatabase';
+import type { HealthResponseRedis } from './healthResponseRedis';
+import type { HealthResponseStatus } from './healthResponseStatus';
+import type { HealthResponseWorker } from './healthResponseWorker';
 
 export interface HealthResponse {
-  status: string;
-  database: string;
-  redis: string;
+  status: HealthResponseStatus;
+  database: HealthResponseDatabase;
+  redis: HealthResponseRedis;
+  worker: HealthResponseWorker;
+  /**
+     * Thời điểm worker ghi nhịp tim gần nhất (ISO-8601); null nếu chưa từng có
+     * @nullable
+     */
+  workerLastSeenAt: string | null;
   version: string;
   timestamp: string;
 }

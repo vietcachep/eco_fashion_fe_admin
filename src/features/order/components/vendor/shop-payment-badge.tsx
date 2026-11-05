@@ -21,13 +21,15 @@ export function ShopPaymentBadge({
   method,
   status,
   showMethod = true,
+  carrierCodStatus,
 }: {
   method: string;
   status: string;
   /** Dòng phụ tên phương thức (COD / PayOS; mã cũ hiện nhãn chung) dưới badge. */
   showMethod?: boolean;
+  carrierCodStatus?: string | null;
 }) {
-  const meta = paymentMeta(method, status);
+  const meta = carrierCodStatus === "collected_pending_remittance" ? { label: "Hãng đã thu · chờ tiền về sàn", tone: "warning" as const } : paymentMeta(method, status);
   return (
     <div className="flex flex-col items-start gap-0.5">
       <StatusBadge tone={meta.tone}>{meta.label}</StatusBadge>

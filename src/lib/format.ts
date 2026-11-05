@@ -71,6 +71,22 @@ export function fromLocalInput(value: string): string | undefined {
   return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
 }
 
+/*
+ * Thời gian còn lại tới một hạn chót, nói gọn: "2 ngày 5 giờ" · "5 giờ 20 phút" · "35 phút".
+ * `ms` ≤ 0 = đã quá hạn. Thuần: nơi gọi truyền `deadline − now` (lấy `now` từ state/hook, không gọi Date.now() lúc render).
+ */
+export function formatRemaining(ms: number): string {
+  if (!Number.isFinite(ms) || ms <= 0) return "Đã quá hạn";
+  const minutes = Math.floor(ms / 60_000);
+  if (minutes < 1) return "dưới 1 phút";
+  const days = Math.floor(minutes / 1440);
+  const hours = Math.floor((minutes % 1440) / 60);
+  const mins = minutes % 60;
+  if (days > 0) return hours > 0 ? `${days} ngày ${hours} giờ` : `${days} ngày`;
+  if (hours > 0) return mins > 0 ? `${hours} giờ ${mins} phút` : `${hours} giờ`;
+  return `${mins} phút`;
+}
+
 export function truncate(s: string | null | undefined, max = 80): string {
   if (!s) return "";
   return s.length > max ? `${s.slice(0, max)}…` : s;

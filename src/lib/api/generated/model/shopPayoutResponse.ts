@@ -11,6 +11,8 @@ export interface ShopPayoutResponse {
   id: string;
   code: string;
   shopId: string;
+  /** Mã gian hàng (FT-…) — đi cùng shopName; không cần quyền đọc shop */
+  shopCode?: string;
   /** Tên gian hàng — để màn đối soát không phải tra thêm danh sách shop (kế toán không có quyền đọc shop) */
   shopName?: string;
   periodStart: string;
@@ -25,8 +27,18 @@ export interface ShopPayoutResponse {
   carriedDebt: string;
   /** Thực chi = gross − commission − refund − carriedDebt; âm = nợ mang sang kỳ sau */
   netPayout: string;
-  /** carried = net âm (không chi), settled = net 0 */
+  /** unknown = gửi lệnh nhưng không rõ kết quả (KHÔNG chi lại / KHÔNG đánh dấu tay — dùng Kiểm tra với PayOS) · awaiting_approval = vượt hạn mức tự chi, chờ duyệt · held = shop bị khoá / đang giữ · deferred = dưới mức tối thiểu, dồn kỳ sau · carried = net âm (không chi) · settled = net 0 */
   status: ShopPayoutResponseStatus;
+  /**
+     * Kết quả cổng: submitted | failed (PayOS từ chối chắc chắn) | not_received | succeeded | unknown
+     * @nullable
+     */
+  gatewayStatus: string | null;
+  /**
+     * Lý do giữ (khi status = held)
+     * @nullable
+     */
+  holdReason: string | null;
   /** @nullable */
   providerRef: string | null;
   /** @nullable */

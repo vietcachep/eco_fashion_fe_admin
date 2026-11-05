@@ -7,21 +7,114 @@
  */
 import type { MediaItemResponse } from './mediaItemResponse';
 import type { MoneyResponse } from './moneyResponse';
+import type { RefundAccountResponse } from './refundAccountResponse';
+import type { ReturnAddressResponse } from './returnAddressResponse';
 import type { ReturnItemResponse } from './returnItemResponse';
+import type { ReturnRefundResponse } from './returnRefundResponse';
+import type { ReturnRequestResponseDeadlineKind } from './returnRequestResponseDeadlineKind';
+import type { ReturnRequestResponseEscalateSource } from './returnRequestResponseEscalateSource';
+import type { ReturnRequestResponseReasonCode } from './returnRequestResponseReasonCode';
+import type { ReturnRequestResponseReceivedCondition } from './returnRequestResponseReceivedCondition';
+import type { ReturnRequestResponseRejectedBy } from './returnRequestResponseRejectedBy';
+import type { ReturnRequestResponseResolveDecision } from './returnRequestResponseResolveDecision';
+import type { ReturnRequestResponseStatus } from './returnRequestResponseStatus';
 
 export interface ReturnRequestResponse {
   id: string;
   orderCode: string;
-  status: string;
+  shopId: string;
+  shopName: string;
+  status: ReturnRequestResponseStatus;
+  reasonCode: ReturnRequestResponseReasonCode;
+  /** false = không cần trả hàng (khách báo chưa nhận hàng) — shop duyệt là hoàn tiền ngay, không nhập kho */
+  requireReturn: boolean;
   reason: string;
   /** @nullable */
   detail?: string | null;
+  /** Số tiền sẽ hoàn thực tế (shop chỉ được giảm; sàn ≤ tổng đơn − đã hoàn) */
+  refundAmount: MoneyResponse;
+  /** Số tiền hệ thống tính lúc tạo yêu cầu (theo tỉ lệ hàng trả) — so với refundAmount để thấy mức đã chỉnh */
+  calculatedRefundAmount: MoneyResponse;
+  /**
+     * Lý do chỉnh số tiền hoàn (có khi refundAmount ≠ calculatedRefundAmount)
+     * @nullable
+     */
+  adjustReason?: string | null;
+  items: ReturnItemResponse[];
+  /** Minh chứng của khách */
+  evidence: MediaItemResponse[];
+  /**
+     * Hạn của bước đang chờ (ISO)
+     * @nullable
+     */
+  deadlineAt?: string | null;
+  /** @nullable */
+  deadlineKind?: ReturnRequestResponseDeadlineKind;
+  /** @nullable */
+  approvedAt?: string | null;
+  /**
+     * Địa chỉ gửi trả — chỉ có khi status = approved
+     * @nullable
+     */
+  returnAddress?: ReturnAddressResponse | null;
+  /** @nullable */
+  carrier?: string | null;
+  /** @nullable */
+  trackingCode?: string | null;
+  /** @nullable */
+  shippedBackAt?: string | null;
+  /** @nullable */
+  receivedAt?: string | null;
+  /** @nullable */
+  receivedCondition?: ReturnRequestResponseReceivedCondition;
+  /** @nullable */
+  receivedNote?: string | null;
+  /** Minh chứng shop đính kèm khi xác nhận nhận hàng */
+  receivedEvidence: MediaItemResponse[];
+  /** @nullable */
+  rejectedBy?: ReturnRequestResponseRejectedBy;
   /** @nullable */
   rejectReason?: string | null;
-  refundAmount: MoneyResponse;
-  items: ReturnItemResponse[];
-  evidence: MediaItemResponse[];
+  /** Minh chứng shop đính kèm khi từ chối */
+  rejectEvidence: MediaItemResponse[];
+  /** @nullable */
+  escalatedAt?: string | null;
+  /** @nullable */
+  escalateReason?: string | null;
+  /** @nullable */
+  escalateSource?: ReturnRequestResponseEscalateSource;
+  /**
+     * Id nhân viên sàn phân xử — chỉ có ở API của sàn
+     * @nullable
+     */
+  resolvedBy?: string | null;
+  /** @nullable */
+  resolvedAt?: string | null;
+  /** @nullable */
+  resolveDecision?: ReturnRequestResponseResolveDecision;
+  /** @nullable */
+  resolveNote?: string | null;
+  /**
+     * Tài khoản nhận hoàn đã che số — không có ở API của shop
+     * @nullable
+     */
+  refundAccount?: RefundAccountResponse | null;
+  /**
+     * Khoản hoàn tiền bên payment — chỉ có khi status = received/refunded
+     * @nullable
+     */
+  refund?: ReturnRefundResponse | null;
+  /** COD-08b: true khi yêu cầu "chưa nhận hàng" của đơn COD đã ghi thu kết thúc bằng ĐẢO ghi thu COD (refundAmount = 0, khách chưa trả tiền nên KHÔNG có khoản hoàn; ví shop được trả lại hoa hồng) */
+  codReversed: boolean;
+  /** Khách rút được (chưa gửi hàng) */
+  canCancel: boolean;
+  /** Khách báo đã gửi hàng trả được (đã duyệt, cần trả hàng, còn hạn) */
+  canShipBack: boolean;
+  /** Khách khiếu nại lên sàn được (shop từ chối, còn hạn khiếu nại) */
+  canEscalate: boolean;
   /** @nullable */
   processedAt?: string | null;
+  /** @nullable */
+  refundedAt?: string | null;
   createdAt: string;
 }
