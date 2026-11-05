@@ -10,7 +10,7 @@ export default function ReturnsPage() {
   return (
     <PermissionGuard permission={PERMISSIONS.returnRead}>
       <div className="flex flex-col gap-4">
-        <PageHeader title="Yêu cầu đổi trả" description="Khách gửi trong hạn đổi trả; duyệt → kế toán hoàn tiền" />
+        <PageHeader title="Yêu cầu đổi trả" description="Shop duyệt / từ chối / nhận hàng; sàn chỉ phân xử khi khách khiếu nại hoặc shop quá hạn, báo hàng không khớp" />
         <ReturnsTable />
       </div>
     </PermissionGuard>

@@ -10,7 +10,7 @@ export default function RefundsPage() {
   return (
     <PermissionGuard permission={PERMISSIONS.paymentRead}>
       <div className="flex flex-col gap-4">
-        <PageHeader title="Hoàn tiền" description="Yêu cầu hoàn từ huỷ đơn đã thanh toán / đổi trả được duyệt" />
+        <PageHeader title="Hoàn tiền" description="Yêu cầu hoàn từ huỷ đơn đã thanh toán, đổi trả được hoàn hoặc khách trả trùng — chi qua PayOS hoặc chuyển khoản tay" />
         <RefundsTable />
       </div>
     </PermissionGuard>
