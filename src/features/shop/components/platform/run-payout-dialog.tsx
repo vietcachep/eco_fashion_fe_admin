@@ -36,7 +36,7 @@ function lastMonthRange(): PayoutRunInput {
  * ngày tính hết ngày đó nhưng không vượt quá hiện tại (backend từ chối kỳ chưa kết
  * thúc). Thành công đổi sang màn tóm tắt kết quả (số kỳ, tổng thực chi) thay vì chỉ toast.
  */
-export function RunPayoutDialog({ onClose }: { onClose: () => void }) {
+export function RunPayoutDialog({ onClose, shopId, shopName }: { onClose: () => void; shopId?: string; shopName?: string }) {
   const run = useRunPayout();
   const [created, setCreated] = useState<ShopPayoutResponse[] | null>(null);
   // Khởi tạo lười để ngày mặc định tính một lần lúc mở, không đổi theo mỗi lần render.
@@ -51,7 +51,8 @@ export function RunPayoutDialog({ onClose }: { onClose: () => void }) {
     const now = new Date();
     const periodEnd = endOfDay > now ? now : endOfDay;
     run.mutate(
-      { periodStart: periodStart.toISOString(), periodEnd: periodEnd.toISOString() },
+      // PLAN-0040 6.2: `shopId` có ⇒ chỉ chạy kỳ cho gian hàng đó (chạy lại cùng kỳ vẫn idempotent).
+      { periodStart: periodStart.toISOString(), periodEnd: periodEnd.toISOString(), shopId },
       { onSuccess: (rows) => setCreated(rows) },
     );
   };
@@ -66,8 +67,9 @@ export function RunPayoutDialog({ onClose }: { onClose: () => void }) {
             <DialogHeader>
               <DialogTitle>Chạy kỳ đối soát</DialogTitle>
               <DialogDescription>
-                Sàn đã tự động chạy kỳ mỗi ngày — nút này để chạy bù. Tính cả đơn online (PayOS) và COD đã qua hạn đổi trả trong kỳ; trừ hoa hồng, tiền hoàn và nợ mang sang từ kỳ trước. Chạy lại cùng
-                kỳ không tạo trùng, nhưng kỳ mới không được chồng lên kỳ đã chạy.
+                {shopId ? `Chỉ chạy cho ${shopName ?? "gian hàng đang lọc ở danh sách"}. ` : "Chạy cho mọi gian hàng. "}
+                Nút này để chạy bù (sàn chỉ tự chạy khi bật payout.auto_enabled). Chỉ gom đơn online (PayOS) đã qua hạn đổi trả trong kỳ — đơn COD không vào đối soát, sàn trừ hoa hồng từ ví đặt cọc; trừ
+                tiền hoàn và nợ mang sang từ kỳ trước. Chạy lại cùng kỳ không tạo trùng, nhưng kỳ mới không được chồng lên kỳ đã chạy.
               </DialogDescription>
             </DialogHeader>
             <form id="run-payout-form" noValidate onSubmit={form.handleSubmit(submit)}>
@@ -105,6 +107,10 @@ function RunResult({ created, onClose }: { created: ShopPayoutResponse[]; onClos
   const toPay = created.filter((p) => Number(p.netPayout) > 0);
   const totalNet = toPay.reduce((sum, p) => sum + Number(p.netPayout), 0);
   const carried = created.filter((p) => p.status === "carried").length;
+  // Kỳ chưa đi thẳng tới PayOS: cần người xử lý tiếp (duyệt / mở giữ) hoặc dồn sang kỳ sau.
+  const awaitingApproval = created.filter((p) => p.status === "awaiting_approval").length;
+  const held = created.filter((p) => p.status === "held").length;
+  const deferred = created.filter((p) => p.status === "deferred").length;
 
   return (
     <>
@@ -123,6 +129,9 @@ function RunResult({ created, onClose }: { created: ShopPayoutResponse[]; onClos
             { label: "Kỳ cần chi tiền", value: formatNumber(toPay.length) },
             { label: "Tổng thực chi", value: formatVnd(totalNet) },
             { label: "Kỳ mang nợ sang", value: formatNumber(carried) },
+            { label: "Kỳ chờ duyệt", value: formatNumber(awaitingApproval) },
+            { label: "Kỳ đang giữ", value: formatNumber(held) },
+            { label: "Kỳ dồn sang kỳ sau", value: formatNumber(deferred) },
           ]}
         />
       ) : null}

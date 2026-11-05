@@ -1,28 +1,38 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { PlayIcon } from "lucide-react";
+import { useState } from "react";
+import { HandIcon, PlayIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ApiErrorState } from "@/components/shared/api-error-state";
 import { FilterTabs } from "@/components/shared/filter-tabs";
-import { NativeSelect } from "@/components/shared/native-select";
 import { PermissionGate } from "@/components/shared/permission-gate";
 import { isForbiddenError } from "@/lib/api-error";
 import { PERMISSIONS } from "@/lib/constants";
 import { useListState } from "@/hooks/use-list-state";
 import { PayoutDetailSheet } from "@/features/shop/components/platform/payout-detail-sheet";
+import { PayoutHoldsPanel } from "@/features/shop/components/platform/payout-holds-panel";
 import { PayoutsTable } from "@/features/shop/components/platform/payouts-table";
 import { PayosBalanceCard } from "@/features/shop/components/platform/payos-balance-card";
 import { RunPayoutDialog } from "@/features/shop/components/platform/run-payout-dialog";
+import { ShopFilter } from "@/features/shop/components/platform/shop-filter";
 import { useAdminPayouts } from "@/features/shop/hooks/use-admin-payouts";
-import { useAdminShopOptions } from "@/features/shop/hooks/use-admin-shops";
 
+/*
+ * Tab lọc theo trạng thái kỳ. Ba tab đầu là hàng đợi cần NGƯỜI xử lý (chờ duyệt · không rõ kết quả · đang giữ) nên đứng trước các
+ * tab theo vòng đời chi tiền; `deferred` (dưới mức tối thiểu, chưa gộp) và `merged` (đã cộng sang kỳ sau) tách riêng vì khác nghĩa.
+ * `key` trùng mã trạng thái backend để dashboard / đường dẫn `?status=held` trỏ thẳng vào đúng tab.
+ */
 export const PAYOUT_TABS = [
   { key: "", label: "Tất cả" },
+  { key: "awaiting_approval", label: "Chờ duyệt" },
+  { key: "unknown", label: "Không rõ kết quả" },
+  { key: "held", label: "Đang giữ" },
   { key: "pending", label: "Chờ chi" },
   { key: "processing", label: "Đang chi" },
   { key: "paid", label: "Đã chi" },
   { key: "failed", label: "Chi lỗi" },
+  { key: "deferred", label: "Chờ dồn kỳ sau" },
+  { key: "merged", label: "Đã dồn kỳ sau" },
   { key: "carried", label: "Mang nợ sang kỳ sau" },
   { key: "settled", label: "Không phát sinh" },
 ] as const;
@@ -32,9 +42,9 @@ const LOAD_ERROR = "Không tải được danh sách kỳ đối soát.";
 const DEFAULTS = { status: "", shopId: "" };
 
 /*
- * Đối soát (payout) toàn sàn, quyền supplier.payout.read: thẻ tài khoản chi PayOS, chạy kỳ
- * mới, lọc theo trạng thái + shop, mở chi tiết từng kỳ để chi tiền. Kỳ do job/nhân viên
- * sàn tạo; shop chỉ xem kỳ của mình ở cổng vendor.
+ * Đối soát (payout) toàn sàn, quyền supplier.payout.read: thẻ tài khoản chi PayOS, chạy kỳ mới, lọc theo trạng thái + shop, mở chi tiết
+ * từng kỳ để duyệt / đối chiếu PayOS / mở giữ / chi tiền, và xem các lệnh giữ tay đang hiệu lực. Kỳ do job/nhân viên sàn tạo; shop chỉ xem
+ * kỳ của mình ở cổng vendor. Tên shop lấy từ `shopName`/`shopCode` do backend trả kèm mỗi kỳ — kế toán không có quyền đọc shop.
  */
 export function PayoutsScreen() {
   const { filters, setFilter, pageIndex, setPageIndex, page } = useListState(DEFAULTS);
@@ -44,13 +54,12 @@ export function PayoutsScreen() {
     page,
     size: PAGE_SIZE,
   });
-  const shops = useAdminShopOptions();
   const [openId, setOpenId] = useState<string | null>(null);
   const [runOpen, setRunOpen] = useState(false);
-
-  // Kỳ đối soát chỉ có `shopId`; dịch sang tên nhờ danh sách shop, thiếu (shop ngoài 100 đầu / thiếu quyền) thì hiện mã rút gọn.
-  const names = useMemo(() => new Map((shops.data ?? []).map((s) => [s.id, s.name])), [shops.data]);
-  const shopLabel = useCallback((shopId: string) => names.get(shopId) ?? `Shop …${shopId.slice(0, 8)}`, [names]);
+  // Panel lệnh giữ: tự mở ở tab "Đang giữ" (cùng chủ đề), các tab khác bật tay bằng nút.
+  const [holdsOpen, setHoldsOpen] = useState(false);
+  const onHeldTab = filters.status === "held";
+  const showHolds = holdsOpen || onHeldTab;
 
   if (isForbiddenError(error)) return <ApiErrorState error={error} fallback={LOAD_ERROR} />;
 
@@ -61,16 +70,11 @@ export function PayoutsScreen() {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <FilterTabs tabs={PAYOUT_TABS} value={filters.status} onChange={(v) => setFilter("status", v)} />
         <div className="flex flex-wrap items-center gap-2">
-          {shops.data && shops.data.length > 0 ? (
-            <NativeSelect aria-label="Gian hàng" className="w-52" value={filters.shopId} onChange={(e) => setFilter("shopId", e.target.value)}>
-              <option value="">Mọi gian hàng</option>
-              {shops.data.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </NativeSelect>
-          ) : null}
+          <ShopFilter value={filters.shopId} onChange={(v) => setFilter("shopId", v)} />
+          <Button variant="outline" aria-pressed={showHolds} disabled={onHeldTab} onClick={() => setHoldsOpen((v) => !v)}>
+            <HandIcon className="size-4" />
+            Lệnh giữ tay
+          </Button>
           <PermissionGate permission={PERMISSIONS.supplierPayoutProcess}>
             <Button onClick={() => setRunOpen(true)}>
               <PlayIcon className="size-4" />
@@ -80,11 +84,12 @@ export function PayoutsScreen() {
         </div>
       </div>
 
+      {showHolds ? <PayoutHoldsPanel /> : null}
+
       {isError ? <ApiErrorState error={error} fallback={LOAD_ERROR} compact /> : null}
       <PayoutsTable
         data={data?.content ?? []}
         loading={isLoading}
-        shopLabel={shopLabel}
         onOpen={(p) => setOpenId(p.id)}
         serverPagination={{
           pageIndex,
@@ -95,8 +100,9 @@ export function PayoutsScreen() {
         }}
       />
 
-      {openId ? <PayoutDetailSheet payoutId={openId} shopLabel={shopLabel} onClose={() => setOpenId(null)} /> : null}
-      {runOpen ? <RunPayoutDialog onClose={() => setRunOpen(false)} /> : null}
+      {openId ? <PayoutDetailSheet payoutId={openId} onClose={() => setOpenId(null)} /> : null}
+      {/* Đang lọc một shop ⇒ chạy kỳ chỉ cho shop đó; không lọc ⇒ mọi shop. */}
+      {runOpen ? <RunPayoutDialog shopId={filters.shopId || undefined} onClose={() => setRunOpen(false)} /> : null}
     </div>
   );
 }

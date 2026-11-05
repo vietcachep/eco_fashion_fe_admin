@@ -2,45 +2,52 @@
 
 import { useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { BanknoteIcon, InfoIcon, Loader2Icon, LockIcon, LockOpenIcon } from "lucide-react";
+import { InfoIcon, LockIcon, LockOpenIcon, WalletIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ApiErrorState } from "@/components/shared/api-error-state";
 import { DataTable } from "@/components/shared/data-table";
 import { FilterTabs } from "@/components/shared/filter-tabs";
-import { FormMessage } from "@/components/shared/form-message";
 import { PermissionGate } from "@/components/shared/permission-gate";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { formatDateTime, formatVnd } from "@/lib/format";
 import { PERMISSIONS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { SignedMoney } from "@/features/shop/components/vendor/signed-money";
-import { useMyDeposits, useMyWallet, useMyWalletTransactions, useRequestDeposit } from "@/features/shop/hooks/use-wallet";
-import { DEPOSIT_STATUS_META, WALLET_TX_LABEL } from "@/features/shop/components/wallet-labels";
-import type { WalletDeposit, WalletTransaction } from "@/features/shop/types/wallet";
+import { useMyWallet, useMyWalletTransactions } from "@/features/shop/hooks/use-wallet";
+import { WALLET_TX_LABEL } from "@/features/shop/components/wallet-labels";
+import { ActiveTopupCard, isLiveTopup, useNow } from "@/features/shop/components/vendor/active-topup-card";
+import { MyTopupsTable } from "@/features/shop/components/vendor/my-topups-table";
+import { TopupDialog } from "@/features/shop/components/vendor/topup-dialog";
+import type { WalletTransaction, WalletTxType } from "@/features/shop/types/wallet";
 
 const PAGE_SIZE = 10;
 
+/* Nhãn sổ cái cho chủ shop: dòng nạp tiền không nhắc tên cổng thanh toán. Màn sàn vẫn dùng WALLET_TX_LABEL gốc. */
+const SHOP_TX_LABEL: Record<WalletTxType, string> = { ...WALLET_TX_LABEL, topup_payos: "Nạp tiền vào ví" };
+
 /*
- * Ví đặt cọc COD của gian hàng (vendor). Shop chỉ nhận COD khi ví > 0: nộp cọc cho sàn → sàn duyệt → ví cộng; mỗi đơn COD
- * giao thành công sàn tự trừ hoa hồng của đơn. Về 0 hoặc âm thì COD đóng; số âm được trừ vào khoản nộp thêm kế tiếp.
+ * Ví đặt cọc COD của gian hàng (vendor). Shop chỉ nhận COD khi ví > 0: nạp tiền vào ví qua PayOS là đường nạp duy nhất, ví được cộng
+ * ngay khi nhận tiền; mỗi đơn COD giao thành công sàn tự trừ hoa hồng của đơn. Về 0 hoặc âm thì COD đóng; số âm được trừ vào lần nạp kế tiếp.
  */
 export function VendorWalletScreen() {
   const wallet = useMyWallet();
-  const [depositOpen, setDepositOpen] = useState(false);
-  const [tab, setTab] = useState<"tx" | "deposits">("tx");
+  // Gọi trước mọi return sớm (quy tắc hook). Mốc này quyết định khoản PayOS còn sống để khoá nút tạo link mới.
+  const now = useNow();
+  const [topupOpen, setTopupOpen] = useState(false);
+  const [tab, setTab] = useState<"tx" | "topups">("tx");
 
   if (wallet.error) return <ApiErrorState error={wallet.error} fallback="Không tải được ví đặt cọc." />;
   if (wallet.isPending || !wallet.data) return <Skeleton className="h-40 w-full rounded-xl" />;
   const w = wallet.data;
   const balance = Number(w.balance);
+  // `enabled` của BE đã gộp cờ bật + PayOS đã cấu hình + EF_ADMIN_URL dùng được. Khi tắt, chủ shop không còn đường nạp nào: màn hiện thông báo tạm thời không khả dụng (PLAN-0006: PayOS là đường nạp duy nhất).
+  const payos = w.payosTopup;
+  const payosOn = !!payos?.enabled;
+  // Khoản đang chờ vẫn hiện thẻ khi cờ đã tắt (tiền về vẫn được ghi có), nên thẻ không phụ thuộc `enabled`.
+  const activeTopup = payos?.active ?? null;
+  const liveTopup = isLiveTopup(activeTopup, now) ? activeTopup : null;
 
   return (
     <div className="flex flex-col gap-4">
@@ -58,25 +65,39 @@ export function VendorWalletScreen() {
               ) : (
                 <StatusBadge tone="danger">
                   <LockIcon className="mr-1 inline size-3" />
-                  COD đang đóng — cần nộp thêm cọc
+                  COD đang đóng — cần nạp thêm tiền vào ví
                 </StatusBadge>
               )}
-              {balance < 0 ? <span className="text-xs text-destructive">Còn nợ sàn {formatVnd(-balance)} — sẽ trừ vào khoản nộp tiếp theo</span> : null}
+              {balance < 0 ? <span className="text-xs text-destructive">Còn nợ sàn {formatVnd(-balance)} — sẽ trừ vào lần nạp tiền tiếp theo</span> : null}
             </div>
           </div>
           <PermissionGate permission={PERMISSIONS.shopWalletDepositRequest}>
-            <Button onClick={() => setDepositOpen(true)} disabled={!!w.pendingDeposit}>
-              <BanknoteIcon className="size-4" />
-              Nộp tiền đặt cọc
-            </Button>
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:items-end">
+              {/* PayOS là đường nạp duy nhất của chủ shop. Cờ tắt hoặc PayOS chưa cấu hình thì không có đường dự phòng: báo trạng thái thay vì ẩn lặng lẽ. */}
+              {payosOn ? (
+                <>
+                  <Button onClick={() => setTopupOpen(true)} disabled={!!liveTopup}>
+                    <WalletIcon className="size-4" />
+                    Nạp tiền vào ví
+                  </Button>
+                  {liveTopup ? <p className="text-xs text-muted-foreground">Đang có một lần nạp chờ thanh toán — xem thẻ bên dưới.</p> : null}
+                </>
+              ) : (
+                <div role="status" className="max-w-xs rounded-lg border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+                  Nạp tiền vào ví đang tạm thời không khả dụng. Vui lòng liên hệ sàn.
+                </div>
+              )}
+            </div>
           </PermissionGate>
         </CardContent>
       </Card>
 
+      {liveTopup ? <ActiveTopupCard key={liveTopup.id} topup={liveTopup} /> : null}
+
       {w.pendingDeposit ? (
         <Card size="sm">
           <CardContent className="text-sm">
-            Yêu cầu nộp <b>{formatVnd(w.pendingDeposit.amount)}</b> (mã GD {w.pendingDeposit.transferRef}) đang chờ sàn đối chiếu và duyệt.
+            Khoản nộp cọc <b>{formatVnd(w.pendingDeposit.amount)}</b> (mã GD {w.pendingDeposit.transferRef}) gửi trước đây vẫn đang chờ sàn đối chiếu và duyệt.
           </CardContent>
         </Card>
       ) : null}
@@ -87,8 +108,9 @@ export function VendorWalletScreen() {
           <ul className="flex list-disc flex-col gap-1 pl-4 text-xs text-muted-foreground">
             <li>Chỉ khi ví đặt cọc <b className="text-foreground">lớn hơn 0</b>, khách mới chọn được thanh toán khi nhận hàng (COD) cho sản phẩm của bạn.</li>
             <li>Mỗi đơn COD giao thành công, sàn <b className="text-foreground">tự trừ hoa hồng của đơn</b> khỏi ví. Ví về 0 hoặc âm thì COD đóng cho đơn mới (đơn đang giao không bị huỷ).</li>
-            <li>Ví âm là khoản bạn còn nợ sàn: lần nộp cọc tiếp theo sẽ <b className="text-foreground">trừ nợ trước</b>, phần còn dư mới mở lại COD.</li>
-            <li>Tối thiểu {formatVnd(w.minDeposit)} mỗi lần. {w.instructions}</li>
+            <li>Ví âm là khoản bạn còn nợ sàn: lần nạp tiền tiếp theo sẽ <b className="text-foreground">trừ nợ trước</b>, phần còn dư mới mở lại COD.</li>
+            <li>Tối thiểu {formatVnd(w.minDeposit)} mỗi lần.</li>
+            {payosOn ? <li>Nạp tiền vào ví: ví được cộng ngay khi nhận được tiền, không cần chờ sàn duyệt.</li> : null}
           </ul>
         </CardContent>
       </Card>
@@ -96,13 +118,13 @@ export function VendorWalletScreen() {
       <FilterTabs
         tabs={[
           { key: "tx", label: "Lịch sử ví" },
-          { key: "deposits", label: "Yêu cầu nộp cọc" },
+          { key: "topups", label: "Lịch sử nạp tiền" },
         ]}
         value={tab}
-        onChange={(v) => setTab(v as "tx" | "deposits")}
+        onChange={(v) => setTab(v as "tx" | "topups")}
       />
-      {tab === "tx" ? <TransactionsTable /> : <MyDepositsTable />}
-      {depositOpen ? <DepositDialog minDeposit={w.minDeposit} instructions={w.instructions} onClose={() => setDepositOpen(false)} /> : null}
+      {tab === "tx" ? <TransactionsTable /> : <MyTopupsTable />}
+      {topupOpen && payos ? <TopupDialog minAmount={payos.minAmount} maxAmount={payos.maxAmount} onClose={() => setTopupOpen(false)} /> : null}
     </div>
   );
 }
@@ -113,7 +135,7 @@ function TransactionsTable() {
   const columns: ColumnDef<WalletTransaction>[] = useMemo(
     () => [
       { id: "at", header: "Thời gian", cell: ({ row }) => <span className="text-xs whitespace-nowrap text-muted-foreground">{formatDateTime(row.original.createdAt)}</span> },
-      { id: "type", header: "Loại", cell: ({ row }) => WALLET_TX_LABEL[row.original.type] ?? row.original.type },
+      { id: "type", header: "Loại", cell: ({ row }) => SHOP_TX_LABEL[row.original.type] ?? row.original.type },
       { id: "order", header: "Đơn / ghi chú", cell: ({ row }) => <span className="text-sm">{row.original.note ?? row.original.orderCode ?? "—"}</span> },
       { id: "amount", header: "Biến động", cell: ({ row }) => <SignedMoney value={row.original.amount} /> },
       { id: "after", header: "Số dư sau", cell: ({ row }) => <span className="tabular-nums">{formatVnd(row.original.balanceAfter)}</span> },
@@ -127,100 +149,5 @@ function TransactionsTable() {
       loading={isLoading}
       serverPagination={{ pageIndex, pageSize: PAGE_SIZE, pageCount: data?.totalPages || 1, total: data?.totalElements ?? 0, onPageChange: setPageIndex }}
     />
-  );
-}
-
-function MyDepositsTable() {
-  const [pageIndex, setPageIndex] = useState(0);
-  const { data, isLoading } = useMyDeposits(pageIndex + 1, PAGE_SIZE);
-  const columns: ColumnDef<WalletDeposit>[] = useMemo(
-    () => [
-      { id: "at", header: "Gửi lúc", cell: ({ row }) => <span className="text-xs whitespace-nowrap text-muted-foreground">{formatDateTime(row.original.createdAt)}</span> },
-      { id: "amount", header: "Số tiền", cell: ({ row }) => <span className="font-medium tabular-nums">{formatVnd(row.original.amount)}</span> },
-      { id: "ref", header: "Mã giao dịch", cell: ({ row }) => <span className="font-mono text-xs">{row.original.transferRef}</span> },
-      {
-        id: "status",
-        header: "Trạng thái",
-        cell: ({ row }) => {
-          const m = DEPOSIT_STATUS_META[row.original.status];
-          return (
-            <div className="flex flex-col gap-0.5">
-              <StatusBadge tone={m.tone}>{m.label}</StatusBadge>
-              {row.original.rejectReason ? <span className="text-xs text-destructive">{row.original.rejectReason}</span> : null}
-            </div>
-          );
-        },
-      },
-    ],
-    [],
-  );
-  return (
-    <DataTable
-      columns={columns}
-      data={data?.content ?? []}
-      loading={isLoading}
-      serverPagination={{ pageIndex, pageSize: PAGE_SIZE, pageCount: data?.totalPages || 1, total: data?.totalElements ?? 0, onPageChange: setPageIndex }}
-    />
-  );
-}
-
-function DepositDialog({ minDeposit, instructions, onClose }: { minDeposit: number; instructions: string; onClose: () => void }) {
-  const request = useRequestDeposit();
-  const schema = useMemo(
-    () =>
-      z.object({
-        amount: z
-          .string()
-          .regex(/^[1-9]\d{0,13}$/, "Nhập số tiền (chỉ chữ số)")
-          .refine((v) => Number(v) >= minDeposit, `Tối thiểu ${formatVnd(minDeposit)}`),
-        transferRef: z.string().trim().min(3, "Nhập mã giao dịch (tối thiểu 3 ký tự)").max(120, "Tối đa 120 ký tự"),
-        note: z.string().trim().max(500, "Tối đa 500 ký tự"),
-      }),
-    [minDeposit],
-  );
-  const form = useForm<z.infer<typeof schema>>({ resolver: zodResolver(schema), defaultValues: { amount: "", transferRef: "", note: "" } });
-  const errors = form.formState.errors;
-
-  return (
-    <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Nộp tiền đặt cọc COD</DialogTitle>
-          <DialogDescription>{instructions}</DialogDescription>
-        </DialogHeader>
-        <form
-          id="deposit-form"
-          noValidate
-          onSubmit={form.handleSubmit((v) => request.mutate({ amount: v.amount, transferRef: v.transferRef, note: v.note || undefined }, { onSuccess: onClose }))}
-        >
-          <FieldGroup className="gap-4">
-            <Field>
-              <FieldLabel htmlFor="deposit-amount">Số tiền đã chuyển (VND)</FieldLabel>
-              <Input id="deposit-amount" inputMode="numeric" placeholder="2000000" aria-invalid={!!errors.amount} {...form.register("amount", { setValueAs: (v: string) => v.replace(/\D/g, "") })} />
-              <FormMessage message={errors.amount?.message} />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="deposit-ref">Mã giao dịch / nội dung chuyển khoản</FieldLabel>
-              <Input id="deposit-ref" placeholder="FT26102312345" aria-invalid={!!errors.transferRef} {...form.register("transferRef")} />
-              <FormMessage message={errors.transferRef?.message} />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="deposit-note">Ghi chú (tuỳ chọn)</FieldLabel>
-              <Input id="deposit-note" aria-invalid={!!errors.note} {...form.register("note")} />
-              <FormMessage message={errors.note?.message} />
-            </Field>
-          </FieldGroup>
-        </form>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Hủy
-          </Button>
-          <Button type="submit" form="deposit-form" disabled={request.isPending}>
-            {request.isPending ? <Loader2Icon className="size-4 animate-spin" /> : null}
-            Gửi yêu cầu
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   );
 }

@@ -7,24 +7,23 @@ import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/shared/data-table";
 import { formatVnd } from "@/lib/format";
 import type { ShopPayoutResponse } from "@/lib/api/generated/model";
-import { NetPayoutAmount, PayoutPeriod, PayoutStatusBadge } from "@/features/shop/components/platform/payout-cells";
+import { NetPayoutAmount, PayoutPeriod, PayoutShopCell, PayoutStatusBadge } from "@/features/shop/components/platform/payout-cells";
 
 /*
- * Bảng kỳ đối soát — chỉ trình bày; màn cha (`PayoutsScreen`, tab "Đối soát" của
- * chi tiết shop) giữ dữ liệu, trang, bộ lọc. Danh sách payout KHÔNG kèm tên shop nên
- * màn cha truyền `shopLabel` để dịch `shopId` → tên; tab trong chi tiết shop đã biết
- * shop nên ẩn cột (`shopLabel` bỏ trống).
+ * Bảng kỳ đối soát — chỉ trình bày; màn cha (`PayoutsScreen`, tab "Đối soát" của chi tiết shop) giữ dữ liệu, trang, bộ lọc. Cột
+ * Gian hàng dùng `shopName`/`shopCode` do backend trả kèm mỗi kỳ (kế toán không có quyền đọc shop nên không tự tra được); tab trong
+ * chi tiết shop đã biết shop nên ẩn cột (`showShop` = false).
  */
 export function PayoutsTable({
   data,
   loading,
-  shopLabel,
+  showShop = true,
   serverPagination,
   onOpen,
 }: {
   data: ShopPayoutResponse[];
   loading: boolean;
-  shopLabel?: (shopId: string) => string;
+  showShop?: boolean;
   serverPagination: { pageIndex: number; pageSize: number; pageCount: number; total: number; onPageChange: (pageIndex: number) => void };
   onOpen: (payout: ShopPayoutResponse) => void;
 }) {
@@ -40,7 +39,7 @@ export function PayoutsTable({
         ),
       },
     ];
-    if (shopLabel) cols.push({ id: "shop", header: "Gian hàng", cell: ({ row }) => <span className="font-medium">{shopLabel(row.original.shopId)}</span> });
+    if (showShop) cols.push({ id: "shop", header: "Gian hàng", cell: ({ row }) => <PayoutShopCell payout={row.original} /> });
     cols.push(
       { id: "period", header: "Kỳ đối soát", cell: ({ row }) => <PayoutPeriod start={row.original.periodStart} end={row.original.periodEnd} /> },
       { id: "gross", header: "Doanh thu", cell: ({ row }) => <span className="tabular-nums">{formatVnd(row.original.grossRevenue)}</span> },
@@ -48,7 +47,21 @@ export function PayoutsTable({
       { id: "refund", header: "Hoàn tiền", cell: ({ row }) => <span className="tabular-nums">{formatVnd(row.original.refundAmount)}</span> },
       { id: "debt", header: "Nợ mang sang", cell: ({ row }) => <span className="tabular-nums">{formatVnd(row.original.carriedDebt)}</span> },
       { id: "net", header: "Thực chi", cell: ({ row }) => <NetPayoutAmount value={row.original.netPayout} /> },
-      { id: "status", header: "Trạng thái", cell: ({ row }) => <PayoutStatusBadge status={row.original.status} /> },
+      {
+        id: "status",
+        header: "Trạng thái",
+        cell: ({ row }) => (
+          <div className="flex flex-col items-start gap-1">
+            <PayoutStatusBadge status={row.original.status} />
+            {/* Kỳ đang giữ: nói thẳng vì sao giữ ngay ở danh sách — kế toán khỏi mở từng kỳ. */}
+            {row.original.status === "held" && row.original.holdReason ? (
+              <span className="line-clamp-2 max-w-56 text-xs text-muted-foreground" title={row.original.holdReason}>
+                {row.original.holdReason}
+              </span>
+            ) : null}
+          </div>
+        ),
+      },
       {
         id: "actions",
         header: () => <span className="sr-only">Thao tác</span>,
@@ -63,7 +76,7 @@ export function PayoutsTable({
       },
     );
     return cols;
-  }, [shopLabel, onOpen]);
+  }, [showShop, onOpen]);
 
   return <DataTable columns={columns} data={data} loading={loading} serverPagination={serverPagination} />;
 }

@@ -11,7 +11,7 @@ export default function VendorWalletPage() {
     <RoleGuard>
       <PermissionGuard permission={PERMISSIONS.shopWalletRead}>
         <div className="flex flex-col gap-4">
-          <PageHeader title="Ví đặt cọc COD" description="Nộp cọc cho sàn để bán thanh toán khi nhận hàng — sàn tự trừ hoa hồng mỗi đơn COD giao thành công" />
+          <PageHeader title="Ví đặt cọc COD" description="Nạp tiền vào ví để bán thanh toán khi nhận hàng (COD) — sàn tự trừ hoa hồng mỗi đơn COD giao thành công" />
           <VendorWalletScreen />
         </div>
       </PermissionGuard>

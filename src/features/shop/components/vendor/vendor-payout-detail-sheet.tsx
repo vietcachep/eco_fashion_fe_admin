@@ -72,8 +72,8 @@ function PayoutDetailContent({ detail }: { detail: ShopPayoutDetailResponse }) {
         id: "orderCode",
         header: "Mã đơn / dòng",
         cell: ({ row }) =>
-          // Dòng sale là mã đơn → mở được trang đơn; dòng refund là mã hoàn tiền RF-… không có trang riêng.
-          row.original.kind === "sale" ? (
+          // Cả dòng bán lẫn dòng hoàn tiền mang MÃ ĐƠN thật (PLAN-0022) → mở được trang đơn; dòng hoàn tiền cũ không khớp được đơn còn mã kỹ thuật RF-… (không có trang).
+          !row.original.orderCode.startsWith("RF-") ? (
             <Link href={`${ROUTES.vendor.orders}/${row.original.orderCode}`} className="font-mono text-xs hover:underline">
               {row.original.orderCode}
             </Link>
@@ -160,7 +160,7 @@ function PayoutDetailContent({ detail }: { detail: ShopPayoutDetailResponse }) {
           <h3 className="text-sm font-medium">Các dòng trong kỳ ({lines.length})</h3>
           <DataTable columns={columns} data={lines} pageSize={8} />
           <p className="text-xs text-muted-foreground">
-            Dòng hoàn tiền: trừ số tiền hoàn khỏi kỳ, sàn hoàn lại phần hoa hồng đã thu trên hàng bị hoàn. Dấu − là khoản trừ khỏi bạn, + là khoản cộng cho bạn.
+            Dòng hoàn tiền hiện mã đơn bị hoàn (bấm để mở đơn): trừ số tiền hoàn khỏi kỳ, sàn hoàn lại phần hoa hồng đã thu trên hàng bị hoàn. Dấu − là khoản trừ khỏi bạn, + là khoản cộng cho bạn.
           </p>
         </section>
       </div>
