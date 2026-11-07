@@ -81,1235 +81,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
 };
 
 /**
- * @summary Tin nhắn khách gửi gian hàng của tôi (lọc status)
- */
-export const shopContactsControllerList = (
-    params?: ShopContactsControllerListParams,
- options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
-) => {
-
-
-      return customInstance<void>(
-      {url: `/api/v1/shop/contacts`, method: 'GET',
-        params, signal
-    },
-      options);
-    }
-
-
-
-
-export const getShopContactsControllerListQueryKey = (params?: ShopContactsControllerListParams,) => {
-    return [
-    `/api/v1/shop/contacts`, ...(params ? [params] : [])
-    ] as const;
-    }
-
-
-export const getShopContactsControllerListQueryOptions = <TData = Awaited<ReturnType<typeof shopContactsControllerList>>, TError = unknown>(params?: ShopContactsControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopContactsControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getShopContactsControllerListQueryKey(params);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopContactsControllerList>>> = ({ signal }) => shopContactsControllerList(params, requestOptions, signal);
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopContactsControllerList>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ShopContactsControllerListQueryResult = NonNullable<Awaited<ReturnType<typeof shopContactsControllerList>>>
-export type ShopContactsControllerListQueryError = unknown
-
-
-export function useShopContactsControllerList<TData = Awaited<ReturnType<typeof shopContactsControllerList>>, TError = unknown>(
- params: undefined |  ShopContactsControllerListParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopContactsControllerList>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopContactsControllerList>>,
-          TError,
-          Awaited<ReturnType<typeof shopContactsControllerList>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopContactsControllerList<TData = Awaited<ReturnType<typeof shopContactsControllerList>>, TError = unknown>(
- params?: ShopContactsControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopContactsControllerList>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopContactsControllerList>>,
-          TError,
-          Awaited<ReturnType<typeof shopContactsControllerList>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopContactsControllerList<TData = Awaited<ReturnType<typeof shopContactsControllerList>>, TError = unknown>(
- params?: ShopContactsControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopContactsControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Tin nhắn khách gửi gian hàng của tôi (lọc status)
- */
-
-export function useShopContactsControllerList<TData = Awaited<ReturnType<typeof shopContactsControllerList>>, TError = unknown>(
- params?: ShopContactsControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopContactsControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getShopContactsControllerListQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-/**
- * @summary Trả lời khách qua email (tin của shop khác → 404)
- */
-export const shopContactsControllerReply = (
-    id: string,
-    replyContactRequest: ReplyContactRequest,
- options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
-) => {
-
-
-      return customInstance<void>(
-      {url: `/api/v1/shop/contacts/${id}/reply`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: replyContactRequest, signal
-    },
-      options);
-    }
-
-
-
-
-export const getShopContactsControllerReplyQueryKey = (id: string,
-    replyContactRequest?: ReplyContactRequest,) => {
-    return [
-    'POST', `/api/v1/shop/contacts/${id}/reply`, replyContactRequest
-    ] as const;
-    }
-
-
-export const getShopContactsControllerReplyQueryOptions = <TData = Awaited<ReturnType<typeof shopContactsControllerReply>>, TError = unknown>(id: string,
-    replyContactRequest: ReplyContactRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopContactsControllerReply>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getShopContactsControllerReplyQueryKey(id,replyContactRequest);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopContactsControllerReply>>> = ({ signal }) => shopContactsControllerReply(id,replyContactRequest, requestOptions, signal);
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopContactsControllerReply>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ShopContactsControllerReplyQueryResult = NonNullable<Awaited<ReturnType<typeof shopContactsControllerReply>>>
-export type ShopContactsControllerReplyQueryError = unknown
-
-
-export function useShopContactsControllerReply<TData = Awaited<ReturnType<typeof shopContactsControllerReply>>, TError = unknown>(
- id: string,
-    replyContactRequest: ReplyContactRequest, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopContactsControllerReply>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopContactsControllerReply>>,
-          TError,
-          Awaited<ReturnType<typeof shopContactsControllerReply>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopContactsControllerReply<TData = Awaited<ReturnType<typeof shopContactsControllerReply>>, TError = unknown>(
- id: string,
-    replyContactRequest: ReplyContactRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopContactsControllerReply>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopContactsControllerReply>>,
-          TError,
-          Awaited<ReturnType<typeof shopContactsControllerReply>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopContactsControllerReply<TData = Awaited<ReturnType<typeof shopContactsControllerReply>>, TError = unknown>(
- id: string,
-    replyContactRequest: ReplyContactRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopContactsControllerReply>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Trả lời khách qua email (tin của shop khác → 404)
- */
-
-export function useShopContactsControllerReply<TData = Awaited<ReturnType<typeof shopContactsControllerReply>>, TError = unknown>(
- id: string,
-    replyContactRequest: ReplyContactRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopContactsControllerReply>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getShopContactsControllerReplyQueryOptions(id,replyContactRequest,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-/**
- * @summary Phiên vendor: gian hàng + vai + mã quyền shop.* của tôi
- */
-export const shopControllerSession = (
-
- options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
-) => {
-
-
-      return customInstance<ShopSessionResponse>(
-      {url: `/api/v1/shop/session`, method: 'GET', signal
-    },
-      options);
-    }
-
-
-
-
-export const getShopControllerSessionQueryKey = () => {
-    return [
-    `/api/v1/shop/session`
-    ] as const;
-    }
-
-
-export const getShopControllerSessionQueryOptions = <TData = Awaited<ReturnType<typeof shopControllerSession>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerSession>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getShopControllerSessionQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopControllerSession>>> = ({ signal }) => shopControllerSession(requestOptions, signal);
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopControllerSession>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ShopControllerSessionQueryResult = NonNullable<Awaited<ReturnType<typeof shopControllerSession>>>
-export type ShopControllerSessionQueryError = unknown
-
-
-export function useShopControllerSession<TData = Awaited<ReturnType<typeof shopControllerSession>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerSession>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopControllerSession>>,
-          TError,
-          Awaited<ReturnType<typeof shopControllerSession>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopControllerSession<TData = Awaited<ReturnType<typeof shopControllerSession>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerSession>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopControllerSession>>,
-          TError,
-          Awaited<ReturnType<typeof shopControllerSession>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopControllerSession<TData = Awaited<ReturnType<typeof shopControllerSession>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerSession>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Phiên vendor: gian hàng + vai + mã quyền shop.* của tôi
- */
-
-export function useShopControllerSession<TData = Awaited<ReturnType<typeof shopControllerSession>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerSession>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getShopControllerSessionQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-/**
- * @summary Hồ sơ gian hàng của tôi
- */
-export const shopControllerMe = (
-
- options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
-) => {
-
-
-      return customInstance<ShopResponse>(
-      {url: `/api/v1/shop/me`, method: 'GET', signal
-    },
-      options);
-    }
-
-
-
-
-export const getShopControllerMeQueryKey = () => {
-    return [
-    `/api/v1/shop/me`
-    ] as const;
-    }
-
-
-export const getShopControllerMeQueryOptions = <TData = Awaited<ReturnType<typeof shopControllerMe>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getShopControllerMeQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopControllerMe>>> = ({ signal }) => shopControllerMe(requestOptions, signal);
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopControllerMe>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ShopControllerMeQueryResult = NonNullable<Awaited<ReturnType<typeof shopControllerMe>>>
-export type ShopControllerMeQueryError = unknown
-
-
-export function useShopControllerMe<TData = Awaited<ReturnType<typeof shopControllerMe>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerMe>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopControllerMe>>,
-          TError,
-          Awaited<ReturnType<typeof shopControllerMe>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopControllerMe<TData = Awaited<ReturnType<typeof shopControllerMe>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerMe>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopControllerMe>>,
-          TError,
-          Awaited<ReturnType<typeof shopControllerMe>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopControllerMe<TData = Awaited<ReturnType<typeof shopControllerMe>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Hồ sơ gian hàng của tôi
- */
-
-export function useShopControllerMe<TData = Awaited<ReturnType<typeof shopControllerMe>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getShopControllerMeQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-/**
- * @summary Sửa hồ sơ gian hàng của tôi (không đổi được mã/slug/trạng thái/hoa hồng — sàn quản)
- */
-export const shopControllerUpdateMe = (
-    updateShopProfileRequest: UpdateShopProfileRequest,
- options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
-) => {
-
-
-      return customInstance<ShopResponse>(
-      {url: `/api/v1/shop/me`, method: 'PATCH',
-      headers: {'Content-Type': 'application/json', },
-      data: updateShopProfileRequest, signal
-    },
-      options);
-    }
-
-
-
-
-export const getShopControllerUpdateMeQueryKey = (updateShopProfileRequest?: UpdateShopProfileRequest,) => {
-    return [
-    'PATCH', `/api/v1/shop/me`, updateShopProfileRequest
-    ] as const;
-    }
-
-
-export const getShopControllerUpdateMeQueryOptions = <TData = Awaited<ReturnType<typeof shopControllerUpdateMe>>, TError = unknown>(updateShopProfileRequest: UpdateShopProfileRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerUpdateMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getShopControllerUpdateMeQueryKey(updateShopProfileRequest);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopControllerUpdateMe>>> = ({ signal }) => shopControllerUpdateMe(updateShopProfileRequest, requestOptions, signal);
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopControllerUpdateMe>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ShopControllerUpdateMeQueryResult = NonNullable<Awaited<ReturnType<typeof shopControllerUpdateMe>>>
-export type ShopControllerUpdateMeQueryError = unknown
-
-
-export function useShopControllerUpdateMe<TData = Awaited<ReturnType<typeof shopControllerUpdateMe>>, TError = unknown>(
- updateShopProfileRequest: UpdateShopProfileRequest, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerUpdateMe>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopControllerUpdateMe>>,
-          TError,
-          Awaited<ReturnType<typeof shopControllerUpdateMe>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopControllerUpdateMe<TData = Awaited<ReturnType<typeof shopControllerUpdateMe>>, TError = unknown>(
- updateShopProfileRequest: UpdateShopProfileRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerUpdateMe>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopControllerUpdateMe>>,
-          TError,
-          Awaited<ReturnType<typeof shopControllerUpdateMe>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopControllerUpdateMe<TData = Awaited<ReturnType<typeof shopControllerUpdateMe>>, TError = unknown>(
- updateShopProfileRequest: UpdateShopProfileRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerUpdateMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Sửa hồ sơ gian hàng của tôi (không đổi được mã/slug/trạng thái/hoa hồng — sàn quản)
- */
-
-export function useShopControllerUpdateMe<TData = Awaited<ReturnType<typeof shopControllerUpdateMe>>, TError = unknown>(
- updateShopProfileRequest: UpdateShopProfileRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerUpdateMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getShopControllerUpdateMeQueryOptions(updateShopProfileRequest,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-/**
- * @summary Danh sách nhân viên gian hàng của tôi
- */
-export const shopMemberControllerList = (
-    params?: ShopMemberControllerListParams,
- options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
-) => {
-
-
-      return customInstance<PageResponse>(
-      {url: `/api/v1/shop/members`, method: 'GET',
-        params, signal
-    },
-      options);
-    }
-
-
-
-
-export const getShopMemberControllerListQueryKey = (params?: ShopMemberControllerListParams,) => {
-    return [
-    `/api/v1/shop/members`, ...(params ? [params] : [])
-    ] as const;
-    }
-
-
-export const getShopMemberControllerListQueryOptions = <TData = Awaited<ReturnType<typeof shopMemberControllerList>>, TError = unknown>(params?: ShopMemberControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getShopMemberControllerListQueryKey(params);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopMemberControllerList>>> = ({ signal }) => shopMemberControllerList(params, requestOptions, signal);
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerList>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ShopMemberControllerListQueryResult = NonNullable<Awaited<ReturnType<typeof shopMemberControllerList>>>
-export type ShopMemberControllerListQueryError = unknown
-
-
-export function useShopMemberControllerList<TData = Awaited<ReturnType<typeof shopMemberControllerList>>, TError = unknown>(
- params: undefined |  ShopMemberControllerListParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerList>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopMemberControllerList>>,
-          TError,
-          Awaited<ReturnType<typeof shopMemberControllerList>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopMemberControllerList<TData = Awaited<ReturnType<typeof shopMemberControllerList>>, TError = unknown>(
- params?: ShopMemberControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerList>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopMemberControllerList>>,
-          TError,
-          Awaited<ReturnType<typeof shopMemberControllerList>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopMemberControllerList<TData = Awaited<ReturnType<typeof shopMemberControllerList>>, TError = unknown>(
- params?: ShopMemberControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Danh sách nhân viên gian hàng của tôi
- */
-
-export function useShopMemberControllerList<TData = Awaited<ReturnType<typeof shopMemberControllerList>>, TError = unknown>(
- params?: ShopMemberControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getShopMemberControllerListQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-/**
- * @summary Thêm nhân viên: chủ shop TẠO TÀI KHOẢN {email, fullName, password, roleCode} cho nhân viên (có hiệu lực ngay, không mời/không chờ chấp nhận). Email của nhân viên TỪNG làm ở shop này (đã gỡ) ⇒ khôi phục tài khoản cũ, mật khẩu KHÔNG đổi (`restored: true`). 409 IDENTITY_EMAIL_EXISTS khi email đã có tài khoản khác; 409 SHOP_MEMBER_UNAVAILABLE khi không khôi phục được; 409 SHOP_MEMBER_LIMIT_REACHED khi shop đã đủ 50 thành viên; 400 IDENTITY_PASSWORD_WEAK khi mật khẩu không đạt luật.
- */
-export const shopMemberControllerAdd = (
-    addShopMemberRequest: AddShopMemberRequest,
- options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
-) => {
-
-
-      return customInstance<AddShopMemberResponse>(
-      {url: `/api/v1/shop/members`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: addShopMemberRequest, signal
-    },
-      options);
-    }
-
-
-
-
-export const getShopMemberControllerAddQueryKey = (addShopMemberRequest?: AddShopMemberRequest,) => {
-    return [
-    'POST', `/api/v1/shop/members`, addShopMemberRequest
-    ] as const;
-    }
-
-
-export const getShopMemberControllerAddQueryOptions = <TData = Awaited<ReturnType<typeof shopMemberControllerAdd>>, TError = unknown>(addShopMemberRequest: AddShopMemberRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerAdd>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getShopMemberControllerAddQueryKey(addShopMemberRequest);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopMemberControllerAdd>>> = ({ signal }) => shopMemberControllerAdd(addShopMemberRequest, requestOptions, signal);
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerAdd>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ShopMemberControllerAddQueryResult = NonNullable<Awaited<ReturnType<typeof shopMemberControllerAdd>>>
-export type ShopMemberControllerAddQueryError = unknown
-
-
-export function useShopMemberControllerAdd<TData = Awaited<ReturnType<typeof shopMemberControllerAdd>>, TError = unknown>(
- addShopMemberRequest: AddShopMemberRequest, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerAdd>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopMemberControllerAdd>>,
-          TError,
-          Awaited<ReturnType<typeof shopMemberControllerAdd>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopMemberControllerAdd<TData = Awaited<ReturnType<typeof shopMemberControllerAdd>>, TError = unknown>(
- addShopMemberRequest: AddShopMemberRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerAdd>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopMemberControllerAdd>>,
-          TError,
-          Awaited<ReturnType<typeof shopMemberControllerAdd>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopMemberControllerAdd<TData = Awaited<ReturnType<typeof shopMemberControllerAdd>>, TError = unknown>(
- addShopMemberRequest: AddShopMemberRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerAdd>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Thêm nhân viên: chủ shop TẠO TÀI KHOẢN {email, fullName, password, roleCode} cho nhân viên (có hiệu lực ngay, không mời/không chờ chấp nhận). Email của nhân viên TỪNG làm ở shop này (đã gỡ) ⇒ khôi phục tài khoản cũ, mật khẩu KHÔNG đổi (`restored: true`). 409 IDENTITY_EMAIL_EXISTS khi email đã có tài khoản khác; 409 SHOP_MEMBER_UNAVAILABLE khi không khôi phục được; 409 SHOP_MEMBER_LIMIT_REACHED khi shop đã đủ 50 thành viên; 400 IDENTITY_PASSWORD_WEAK khi mật khẩu không đạt luật.
- */
-
-export function useShopMemberControllerAdd<TData = Awaited<ReturnType<typeof shopMemberControllerAdd>>, TError = unknown>(
- addShopMemberRequest: AddShopMemberRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerAdd>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getShopMemberControllerAddQueryOptions(addShopMemberRequest,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-/**
- * @summary Tôi tự rời gian hàng hiện tại (chủ cuối cùng không rời được — 409 SHOP_LAST_OWNER); dùng được cả khi gian hàng chưa duyệt/đã khoá
- */
-export const shopMemberControllerLeave = (
-
- options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
-) => {
-
-
-      return customInstance<void>(
-      {url: `/api/v1/shop/members/leave`, method: 'POST', signal
-    },
-      options);
-    }
-
-
-
-
-export const getShopMemberControllerLeaveQueryKey = () => {
-    return [
-    'POST', `/api/v1/shop/members/leave`
-    ] as const;
-    }
-
-
-export const getShopMemberControllerLeaveQueryOptions = <TData = Awaited<ReturnType<typeof shopMemberControllerLeave>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerLeave>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getShopMemberControllerLeaveQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopMemberControllerLeave>>> = ({ signal }) => shopMemberControllerLeave(requestOptions, signal);
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerLeave>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ShopMemberControllerLeaveQueryResult = NonNullable<Awaited<ReturnType<typeof shopMemberControllerLeave>>>
-export type ShopMemberControllerLeaveQueryError = unknown
-
-
-export function useShopMemberControllerLeave<TData = Awaited<ReturnType<typeof shopMemberControllerLeave>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerLeave>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopMemberControllerLeave>>,
-          TError,
-          Awaited<ReturnType<typeof shopMemberControllerLeave>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopMemberControllerLeave<TData = Awaited<ReturnType<typeof shopMemberControllerLeave>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerLeave>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopMemberControllerLeave>>,
-          TError,
-          Awaited<ReturnType<typeof shopMemberControllerLeave>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopMemberControllerLeave<TData = Awaited<ReturnType<typeof shopMemberControllerLeave>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerLeave>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Tôi tự rời gian hàng hiện tại (chủ cuối cùng không rời được — 409 SHOP_LAST_OWNER); dùng được cả khi gian hàng chưa duyệt/đã khoá
- */
-
-export function useShopMemberControllerLeave<TData = Awaited<ReturnType<typeof shopMemberControllerLeave>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerLeave>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getShopMemberControllerLeaveQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-/**
- * @summary Đổi vai một nhân viên (không hạ được người chủ cuối cùng)
- */
-export const shopMemberControllerUpdate = (
-    id: string,
-    updateShopMemberRequest: UpdateShopMemberRequest,
- options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
-) => {
-
-
-      return customInstance<ShopMemberResponse>(
-      {url: `/api/v1/shop/members/${id}`, method: 'PATCH',
-      headers: {'Content-Type': 'application/json', },
-      data: updateShopMemberRequest, signal
-    },
-      options);
-    }
-
-
-
-
-export const getShopMemberControllerUpdateQueryKey = (id: string,
-    updateShopMemberRequest?: UpdateShopMemberRequest,) => {
-    return [
-    'PATCH', `/api/v1/shop/members/${id}`, updateShopMemberRequest
-    ] as const;
-    }
-
-
-export const getShopMemberControllerUpdateQueryOptions = <TData = Awaited<ReturnType<typeof shopMemberControllerUpdate>>, TError = unknown>(id: string,
-    updateShopMemberRequest: UpdateShopMemberRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getShopMemberControllerUpdateQueryKey(id,updateShopMemberRequest);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopMemberControllerUpdate>>> = ({ signal }) => shopMemberControllerUpdate(id,updateShopMemberRequest, requestOptions, signal);
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerUpdate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ShopMemberControllerUpdateQueryResult = NonNullable<Awaited<ReturnType<typeof shopMemberControllerUpdate>>>
-export type ShopMemberControllerUpdateQueryError = unknown
-
-
-export function useShopMemberControllerUpdate<TData = Awaited<ReturnType<typeof shopMemberControllerUpdate>>, TError = unknown>(
- id: string,
-    updateShopMemberRequest: UpdateShopMemberRequest, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerUpdate>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopMemberControllerUpdate>>,
-          TError,
-          Awaited<ReturnType<typeof shopMemberControllerUpdate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopMemberControllerUpdate<TData = Awaited<ReturnType<typeof shopMemberControllerUpdate>>, TError = unknown>(
- id: string,
-    updateShopMemberRequest: UpdateShopMemberRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerUpdate>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopMemberControllerUpdate>>,
-          TError,
-          Awaited<ReturnType<typeof shopMemberControllerUpdate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopMemberControllerUpdate<TData = Awaited<ReturnType<typeof shopMemberControllerUpdate>>, TError = unknown>(
- id: string,
-    updateShopMemberRequest: UpdateShopMemberRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Đổi vai một nhân viên (không hạ được người chủ cuối cùng)
- */
-
-export function useShopMemberControllerUpdate<TData = Awaited<ReturnType<typeof shopMemberControllerUpdate>>, TError = unknown>(
- id: string,
-    updateShopMemberRequest: UpdateShopMemberRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getShopMemberControllerUpdateQueryOptions(id,updateShopMemberRequest,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-/**
- * @summary Gỡ một nhân viên khỏi gian hàng (không gỡ được người chủ cuối cùng)
- */
-export const shopMemberControllerRemove = (
-    id: string,
- options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
-) => {
-
-
-      return customInstance<void>(
-      {url: `/api/v1/shop/members/${id}`, method: 'DELETE', signal
-    },
-      options);
-    }
-
-
-
-
-export const getShopMemberControllerRemoveQueryKey = (id: string,) => {
-    return [
-    'DELETE', `/api/v1/shop/members/${id}`
-    ] as const;
-    }
-
-
-export const getShopMemberControllerRemoveQueryOptions = <TData = Awaited<ReturnType<typeof shopMemberControllerRemove>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerRemove>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getShopMemberControllerRemoveQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopMemberControllerRemove>>> = ({ signal }) => shopMemberControllerRemove(id, requestOptions, signal);
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerRemove>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ShopMemberControllerRemoveQueryResult = NonNullable<Awaited<ReturnType<typeof shopMemberControllerRemove>>>
-export type ShopMemberControllerRemoveQueryError = unknown
-
-
-export function useShopMemberControllerRemove<TData = Awaited<ReturnType<typeof shopMemberControllerRemove>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerRemove>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopMemberControllerRemove>>,
-          TError,
-          Awaited<ReturnType<typeof shopMemberControllerRemove>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopMemberControllerRemove<TData = Awaited<ReturnType<typeof shopMemberControllerRemove>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerRemove>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopMemberControllerRemove>>,
-          TError,
-          Awaited<ReturnType<typeof shopMemberControllerRemove>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopMemberControllerRemove<TData = Awaited<ReturnType<typeof shopMemberControllerRemove>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerRemove>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Gỡ một nhân viên khỏi gian hàng (không gỡ được người chủ cuối cùng)
- */
-
-export function useShopMemberControllerRemove<TData = Awaited<ReturnType<typeof shopMemberControllerRemove>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerRemove>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getShopMemberControllerRemoveQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-/**
- * @summary Chủ shop tự đặt quyền cho một nhân viên (permissionCodes null = theo preset của vai); không đặt được cho chủ; sàn không can thiệp
- */
-export const shopMemberControllerSetPermissions = (
-    id: string,
-    updateShopMemberPermissionsRequest: UpdateShopMemberPermissionsRequest,
- options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
-) => {
-
-
-      return customInstance<ShopMemberResponse>(
-      {url: `/api/v1/shop/members/${id}/permissions`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: updateShopMemberPermissionsRequest, signal
-    },
-      options);
-    }
-
-
-
-
-export const getShopMemberControllerSetPermissionsQueryKey = (id: string,
-    updateShopMemberPermissionsRequest?: UpdateShopMemberPermissionsRequest,) => {
-    return [
-    'PUT', `/api/v1/shop/members/${id}/permissions`, updateShopMemberPermissionsRequest
-    ] as const;
-    }
-
-
-export const getShopMemberControllerSetPermissionsQueryOptions = <TData = Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>, TError = unknown>(id: string,
-    updateShopMemberPermissionsRequest: UpdateShopMemberPermissionsRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getShopMemberControllerSetPermissionsQueryKey(id,updateShopMemberPermissionsRequest);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>> = ({ signal }) => shopMemberControllerSetPermissions(id,updateShopMemberPermissionsRequest, requestOptions, signal);
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ShopMemberControllerSetPermissionsQueryResult = NonNullable<Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>>
-export type ShopMemberControllerSetPermissionsQueryError = unknown
-
-
-export function useShopMemberControllerSetPermissions<TData = Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>, TError = unknown>(
- id: string,
-    updateShopMemberPermissionsRequest: UpdateShopMemberPermissionsRequest, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>,
-          TError,
-          Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopMemberControllerSetPermissions<TData = Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>, TError = unknown>(
- id: string,
-    updateShopMemberPermissionsRequest: UpdateShopMemberPermissionsRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>,
-          TError,
-          Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopMemberControllerSetPermissions<TData = Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>, TError = unknown>(
- id: string,
-    updateShopMemberPermissionsRequest: UpdateShopMemberPermissionsRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Chủ shop tự đặt quyền cho một nhân viên (permissionCodes null = theo preset của vai); không đặt được cho chủ; sàn không can thiệp
- */
-
-export function useShopMemberControllerSetPermissions<TData = Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>, TError = unknown>(
- id: string,
-    updateShopMemberPermissionsRequest: UpdateShopMemberPermissionsRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getShopMemberControllerSetPermissionsQueryOptions(id,updateShopMemberPermissionsRequest,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-/**
- * @summary Ngành hàng LÁ đang bật (kèm ngành cha) để chọn khi tạo sản phẩm
- */
-export const shopCatalogControllerLeaves = (
-
- options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
-) => {
-
-
-      return customInstance<ShopLeafCategoryResponse[]>(
-      {url: `/api/v1/shop/catalog/categories/leaves`, method: 'GET', signal
-    },
-      options);
-    }
-
-
-
-
-export const getShopCatalogControllerLeavesQueryKey = () => {
-    return [
-    `/api/v1/shop/catalog/categories/leaves`
-    ] as const;
-    }
-
-
-export const getShopCatalogControllerLeavesQueryOptions = <TData = Awaited<ReturnType<typeof shopCatalogControllerLeaves>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopCatalogControllerLeaves>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getShopCatalogControllerLeavesQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopCatalogControllerLeaves>>> = ({ signal }) => shopCatalogControllerLeaves(requestOptions, signal);
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopCatalogControllerLeaves>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ShopCatalogControllerLeavesQueryResult = NonNullable<Awaited<ReturnType<typeof shopCatalogControllerLeaves>>>
-export type ShopCatalogControllerLeavesQueryError = unknown
-
-
-export function useShopCatalogControllerLeaves<TData = Awaited<ReturnType<typeof shopCatalogControllerLeaves>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopCatalogControllerLeaves>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopCatalogControllerLeaves>>,
-          TError,
-          Awaited<ReturnType<typeof shopCatalogControllerLeaves>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopCatalogControllerLeaves<TData = Awaited<ReturnType<typeof shopCatalogControllerLeaves>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopCatalogControllerLeaves>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopCatalogControllerLeaves>>,
-          TError,
-          Awaited<ReturnType<typeof shopCatalogControllerLeaves>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopCatalogControllerLeaves<TData = Awaited<ReturnType<typeof shopCatalogControllerLeaves>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopCatalogControllerLeaves>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Ngành hàng LÁ đang bật (kèm ngành cha) để chọn khi tạo sản phẩm
- */
-
-export function useShopCatalogControllerLeaves<TData = Awaited<ReturnType<typeof shopCatalogControllerLeaves>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopCatalogControllerLeaves>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getShopCatalogControllerLeavesQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-/**
- * @summary Mẫu thuộc tính của ngành (thuộc tính sản phẩm + trục biến thể + giá trị chọn) để dựng form
- */
-export const shopCatalogControllerAttributeTemplate = (
-    slug: string,
- options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
-) => {
-
-
-      return customInstance<ShopCategoryTemplateResponse>(
-      {url: `/api/v1/shop/catalog/categories/${slug}/attribute-template`, method: 'GET', signal
-    },
-      options);
-    }
-
-
-
-
-export const getShopCatalogControllerAttributeTemplateQueryKey = (slug: string,) => {
-    return [
-    `/api/v1/shop/catalog/categories/${slug}/attribute-template`
-    ] as const;
-    }
-
-
-export const getShopCatalogControllerAttributeTemplateQueryOptions = <TData = Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>, TError = unknown>(slug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getShopCatalogControllerAttributeTemplateQueryKey(slug);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>> = ({ signal }) => shopCatalogControllerAttributeTemplate(slug, requestOptions, signal);
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: slug !== null && slug !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ShopCatalogControllerAttributeTemplateQueryResult = NonNullable<Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>>
-export type ShopCatalogControllerAttributeTemplateQueryError = unknown
-
-
-export function useShopCatalogControllerAttributeTemplate<TData = Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>, TError = unknown>(
- slug: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>,
-          TError,
-          Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopCatalogControllerAttributeTemplate<TData = Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>, TError = unknown>(
- slug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>,
-          TError,
-          Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useShopCatalogControllerAttributeTemplate<TData = Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>, TError = unknown>(
- slug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Mẫu thuộc tính của ngành (thuộc tính sản phẩm + trục biến thể + giá trị chọn) để dựng form
- */
-
-export function useShopCatalogControllerAttributeTemplate<TData = Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>, TError = unknown>(
- slug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getShopCatalogControllerAttributeTemplateQueryOptions(slug,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-/**
  * @summary Danh sách gian hàng đang hoạt động (điểm đánh giá cao trước) — tìm theo tên, phân trang
  */
 export const shopStorefrontControllerList = (
@@ -3395,6 +2166,1235 @@ export function useShopInventoryControllerAdjust<TData = Awaited<ReturnType<type
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getShopInventoryControllerAdjustQueryOptions(adjustStockRequest,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Ngành hàng LÁ đang bật (kèm ngành cha) để chọn khi tạo sản phẩm
+ */
+export const shopCatalogControllerLeaves = (
+
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<ShopLeafCategoryResponse[]>(
+      {url: `/api/v1/shop/catalog/categories/leaves`, method: 'GET', signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopCatalogControllerLeavesQueryKey = () => {
+    return [
+    `/api/v1/shop/catalog/categories/leaves`
+    ] as const;
+    }
+
+
+export const getShopCatalogControllerLeavesQueryOptions = <TData = Awaited<ReturnType<typeof shopCatalogControllerLeaves>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopCatalogControllerLeaves>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopCatalogControllerLeavesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopCatalogControllerLeaves>>> = ({ signal }) => shopCatalogControllerLeaves(requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopCatalogControllerLeaves>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopCatalogControllerLeavesQueryResult = NonNullable<Awaited<ReturnType<typeof shopCatalogControllerLeaves>>>
+export type ShopCatalogControllerLeavesQueryError = unknown
+
+
+export function useShopCatalogControllerLeaves<TData = Awaited<ReturnType<typeof shopCatalogControllerLeaves>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopCatalogControllerLeaves>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopCatalogControllerLeaves>>,
+          TError,
+          Awaited<ReturnType<typeof shopCatalogControllerLeaves>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopCatalogControllerLeaves<TData = Awaited<ReturnType<typeof shopCatalogControllerLeaves>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopCatalogControllerLeaves>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopCatalogControllerLeaves>>,
+          TError,
+          Awaited<ReturnType<typeof shopCatalogControllerLeaves>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopCatalogControllerLeaves<TData = Awaited<ReturnType<typeof shopCatalogControllerLeaves>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopCatalogControllerLeaves>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Ngành hàng LÁ đang bật (kèm ngành cha) để chọn khi tạo sản phẩm
+ */
+
+export function useShopCatalogControllerLeaves<TData = Awaited<ReturnType<typeof shopCatalogControllerLeaves>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopCatalogControllerLeaves>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopCatalogControllerLeavesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Mẫu thuộc tính của ngành (thuộc tính sản phẩm + trục biến thể + giá trị chọn) để dựng form
+ */
+export const shopCatalogControllerAttributeTemplate = (
+    slug: string,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<ShopCategoryTemplateResponse>(
+      {url: `/api/v1/shop/catalog/categories/${slug}/attribute-template`, method: 'GET', signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopCatalogControllerAttributeTemplateQueryKey = (slug: string,) => {
+    return [
+    `/api/v1/shop/catalog/categories/${slug}/attribute-template`
+    ] as const;
+    }
+
+
+export const getShopCatalogControllerAttributeTemplateQueryOptions = <TData = Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>, TError = unknown>(slug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopCatalogControllerAttributeTemplateQueryKey(slug);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>> = ({ signal }) => shopCatalogControllerAttributeTemplate(slug, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: slug !== null && slug !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopCatalogControllerAttributeTemplateQueryResult = NonNullable<Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>>
+export type ShopCatalogControllerAttributeTemplateQueryError = unknown
+
+
+export function useShopCatalogControllerAttributeTemplate<TData = Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>, TError = unknown>(
+ slug: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>,
+          TError,
+          Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopCatalogControllerAttributeTemplate<TData = Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>, TError = unknown>(
+ slug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>,
+          TError,
+          Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopCatalogControllerAttributeTemplate<TData = Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>, TError = unknown>(
+ slug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Mẫu thuộc tính của ngành (thuộc tính sản phẩm + trục biến thể + giá trị chọn) để dựng form
+ */
+
+export function useShopCatalogControllerAttributeTemplate<TData = Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>, TError = unknown>(
+ slug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopCatalogControllerAttributeTemplate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopCatalogControllerAttributeTemplateQueryOptions(slug,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Phiên vendor: gian hàng + vai + mã quyền shop.* của tôi
+ */
+export const shopControllerSession = (
+
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<ShopSessionResponse>(
+      {url: `/api/v1/shop/session`, method: 'GET', signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopControllerSessionQueryKey = () => {
+    return [
+    `/api/v1/shop/session`
+    ] as const;
+    }
+
+
+export const getShopControllerSessionQueryOptions = <TData = Awaited<ReturnType<typeof shopControllerSession>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerSession>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopControllerSessionQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopControllerSession>>> = ({ signal }) => shopControllerSession(requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopControllerSession>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopControllerSessionQueryResult = NonNullable<Awaited<ReturnType<typeof shopControllerSession>>>
+export type ShopControllerSessionQueryError = unknown
+
+
+export function useShopControllerSession<TData = Awaited<ReturnType<typeof shopControllerSession>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerSession>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopControllerSession>>,
+          TError,
+          Awaited<ReturnType<typeof shopControllerSession>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopControllerSession<TData = Awaited<ReturnType<typeof shopControllerSession>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerSession>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopControllerSession>>,
+          TError,
+          Awaited<ReturnType<typeof shopControllerSession>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopControllerSession<TData = Awaited<ReturnType<typeof shopControllerSession>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerSession>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Phiên vendor: gian hàng + vai + mã quyền shop.* của tôi
+ */
+
+export function useShopControllerSession<TData = Awaited<ReturnType<typeof shopControllerSession>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerSession>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopControllerSessionQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Hồ sơ gian hàng của tôi
+ */
+export const shopControllerMe = (
+
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<ShopResponse>(
+      {url: `/api/v1/shop/me`, method: 'GET', signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopControllerMeQueryKey = () => {
+    return [
+    `/api/v1/shop/me`
+    ] as const;
+    }
+
+
+export const getShopControllerMeQueryOptions = <TData = Awaited<ReturnType<typeof shopControllerMe>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopControllerMeQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopControllerMe>>> = ({ signal }) => shopControllerMe(requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopControllerMe>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopControllerMeQueryResult = NonNullable<Awaited<ReturnType<typeof shopControllerMe>>>
+export type ShopControllerMeQueryError = unknown
+
+
+export function useShopControllerMe<TData = Awaited<ReturnType<typeof shopControllerMe>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerMe>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopControllerMe>>,
+          TError,
+          Awaited<ReturnType<typeof shopControllerMe>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopControllerMe<TData = Awaited<ReturnType<typeof shopControllerMe>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerMe>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopControllerMe>>,
+          TError,
+          Awaited<ReturnType<typeof shopControllerMe>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopControllerMe<TData = Awaited<ReturnType<typeof shopControllerMe>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Hồ sơ gian hàng của tôi
+ */
+
+export function useShopControllerMe<TData = Awaited<ReturnType<typeof shopControllerMe>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopControllerMeQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Sửa hồ sơ gian hàng của tôi (không đổi được mã/slug/trạng thái/hoa hồng — sàn quản)
+ */
+export const shopControllerUpdateMe = (
+    updateShopProfileRequest: UpdateShopProfileRequest,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<ShopResponse>(
+      {url: `/api/v1/shop/me`, method: 'PATCH',
+      headers: {'Content-Type': 'application/json', },
+      data: updateShopProfileRequest, signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopControllerUpdateMeQueryKey = (updateShopProfileRequest?: UpdateShopProfileRequest,) => {
+    return [
+    'PATCH', `/api/v1/shop/me`, updateShopProfileRequest
+    ] as const;
+    }
+
+
+export const getShopControllerUpdateMeQueryOptions = <TData = Awaited<ReturnType<typeof shopControllerUpdateMe>>, TError = unknown>(updateShopProfileRequest: UpdateShopProfileRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerUpdateMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopControllerUpdateMeQueryKey(updateShopProfileRequest);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopControllerUpdateMe>>> = ({ signal }) => shopControllerUpdateMe(updateShopProfileRequest, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopControllerUpdateMe>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopControllerUpdateMeQueryResult = NonNullable<Awaited<ReturnType<typeof shopControllerUpdateMe>>>
+export type ShopControllerUpdateMeQueryError = unknown
+
+
+export function useShopControllerUpdateMe<TData = Awaited<ReturnType<typeof shopControllerUpdateMe>>, TError = unknown>(
+ updateShopProfileRequest: UpdateShopProfileRequest, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerUpdateMe>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopControllerUpdateMe>>,
+          TError,
+          Awaited<ReturnType<typeof shopControllerUpdateMe>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopControllerUpdateMe<TData = Awaited<ReturnType<typeof shopControllerUpdateMe>>, TError = unknown>(
+ updateShopProfileRequest: UpdateShopProfileRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerUpdateMe>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopControllerUpdateMe>>,
+          TError,
+          Awaited<ReturnType<typeof shopControllerUpdateMe>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopControllerUpdateMe<TData = Awaited<ReturnType<typeof shopControllerUpdateMe>>, TError = unknown>(
+ updateShopProfileRequest: UpdateShopProfileRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerUpdateMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Sửa hồ sơ gian hàng của tôi (không đổi được mã/slug/trạng thái/hoa hồng — sàn quản)
+ */
+
+export function useShopControllerUpdateMe<TData = Awaited<ReturnType<typeof shopControllerUpdateMe>>, TError = unknown>(
+ updateShopProfileRequest: UpdateShopProfileRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopControllerUpdateMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopControllerUpdateMeQueryOptions(updateShopProfileRequest,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Danh sách nhân viên gian hàng của tôi
+ */
+export const shopMemberControllerList = (
+    params?: ShopMemberControllerListParams,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<PageResponse>(
+      {url: `/api/v1/shop/members`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopMemberControllerListQueryKey = (params?: ShopMemberControllerListParams,) => {
+    return [
+    `/api/v1/shop/members`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getShopMemberControllerListQueryOptions = <TData = Awaited<ReturnType<typeof shopMemberControllerList>>, TError = unknown>(params?: ShopMemberControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopMemberControllerListQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopMemberControllerList>>> = ({ signal }) => shopMemberControllerList(params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerList>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopMemberControllerListQueryResult = NonNullable<Awaited<ReturnType<typeof shopMemberControllerList>>>
+export type ShopMemberControllerListQueryError = unknown
+
+
+export function useShopMemberControllerList<TData = Awaited<ReturnType<typeof shopMemberControllerList>>, TError = unknown>(
+ params: undefined |  ShopMemberControllerListParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerList>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopMemberControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof shopMemberControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopMemberControllerList<TData = Awaited<ReturnType<typeof shopMemberControllerList>>, TError = unknown>(
+ params?: ShopMemberControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerList>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopMemberControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof shopMemberControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopMemberControllerList<TData = Awaited<ReturnType<typeof shopMemberControllerList>>, TError = unknown>(
+ params?: ShopMemberControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Danh sách nhân viên gian hàng của tôi
+ */
+
+export function useShopMemberControllerList<TData = Awaited<ReturnType<typeof shopMemberControllerList>>, TError = unknown>(
+ params?: ShopMemberControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopMemberControllerListQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Thêm nhân viên: chủ shop TẠO TÀI KHOẢN {email, fullName, password, roleCode} cho nhân viên (có hiệu lực ngay, không mời/không chờ chấp nhận). Email của nhân viên TỪNG làm ở shop này (đã gỡ) ⇒ khôi phục tài khoản cũ, mật khẩu KHÔNG đổi (`restored: true`). 409 IDENTITY_EMAIL_EXISTS khi email đã có tài khoản khác; 409 SHOP_MEMBER_UNAVAILABLE khi không khôi phục được; 409 SHOP_MEMBER_LIMIT_REACHED khi shop đã đủ 50 thành viên; 400 IDENTITY_PASSWORD_WEAK khi mật khẩu không đạt luật.
+ */
+export const shopMemberControllerAdd = (
+    addShopMemberRequest: AddShopMemberRequest,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<AddShopMemberResponse>(
+      {url: `/api/v1/shop/members`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: addShopMemberRequest, signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopMemberControllerAddQueryKey = (addShopMemberRequest?: AddShopMemberRequest,) => {
+    return [
+    'POST', `/api/v1/shop/members`, addShopMemberRequest
+    ] as const;
+    }
+
+
+export const getShopMemberControllerAddQueryOptions = <TData = Awaited<ReturnType<typeof shopMemberControllerAdd>>, TError = unknown>(addShopMemberRequest: AddShopMemberRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerAdd>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopMemberControllerAddQueryKey(addShopMemberRequest);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopMemberControllerAdd>>> = ({ signal }) => shopMemberControllerAdd(addShopMemberRequest, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerAdd>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopMemberControllerAddQueryResult = NonNullable<Awaited<ReturnType<typeof shopMemberControllerAdd>>>
+export type ShopMemberControllerAddQueryError = unknown
+
+
+export function useShopMemberControllerAdd<TData = Awaited<ReturnType<typeof shopMemberControllerAdd>>, TError = unknown>(
+ addShopMemberRequest: AddShopMemberRequest, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerAdd>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopMemberControllerAdd>>,
+          TError,
+          Awaited<ReturnType<typeof shopMemberControllerAdd>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopMemberControllerAdd<TData = Awaited<ReturnType<typeof shopMemberControllerAdd>>, TError = unknown>(
+ addShopMemberRequest: AddShopMemberRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerAdd>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopMemberControllerAdd>>,
+          TError,
+          Awaited<ReturnType<typeof shopMemberControllerAdd>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopMemberControllerAdd<TData = Awaited<ReturnType<typeof shopMemberControllerAdd>>, TError = unknown>(
+ addShopMemberRequest: AddShopMemberRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerAdd>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Thêm nhân viên: chủ shop TẠO TÀI KHOẢN {email, fullName, password, roleCode} cho nhân viên (có hiệu lực ngay, không mời/không chờ chấp nhận). Email của nhân viên TỪNG làm ở shop này (đã gỡ) ⇒ khôi phục tài khoản cũ, mật khẩu KHÔNG đổi (`restored: true`). 409 IDENTITY_EMAIL_EXISTS khi email đã có tài khoản khác; 409 SHOP_MEMBER_UNAVAILABLE khi không khôi phục được; 409 SHOP_MEMBER_LIMIT_REACHED khi shop đã đủ 50 thành viên; 400 IDENTITY_PASSWORD_WEAK khi mật khẩu không đạt luật.
+ */
+
+export function useShopMemberControllerAdd<TData = Awaited<ReturnType<typeof shopMemberControllerAdd>>, TError = unknown>(
+ addShopMemberRequest: AddShopMemberRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerAdd>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopMemberControllerAddQueryOptions(addShopMemberRequest,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Tôi tự rời gian hàng hiện tại (chủ cuối cùng không rời được — 409 SHOP_LAST_OWNER); dùng được cả khi gian hàng chưa duyệt/đã khoá
+ */
+export const shopMemberControllerLeave = (
+
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<void>(
+      {url: `/api/v1/shop/members/leave`, method: 'POST', signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopMemberControllerLeaveQueryKey = () => {
+    return [
+    'POST', `/api/v1/shop/members/leave`
+    ] as const;
+    }
+
+
+export const getShopMemberControllerLeaveQueryOptions = <TData = Awaited<ReturnType<typeof shopMemberControllerLeave>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerLeave>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopMemberControllerLeaveQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopMemberControllerLeave>>> = ({ signal }) => shopMemberControllerLeave(requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerLeave>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopMemberControllerLeaveQueryResult = NonNullable<Awaited<ReturnType<typeof shopMemberControllerLeave>>>
+export type ShopMemberControllerLeaveQueryError = unknown
+
+
+export function useShopMemberControllerLeave<TData = Awaited<ReturnType<typeof shopMemberControllerLeave>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerLeave>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopMemberControllerLeave>>,
+          TError,
+          Awaited<ReturnType<typeof shopMemberControllerLeave>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopMemberControllerLeave<TData = Awaited<ReturnType<typeof shopMemberControllerLeave>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerLeave>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopMemberControllerLeave>>,
+          TError,
+          Awaited<ReturnType<typeof shopMemberControllerLeave>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopMemberControllerLeave<TData = Awaited<ReturnType<typeof shopMemberControllerLeave>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerLeave>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Tôi tự rời gian hàng hiện tại (chủ cuối cùng không rời được — 409 SHOP_LAST_OWNER); dùng được cả khi gian hàng chưa duyệt/đã khoá
+ */
+
+export function useShopMemberControllerLeave<TData = Awaited<ReturnType<typeof shopMemberControllerLeave>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerLeave>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopMemberControllerLeaveQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Đổi vai một nhân viên (không hạ được người chủ cuối cùng)
+ */
+export const shopMemberControllerUpdate = (
+    id: string,
+    updateShopMemberRequest: UpdateShopMemberRequest,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<ShopMemberResponse>(
+      {url: `/api/v1/shop/members/${id}`, method: 'PATCH',
+      headers: {'Content-Type': 'application/json', },
+      data: updateShopMemberRequest, signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopMemberControllerUpdateQueryKey = (id: string,
+    updateShopMemberRequest?: UpdateShopMemberRequest,) => {
+    return [
+    'PATCH', `/api/v1/shop/members/${id}`, updateShopMemberRequest
+    ] as const;
+    }
+
+
+export const getShopMemberControllerUpdateQueryOptions = <TData = Awaited<ReturnType<typeof shopMemberControllerUpdate>>, TError = unknown>(id: string,
+    updateShopMemberRequest: UpdateShopMemberRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopMemberControllerUpdateQueryKey(id,updateShopMemberRequest);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopMemberControllerUpdate>>> = ({ signal }) => shopMemberControllerUpdate(id,updateShopMemberRequest, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerUpdate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopMemberControllerUpdateQueryResult = NonNullable<Awaited<ReturnType<typeof shopMemberControllerUpdate>>>
+export type ShopMemberControllerUpdateQueryError = unknown
+
+
+export function useShopMemberControllerUpdate<TData = Awaited<ReturnType<typeof shopMemberControllerUpdate>>, TError = unknown>(
+ id: string,
+    updateShopMemberRequest: UpdateShopMemberRequest, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerUpdate>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopMemberControllerUpdate>>,
+          TError,
+          Awaited<ReturnType<typeof shopMemberControllerUpdate>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopMemberControllerUpdate<TData = Awaited<ReturnType<typeof shopMemberControllerUpdate>>, TError = unknown>(
+ id: string,
+    updateShopMemberRequest: UpdateShopMemberRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerUpdate>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopMemberControllerUpdate>>,
+          TError,
+          Awaited<ReturnType<typeof shopMemberControllerUpdate>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopMemberControllerUpdate<TData = Awaited<ReturnType<typeof shopMemberControllerUpdate>>, TError = unknown>(
+ id: string,
+    updateShopMemberRequest: UpdateShopMemberRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Đổi vai một nhân viên (không hạ được người chủ cuối cùng)
+ */
+
+export function useShopMemberControllerUpdate<TData = Awaited<ReturnType<typeof shopMemberControllerUpdate>>, TError = unknown>(
+ id: string,
+    updateShopMemberRequest: UpdateShopMemberRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopMemberControllerUpdateQueryOptions(id,updateShopMemberRequest,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Gỡ một nhân viên khỏi gian hàng (không gỡ được người chủ cuối cùng)
+ */
+export const shopMemberControllerRemove = (
+    id: string,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<void>(
+      {url: `/api/v1/shop/members/${id}`, method: 'DELETE', signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopMemberControllerRemoveQueryKey = (id: string,) => {
+    return [
+    'DELETE', `/api/v1/shop/members/${id}`
+    ] as const;
+    }
+
+
+export const getShopMemberControllerRemoveQueryOptions = <TData = Awaited<ReturnType<typeof shopMemberControllerRemove>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerRemove>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopMemberControllerRemoveQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopMemberControllerRemove>>> = ({ signal }) => shopMemberControllerRemove(id, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerRemove>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopMemberControllerRemoveQueryResult = NonNullable<Awaited<ReturnType<typeof shopMemberControllerRemove>>>
+export type ShopMemberControllerRemoveQueryError = unknown
+
+
+export function useShopMemberControllerRemove<TData = Awaited<ReturnType<typeof shopMemberControllerRemove>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerRemove>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopMemberControllerRemove>>,
+          TError,
+          Awaited<ReturnType<typeof shopMemberControllerRemove>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopMemberControllerRemove<TData = Awaited<ReturnType<typeof shopMemberControllerRemove>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerRemove>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopMemberControllerRemove>>,
+          TError,
+          Awaited<ReturnType<typeof shopMemberControllerRemove>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopMemberControllerRemove<TData = Awaited<ReturnType<typeof shopMemberControllerRemove>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerRemove>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Gỡ một nhân viên khỏi gian hàng (không gỡ được người chủ cuối cùng)
+ */
+
+export function useShopMemberControllerRemove<TData = Awaited<ReturnType<typeof shopMemberControllerRemove>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerRemove>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopMemberControllerRemoveQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Chủ shop tự đặt quyền cho một nhân viên (permissionCodes null = theo preset của vai); không đặt được cho chủ; sàn không can thiệp
+ */
+export const shopMemberControllerSetPermissions = (
+    id: string,
+    updateShopMemberPermissionsRequest: UpdateShopMemberPermissionsRequest,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<ShopMemberResponse>(
+      {url: `/api/v1/shop/members/${id}/permissions`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: updateShopMemberPermissionsRequest, signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopMemberControllerSetPermissionsQueryKey = (id: string,
+    updateShopMemberPermissionsRequest?: UpdateShopMemberPermissionsRequest,) => {
+    return [
+    'PUT', `/api/v1/shop/members/${id}/permissions`, updateShopMemberPermissionsRequest
+    ] as const;
+    }
+
+
+export const getShopMemberControllerSetPermissionsQueryOptions = <TData = Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>, TError = unknown>(id: string,
+    updateShopMemberPermissionsRequest: UpdateShopMemberPermissionsRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopMemberControllerSetPermissionsQueryKey(id,updateShopMemberPermissionsRequest);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>> = ({ signal }) => shopMemberControllerSetPermissions(id,updateShopMemberPermissionsRequest, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopMemberControllerSetPermissionsQueryResult = NonNullable<Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>>
+export type ShopMemberControllerSetPermissionsQueryError = unknown
+
+
+export function useShopMemberControllerSetPermissions<TData = Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>, TError = unknown>(
+ id: string,
+    updateShopMemberPermissionsRequest: UpdateShopMemberPermissionsRequest, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>,
+          TError,
+          Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopMemberControllerSetPermissions<TData = Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>, TError = unknown>(
+ id: string,
+    updateShopMemberPermissionsRequest: UpdateShopMemberPermissionsRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>,
+          TError,
+          Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopMemberControllerSetPermissions<TData = Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>, TError = unknown>(
+ id: string,
+    updateShopMemberPermissionsRequest: UpdateShopMemberPermissionsRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Chủ shop tự đặt quyền cho một nhân viên (permissionCodes null = theo preset của vai); không đặt được cho chủ; sàn không can thiệp
+ */
+
+export function useShopMemberControllerSetPermissions<TData = Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>, TError = unknown>(
+ id: string,
+    updateShopMemberPermissionsRequest: UpdateShopMemberPermissionsRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopMemberControllerSetPermissions>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopMemberControllerSetPermissionsQueryOptions(id,updateShopMemberPermissionsRequest,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Tin nhắn khách gửi gian hàng của tôi (lọc status)
+ */
+export const shopContactsControllerList = (
+    params?: ShopContactsControllerListParams,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<void>(
+      {url: `/api/v1/shop/contacts`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopContactsControllerListQueryKey = (params?: ShopContactsControllerListParams,) => {
+    return [
+    `/api/v1/shop/contacts`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getShopContactsControllerListQueryOptions = <TData = Awaited<ReturnType<typeof shopContactsControllerList>>, TError = unknown>(params?: ShopContactsControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopContactsControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopContactsControllerListQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopContactsControllerList>>> = ({ signal }) => shopContactsControllerList(params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopContactsControllerList>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopContactsControllerListQueryResult = NonNullable<Awaited<ReturnType<typeof shopContactsControllerList>>>
+export type ShopContactsControllerListQueryError = unknown
+
+
+export function useShopContactsControllerList<TData = Awaited<ReturnType<typeof shopContactsControllerList>>, TError = unknown>(
+ params: undefined |  ShopContactsControllerListParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopContactsControllerList>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopContactsControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof shopContactsControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopContactsControllerList<TData = Awaited<ReturnType<typeof shopContactsControllerList>>, TError = unknown>(
+ params?: ShopContactsControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopContactsControllerList>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopContactsControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof shopContactsControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopContactsControllerList<TData = Awaited<ReturnType<typeof shopContactsControllerList>>, TError = unknown>(
+ params?: ShopContactsControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopContactsControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Tin nhắn khách gửi gian hàng của tôi (lọc status)
+ */
+
+export function useShopContactsControllerList<TData = Awaited<ReturnType<typeof shopContactsControllerList>>, TError = unknown>(
+ params?: ShopContactsControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopContactsControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopContactsControllerListQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Trả lời khách qua email (tin của shop khác → 404)
+ */
+export const shopContactsControllerReply = (
+    id: string,
+    replyContactRequest: ReplyContactRequest,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<void>(
+      {url: `/api/v1/shop/contacts/${id}/reply`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: replyContactRequest, signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopContactsControllerReplyQueryKey = (id: string,
+    replyContactRequest?: ReplyContactRequest,) => {
+    return [
+    'POST', `/api/v1/shop/contacts/${id}/reply`, replyContactRequest
+    ] as const;
+    }
+
+
+export const getShopContactsControllerReplyQueryOptions = <TData = Awaited<ReturnType<typeof shopContactsControllerReply>>, TError = unknown>(id: string,
+    replyContactRequest: ReplyContactRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopContactsControllerReply>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopContactsControllerReplyQueryKey(id,replyContactRequest);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopContactsControllerReply>>> = ({ signal }) => shopContactsControllerReply(id,replyContactRequest, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopContactsControllerReply>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopContactsControllerReplyQueryResult = NonNullable<Awaited<ReturnType<typeof shopContactsControllerReply>>>
+export type ShopContactsControllerReplyQueryError = unknown
+
+
+export function useShopContactsControllerReply<TData = Awaited<ReturnType<typeof shopContactsControllerReply>>, TError = unknown>(
+ id: string,
+    replyContactRequest: ReplyContactRequest, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopContactsControllerReply>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopContactsControllerReply>>,
+          TError,
+          Awaited<ReturnType<typeof shopContactsControllerReply>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopContactsControllerReply<TData = Awaited<ReturnType<typeof shopContactsControllerReply>>, TError = unknown>(
+ id: string,
+    replyContactRequest: ReplyContactRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopContactsControllerReply>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopContactsControllerReply>>,
+          TError,
+          Awaited<ReturnType<typeof shopContactsControllerReply>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopContactsControllerReply<TData = Awaited<ReturnType<typeof shopContactsControllerReply>>, TError = unknown>(
+ id: string,
+    replyContactRequest: ReplyContactRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopContactsControllerReply>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Trả lời khách qua email (tin của shop khác → 404)
+ */
+
+export function useShopContactsControllerReply<TData = Awaited<ReturnType<typeof shopContactsControllerReply>>, TError = unknown>(
+ id: string,
+    replyContactRequest: ReplyContactRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopContactsControllerReply>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopContactsControllerReplyQueryOptions(id,replyContactRequest,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

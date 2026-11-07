@@ -58,6 +58,178 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
+export const adminAiControllerVisualIndexStatus = (
+
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<void>(
+      {url: `/api/v1/admin/ai/image-index/status`, method: 'GET', signal
+    },
+      options);
+    }
+
+
+
+
+export const getAdminAiControllerVisualIndexStatusQueryKey = () => {
+    return [
+    `/api/v1/admin/ai/image-index/status`
+    ] as const;
+    }
+
+
+export const getAdminAiControllerVisualIndexStatusQueryOptions = <TData = Awaited<ReturnType<typeof adminAiControllerVisualIndexStatus>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminAiControllerVisualIndexStatus>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAdminAiControllerVisualIndexStatusQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof adminAiControllerVisualIndexStatus>>> = ({ signal }) => adminAiControllerVisualIndexStatus(requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof adminAiControllerVisualIndexStatus>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type AdminAiControllerVisualIndexStatusQueryResult = NonNullable<Awaited<ReturnType<typeof adminAiControllerVisualIndexStatus>>>
+export type AdminAiControllerVisualIndexStatusQueryError = unknown
+
+
+export function useAdminAiControllerVisualIndexStatus<TData = Awaited<ReturnType<typeof adminAiControllerVisualIndexStatus>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminAiControllerVisualIndexStatus>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminAiControllerVisualIndexStatus>>,
+          TError,
+          Awaited<ReturnType<typeof adminAiControllerVisualIndexStatus>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAdminAiControllerVisualIndexStatus<TData = Awaited<ReturnType<typeof adminAiControllerVisualIndexStatus>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminAiControllerVisualIndexStatus>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminAiControllerVisualIndexStatus>>,
+          TError,
+          Awaited<ReturnType<typeof adminAiControllerVisualIndexStatus>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAdminAiControllerVisualIndexStatus<TData = Awaited<ReturnType<typeof adminAiControllerVisualIndexStatus>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminAiControllerVisualIndexStatus>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useAdminAiControllerVisualIndexStatus<TData = Awaited<ReturnType<typeof adminAiControllerVisualIndexStatus>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminAiControllerVisualIndexStatus>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAdminAiControllerVisualIndexStatusQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const adminAiControllerReindexImages = (
+
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<void>(
+      {url: `/api/v1/admin/ai/image-index/reindex`, method: 'POST', signal
+    },
+      options);
+    }
+
+
+
+
+export const getAdminAiControllerReindexImagesQueryKey = () => {
+    return [
+    'POST', `/api/v1/admin/ai/image-index/reindex`
+    ] as const;
+    }
+
+
+export const getAdminAiControllerReindexImagesQueryOptions = <TData = Awaited<ReturnType<typeof adminAiControllerReindexImages>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminAiControllerReindexImages>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAdminAiControllerReindexImagesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof adminAiControllerReindexImages>>> = ({ signal }) => adminAiControllerReindexImages(requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof adminAiControllerReindexImages>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type AdminAiControllerReindexImagesQueryResult = NonNullable<Awaited<ReturnType<typeof adminAiControllerReindexImages>>>
+export type AdminAiControllerReindexImagesQueryError = unknown
+
+
+export function useAdminAiControllerReindexImages<TData = Awaited<ReturnType<typeof adminAiControllerReindexImages>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminAiControllerReindexImages>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminAiControllerReindexImages>>,
+          TError,
+          Awaited<ReturnType<typeof adminAiControllerReindexImages>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAdminAiControllerReindexImages<TData = Awaited<ReturnType<typeof adminAiControllerReindexImages>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminAiControllerReindexImages>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminAiControllerReindexImages>>,
+          TError,
+          Awaited<ReturnType<typeof adminAiControllerReindexImages>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAdminAiControllerReindexImages<TData = Awaited<ReturnType<typeof adminAiControllerReindexImages>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminAiControllerReindexImages>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useAdminAiControllerReindexImages<TData = Awaited<ReturnType<typeof adminAiControllerReindexImages>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminAiControllerReindexImages>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAdminAiControllerReindexImagesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 export const adminAiControllerDocuments = (
     params?: AdminAiControllerDocumentsParams,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal

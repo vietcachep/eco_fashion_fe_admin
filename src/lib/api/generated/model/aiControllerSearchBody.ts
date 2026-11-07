@@ -8,4 +8,6 @@
 
 export type AiControllerSearchBody = {
   image: Blob | File;
+  /** @maxLength 80 */
+  target?: string;
 };

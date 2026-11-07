@@ -5,5 +5,11 @@
  * Backend sàn thương mại điện tử đa ngành hàng — web bán hàng + web quản trị. Mọi response theo envelope ApiResponse.
  * OpenAPI spec version: 0.1.0
  */
+import type { VisualRegionResponse } from './visualRegionResponse';
 
-export type ImageSearchResponseItemsItem = { [key: string]: unknown };
+export interface VisualAnalyzeResponse {
+  available: boolean;
+  regions: VisualRegionResponse[];
+  /** @nullable */
+  message?: string | null;
+}

@@ -21,6 +21,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AiControllerAnalyzeImageBody,
   AiControllerBoughtTogetherParams,
   AiControllerCartSuggestionsParams,
   AiControllerCreateTryOnBody,
@@ -34,7 +35,8 @@ import type {
   SignalBatchRequest,
   SignalEventRequest,
   SupportRequestBody,
-  ViewEventRequest
+  ViewEventRequest,
+  VisualAnalyzeResponse
 } from '../model';
 
 import { customInstance } from '../../mutator';
@@ -898,7 +900,7 @@ export function useAiControllerStyleResult<TData = Awaited<ReturnType<typeof aiC
 
 
 /**
- * @summary Upload ảnh sản phẩm → phân tích bằng vision + tìm sản phẩm tương tự (không có khoá OpenAI → available=false; không thấy gì → items rỗng + message)
+ * @summary Ảnh/vùng chọn → truy hồi ảnh catalog + OCR + so ảnh ứng viên; không đủ liên quan thì trả rỗng
  */
 export const aiControllerSearch = (
     aiControllerSearchBody: AiControllerSearchBody,
@@ -907,6 +909,9 @@ export const aiControllerSearch = (
 
       const formData = new FormData();
 formData.append(`image`, aiControllerSearchBody.image);
+if(aiControllerSearchBody.target !== undefined) {
+ formData.append(`target`, aiControllerSearchBody.target);
+ }
 
       return customInstance<ImageSearchResponse>(
       {url: `/api/v1/ai/image-search`, method: 'POST',
@@ -973,7 +978,7 @@ export function useAiControllerSearch<TData = Awaited<ReturnType<typeof aiContro
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Upload ảnh sản phẩm → phân tích bằng vision + tìm sản phẩm tương tự (không có khoá OpenAI → available=false; không thấy gì → items rỗng + message)
+ * @summary Ảnh/vùng chọn → truy hồi ảnh catalog + OCR + so ảnh ứng viên; không đủ liên quan thì trả rỗng
  */
 
 export function useAiControllerSearch<TData = Awaited<ReturnType<typeof aiControllerSearch>>, TError = unknown>(
@@ -982,6 +987,96 @@ export function useAiControllerSearch<TData = Awaited<ReturnType<typeof aiContro
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getAiControllerSearchQueryOptions(aiControllerSearchBody,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const aiControllerAnalyzeImage = (
+    aiControllerAnalyzeImageBody: AiControllerAnalyzeImageBody,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+      const formData = new FormData();
+formData.append(`image`, aiControllerAnalyzeImageBody.image);
+
+      return customInstance<VisualAnalyzeResponse>(
+      {url: `/api/v1/ai/image-search/analyze`, method: 'POST',
+      headers: {'Content-Type': 'multipart/form-data', },
+       data: formData, signal
+    },
+      options);
+    }
+
+
+
+
+export const getAiControllerAnalyzeImageQueryKey = (aiControllerAnalyzeImageBody?: AiControllerAnalyzeImageBody,) => {
+    return [
+    'POST', `/api/v1/ai/image-search/analyze`, aiControllerAnalyzeImageBody
+    ] as const;
+    }
+
+
+export const getAiControllerAnalyzeImageQueryOptions = <TData = Awaited<ReturnType<typeof aiControllerAnalyzeImage>>, TError = unknown>(aiControllerAnalyzeImageBody: AiControllerAnalyzeImageBody, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerAnalyzeImage>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAiControllerAnalyzeImageQueryKey(aiControllerAnalyzeImageBody);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof aiControllerAnalyzeImage>>> = ({ signal }) => aiControllerAnalyzeImage(aiControllerAnalyzeImageBody, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof aiControllerAnalyzeImage>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type AiControllerAnalyzeImageQueryResult = NonNullable<Awaited<ReturnType<typeof aiControllerAnalyzeImage>>>
+export type AiControllerAnalyzeImageQueryError = unknown
+
+
+export function useAiControllerAnalyzeImage<TData = Awaited<ReturnType<typeof aiControllerAnalyzeImage>>, TError = unknown>(
+ aiControllerAnalyzeImageBody: AiControllerAnalyzeImageBody, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerAnalyzeImage>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof aiControllerAnalyzeImage>>,
+          TError,
+          Awaited<ReturnType<typeof aiControllerAnalyzeImage>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAiControllerAnalyzeImage<TData = Awaited<ReturnType<typeof aiControllerAnalyzeImage>>, TError = unknown>(
+ aiControllerAnalyzeImageBody: AiControllerAnalyzeImageBody, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerAnalyzeImage>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof aiControllerAnalyzeImage>>,
+          TError,
+          Awaited<ReturnType<typeof aiControllerAnalyzeImage>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAiControllerAnalyzeImage<TData = Awaited<ReturnType<typeof aiControllerAnalyzeImage>>, TError = unknown>(
+ aiControllerAnalyzeImageBody: AiControllerAnalyzeImageBody, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerAnalyzeImage>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useAiControllerAnalyzeImage<TData = Awaited<ReturnType<typeof aiControllerAnalyzeImage>>, TError = unknown>(
+ aiControllerAnalyzeImageBody: AiControllerAnalyzeImageBody, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerAnalyzeImage>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAiControllerAnalyzeImageQueryOptions(aiControllerAnalyzeImageBody,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

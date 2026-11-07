@@ -5,22 +5,26 @@
  * Backend sàn thương mại điện tử đa ngành hàng — web bán hàng + web quản trị. Mọi response theo envelope ApiResponse.
  * OpenAPI spec version: 0.1.0
  */
-import type { ImageSearchResponseItemsItem } from './imageSearchResponseItemsItem';
+import type { ImageSearchResponseSearchMode } from './imageSearchResponseSearchMode';
+import type { ProductCardResponse } from './productCardResponse';
+import type { VisualMatchResponse } from './visualMatchResponse';
 
 export interface ImageSearchResponse {
-  /** false khi chưa cấu hình khoá OpenAI — FE ẩn tính năng */
+  searchMode?: ImageSearchResponseSearchMode;
+  matches?: VisualMatchResponse[];
+  /** Có cấu hình encoder ảnh hoặc vision; runtime không sẵn sàng được báo qua message */
   available: boolean;
   /**
-     * Mô tả ngắn ảnh do vision sinh (≤ 500 ký tự)
+     * Mô tả ảnh/vùng tìm kiếm
      * @nullable
      */
   description?: string | null;
-  /** Từ khoá vision rút ra từ ảnh: loại sản phẩm trước, màu/chất liệu sau (≤ 6); chỉ loại sản phẩm được dùng để tìm */
+  /** Loại/thuộc tính và chữ đọc được trên ảnh */
   keywords: string[];
-  /** Thẻ sản phẩm (cùng dạng ProductCardResponse của GET /products), tối đa 12 (có thể ít hơn — chỉ sản phẩm liên quan), khớp loại sản phẩm trước rồi gợi ý cùng ngành */
-  items: ImageSearchResponseItemsItem[];
+  /** Tối đa12 sản phẩm đã kiểm tra được bán; imageUrl là ảnh khớp truy vấn */
+  items: ProductCardResponse[];
   /**
-     * Giải thích khi không có kết quả khớp / chỉ có gợi ý theo ngành / rất ít kết quả khớp / vision lỗi
+     * No-match hoặc giải thích chế độ dự phòng
      * @nullable
      */
   message?: string | null;
