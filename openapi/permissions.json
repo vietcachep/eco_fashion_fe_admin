@@ -150,6 +150,66 @@
     "deprecated": false
   },
   {
+    "code": "livestream.session.read",
+    "module": "livestream",
+    "description": "Xem các phiên livestream toàn sàn",
+    "deprecated": false
+  },
+  {
+    "code": "livestream.session.terminate",
+    "module": "livestream",
+    "description": "Buộc dừng phiên livestream vi phạm",
+    "deprecated": false
+  },
+  {
+    "code": "livestream.report.read",
+    "module": "livestream",
+    "description": "Xem báo cáo nội dung livestream",
+    "deprecated": false
+  },
+  {
+    "code": "livestream.report.process",
+    "module": "livestream",
+    "description": "Xử lý báo cáo nội dung livestream",
+    "deprecated": false
+  },
+  {
+    "code": "livestream.shop.restrict",
+    "module": "livestream",
+    "description": "Hạn chế hoặc khôi phục quyền live của shop",
+    "deprecated": false
+  },
+  {
+    "code": "shop.livestream.read",
+    "module": "shop",
+    "description": "Xem phiên livestream của shop",
+    "deprecated": false
+  },
+  {
+    "code": "shop.livestream.manage",
+    "module": "shop",
+    "description": "Tạo phiên và quản lý hàng, lịch, người điều hành",
+    "deprecated": false
+  },
+  {
+    "code": "shop.livestream.broadcast",
+    "module": "shop",
+    "description": "Phát và kết thúc livestream của shop",
+    "deprecated": false
+  },
+  {
+    "code": "shop.livestream.moderate",
+    "module": "shop",
+    "description": "Điều hành bình luận trong livestream",
+    "deprecated": false
+  },
+  {
+    "code": "shop.livestream.report.read",
+    "module": "shop",
+    "description": "Xem dữ liệu phiên livestream của shop",
+    "deprecated": false
+  },
+  {
     "code": "order.order.read",
     "module": "order",
     "description": "Xem đơn hàng",

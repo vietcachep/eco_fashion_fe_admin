@@ -15,6 +15,7 @@ import {
   Wallet,
   Warehouse,
   Truck,
+  Radio,
 } from "lucide-react";
 import type { PermissionCode } from "@/lib/permission-codes.generated";
 
@@ -58,6 +59,11 @@ export const ROUTES = {
   shipping: {
     shipments: "/shipping/shipments",
     simulator: "/shipping/simulator",
+  },
+  livestream: {
+    sessions: "/livestream/sessions",
+    reports: "/livestream/reports",
+    session: (id: string) => `/livestream/sessions/${id}`,
   },
   payment: {
     payments: "/payment/payments",
@@ -129,6 +135,11 @@ export const ROUTES = {
     // PLAN-0041: PayOS quay về trang này sau khi chủ shop thanh toán link nạp cọc.
     walletPayosReturn: "/vendor/wallet/payos-return",
     violations: "/vendor/violations", // PLAN-0040 6.4
+    livestreams: "/vendor/livestreams",
+    livestreamNew: "/vendor/livestreams/new",
+    livestreamEdit: (id: string) => `/vendor/livestreams/${id}/edit`,
+    livestreamStudio: (id: string) => `/vendor/livestreams/${id}/studio`,
+    livestreamReport: (id: string) => `/vendor/livestreams/${id}/report`,
   },
 } as const;
 
@@ -139,6 +150,16 @@ export const ROUTES = {
  * đỏ, backend xoá mã là thấy chỗ vỡ. Backend đổi catalog → `npm run perms:sync`.
  */
 export const PERMISSIONS = {
+  liveRead: "livestream.session.read",
+  liveTerminate: "livestream.session.terminate",
+  liveReportRead: "livestream.report.read",
+  liveReportProcess: "livestream.report.process",
+  liveRestrict: "livestream.shop.restrict",
+  shopLiveRead: "shop.livestream.read",
+  shopLiveManage: "shop.livestream.manage",
+  shopLiveBroadcast: "shop.livestream.broadcast",
+  shopLiveModerate: "shop.livestream.moderate",
+  shopLiveReportRead: "shop.livestream.report.read",
   // identity
   userRead: "identity.user.read",
   userCreate: "identity.user.create",
@@ -526,6 +547,13 @@ export const SIDEBAR_NAV: NavGroup[] = [
     ],
   },
   {
+    title: "LIVESTREAM",
+    items: [{ id: "livestream", title: "Livestream", icon: Radio, children: [
+      { title: "Phiên phát", href: ROUTES.livestream.sessions, permission: PERMISSIONS.liveRead },
+      { title: "Báo cáo nội dung", href: ROUTES.livestream.reports, permission: PERMISSIONS.liveReportRead },
+    ] }],
+  },
+  {
     title: "HỆ THỐNG",
     items: [
       {
@@ -667,6 +695,13 @@ export const VENDOR_NAV: NavGroup[] = [
   {
     title: "MARKETING & DỊCH VỤ",
     items: [
+      {
+        id: "vendor-livestream",
+        title: "Livestream",
+        icon: Radio,
+        href: ROUTES.vendor.livestreams,
+        permission: PERMISSIONS.shopLiveRead,
+      },
       {
         id: "vendor-promotion",
         title: "Mã khuyến mãi",

@@ -12,6 +12,8 @@ Module `shipping` (PLAN-0043/FE PLAN-0007) thêm danh sách vận đơn và simu
 Đây là app CLIENT-side sau đăng nhập: page.tsx là Server Component mỏng chỉ render component feature;
 dữ liệu tải ở client qua TanStack Query.
 
+Feature `livestream` cung cấp phiên/studio/báo cáo vendor và giám sát/xử lý báo cáo platform. REST đi qua Orval như các module khác; LiveKit và Socket.IO tải động trong hook media/channel. WebSocket đi thẳng origin backend (`NEXT_PUBLIC_LIVE_SOCKET_URL`, fallback `NEXT_PUBLIC_API_URL`); proxy Route Handler HTTP không chuyển WebSocket. Token publish/subscribe được backend cấp theo từng phiên, frontend không chứa khoá LiveKit. Cleanup dừng camera/micro, disconnect phòng/socket và heartbeat khi rời màn. Quyền điều hành bổ sung kiểm tra `canModerate` từ backend để không nhầm quyền chung với phân công phiên.
+
 ## Luồng dữ liệu (một chiều)
 
 ```text
