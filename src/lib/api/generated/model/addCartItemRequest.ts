@@ -7,6 +7,8 @@
  */
 
 export interface AddCartItemRequest {
+  sourceGrantId?: string;
+  requestId?: string;
   variantId: string;
   quantity: number;
 }
