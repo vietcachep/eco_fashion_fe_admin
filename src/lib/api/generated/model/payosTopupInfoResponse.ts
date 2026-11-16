@@ -5,6 +5,7 @@
  * Backend sàn thương mại điện tử đa ngành hàng — web bán hàng + web quản trị. Mọi response theo envelope ApiResponse.
  * OpenAPI spec version: 0.1.0
  */
+import type { PayosTopupInfoResponseUnavailableReason } from './payosTopupInfoResponseUnavailableReason';
 import type { WalletTopupResponse } from './walletTopupResponse';
 
 export interface PayosTopupInfoResponse {
@@ -19,4 +20,9 @@ export interface PayosTopupInfoResponse {
      * @nullable
      */
   active: WalletTopupResponse | null;
+  /**
+     * Vì sao nạp PayOS chưa mở (null khi đã mở): flag_off = tham số tắt · payos_not_configured = server thiếu khoá PayOS thu tiền · admin_url_invalid = EF_ADMIN_URL không phải https
+     * @nullable
+     */
+  unavailableReason: PayosTopupInfoResponseUnavailableReason;
 }

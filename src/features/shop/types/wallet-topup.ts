@@ -58,8 +58,13 @@ export interface WalletTopupDetail extends WalletTopup {
  * Trường `payosTopup` của GET /shop/wallet (chỉ route vendor). `enabled` = cờ bật AND PayOS đã cấu hình AND EF_ADMIN_URL dùng được;
  * `active` = khoản còn mở và còn hạn của shop, không có thì null.
  */
+/* Mã kỹ thuật vì sao nạp PayOS chưa mở (chép từ eco_backend shop-wallet-topup.types.ts TopupUnavailableReason). */
+export type PayosTopupUnavailableReason = "flag_off" | "payos_not_configured" | "admin_url_invalid";
+
 export interface PayosTopupInfo {
   enabled: boolean;
+  /* null khi đã mở; backend cũ chưa có trường này thì undefined. */
+  unavailableReason?: PayosTopupUnavailableReason | null;
   minAmount: number;
   maxAmount: number;
   active: WalletTopup | null;

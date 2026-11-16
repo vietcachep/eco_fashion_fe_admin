@@ -22338,13 +22338,24 @@
                 "$ref": "#/components/schemas/WalletTopupResponse"
               }
             ]
+          },
+          "unavailableReason": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "flag_off",
+              "payos_not_configured",
+              "admin_url_invalid"
+            ],
+            "description": "Vì sao nạp PayOS chưa mở (null khi đã mở): flag_off = tham số tắt · payos_not_configured = server thiếu khoá PayOS thu tiền · admin_url_invalid = EF_ADMIN_URL không phải https"
           }
         },
         "required": [
           "enabled",
           "minAmount",
           "maxAmount",
-          "active"
+          "active",
+          "unavailableReason"
         ]
       },
       "WalletResponse": {

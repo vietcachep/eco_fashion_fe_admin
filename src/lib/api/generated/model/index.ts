@@ -243,6 +243,7 @@ export * from './pageResponse';
 export * from './paymentPublicControllerPayosReturnParams';
 export * from './payosBalanceResponse';
 export * from './payosTopupInfoResponse';
+export * from './payosTopupInfoResponseUnavailableReason';
 export * from './payoutAutoSettingResponse';
 export * from './payoutHoldResponse';
 export * from './permissionResponse';

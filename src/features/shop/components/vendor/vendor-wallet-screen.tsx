@@ -31,6 +31,13 @@ const SHOP_TX_LABEL: Record<WalletTxType, string> = { ...WALLET_TX_LABEL, topup_
  * Ví đặt cọc COD của gian hàng (vendor). Shop chỉ nhận COD khi ví > 0: nạp tiền vào ví qua PayOS là đường nạp duy nhất, ví được cộng
  * ngay khi nhận tiền; mỗi đơn COD giao thành công sàn tự trừ hoa hồng của đơn. Về 0 hoặc âm thì COD đóng; số âm được trừ vào lần nạp kế tiếp.
  */
+/* Lý do kỹ thuật backend trả về (không chứa khoá/giá trị cấu hình) — để chủ shop báo sàn đúng chỗ cần sửa. */
+const UNAVAILABLE_HINT = {
+  flag_off: "sàn đang tạm tắt nạp qua PayOS (tham số wallet.payos_deposit_enabled).",
+  payos_not_configured: "hệ thống chưa cấu hình khoá PayOS thu tiền.",
+  admin_url_invalid: "địa chỉ web quản trị của hệ thống chưa cấu hình đúng (cần https).",
+} as const;
+
 export function VendorWalletScreen() {
   const wallet = useMyWallet();
   // Gọi trước mọi return sớm (quy tắc hook). Mốc này quyết định khoản PayOS còn sống để khoá nút tạo link mới.
@@ -85,6 +92,7 @@ export function VendorWalletScreen() {
               ) : (
                 <div role="status" className="max-w-xs rounded-lg border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
                   Nạp tiền vào ví đang tạm thời không khả dụng. Vui lòng liên hệ sàn.
+                  {payos?.unavailableReason ? <span className="mt-1 block text-xs">Lý do: {UNAVAILABLE_HINT[payos.unavailableReason]}</span> : null}
                 </div>
               )}
             </div>
