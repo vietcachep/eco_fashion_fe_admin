@@ -14,12 +14,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { DetailList } from "@/components/shared/detail-list";
 import { FormMessage } from "@/components/shared/form-message";
 import { formatNumber, formatVnd, toDayString } from "@/lib/format";
 import type { ShopPayoutResponse } from "@/lib/api/generated/model";
 import { useRunPayout } from "@/features/shop/hooks/use-admin-payouts";
+import { usePayoutAutoSettings } from "@/features/shop/hooks/use-payout-auto-settings";
 import { payoutRunSchema, type PayoutRunInput } from "@/features/shop/schemas/payout-run-schema";
 
 /* Gợi ý mặc định: cả tháng trước — nhịp đối soát thường gặp; kế toán sửa lại nếu chạy kỳ khác. */
@@ -35,12 +37,18 @@ function lastMonthRange(): PayoutRunInput {
  * "Chạy kỳ đối soát": chọn từ ngày – đến ngày rồi gọi POST /admin/payouts/run. Đến
  * ngày tính hết ngày đó nhưng không vượt quá hiện tại (backend từ chối kỳ chưa kết
  * thúc). Thành công đổi sang màn tóm tắt kết quả (số kỳ, tổng thực chi) thay vì chỉ toast.
+ * PLAN-0046: không bị khoá vào một shop thì có thể CHỌN các shop cần chi (ô tìm + tích chọn) — chạy tay luôn chi được cả shop đang tắt
+ * chi trả tự động. Không chọn shop nào = chạy cho mọi shop.
  */
 export function RunPayoutDialog({ onClose, shopId, shopName }: { onClose: () => void; shopId?: string; shopName?: string }) {
   const run = useRunPayout();
   const [created, setCreated] = useState<ShopPayoutResponse[] | null>(null);
   // Khởi tạo lười để ngày mặc định tính một lần lúc mở, không đổi theo mỗi lần render.
   const [defaults] = useState(lastMonthRange);
+  const pickable = !shopId; // đang lọc sẵn một shop ⇒ giữ hành vi cũ (chỉ shop đó)
+  const shopsQuery = usePayoutAutoSettings(pickable);
+  const [chosen, setChosen] = useState<string[]>([]);
+  const [shopQ, setShopQ] = useState("");
   const [today] = useState(() => toDayString(new Date()));
   const form = useForm<PayoutRunInput>({ resolver: zodResolver(payoutRunSchema), defaultValues: defaults });
   const errors = form.formState.errors;
@@ -52,7 +60,7 @@ export function RunPayoutDialog({ onClose, shopId, shopName }: { onClose: () => 
     const periodEnd = endOfDay > now ? now : endOfDay;
     run.mutate(
       // PLAN-0040 6.2: `shopId` có ⇒ chỉ chạy kỳ cho gian hàng đó (chạy lại cùng kỳ vẫn idempotent).
-      { periodStart: periodStart.toISOString(), periodEnd: periodEnd.toISOString(), shopId },
+      { periodStart: periodStart.toISOString(), periodEnd: periodEnd.toISOString(), shopId, ...(pickable && chosen.length > 0 ? { shopIds: chosen } : {}) },
       { onSuccess: (rows) => setCreated(rows) },
     );
   };
@@ -67,7 +75,7 @@ export function RunPayoutDialog({ onClose, shopId, shopName }: { onClose: () => 
             <DialogHeader>
               <DialogTitle>Chạy kỳ đối soát</DialogTitle>
               <DialogDescription>
-                {shopId ? `Chỉ chạy cho ${shopName ?? "gian hàng đang lọc ở danh sách"}. ` : "Chạy cho mọi gian hàng. "}
+                {shopId ? `Chỉ chạy cho ${shopName ?? "gian hàng đang lọc ở danh sách"}. ` : chosen.length > 0 ? `Chạy cho ${chosen.length} gian hàng đã chọn. ` : "Chạy cho mọi gian hàng (hoặc chọn shop bên dưới). "}
                 Nút này để chạy bù (sàn chỉ tự chạy khi bật payout.auto_enabled). Chỉ gom đơn online (PayOS) đã qua hạn đổi trả trong kỳ — đơn COD không vào đối soát, sàn trừ hoa hồng từ ví đặt cọc; trừ
                 tiền hoàn và nợ mang sang từ kỳ trước. Chạy lại cùng kỳ không tạo trùng, nhưng kỳ mới không được chồng lên kỳ đã chạy.
               </DialogDescription>
@@ -85,6 +93,36 @@ export function RunPayoutDialog({ onClose, shopId, shopName }: { onClose: () => 
                   <FormMessage message={errors.to?.message} />
                 </Field>
               </FieldGroup>
+              {pickable ? (
+                <div className="mt-4 flex flex-col gap-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-medium">Chọn shop để chi ngay {chosen.length > 0 ? `(${chosen.length})` : "(bỏ trống = mọi shop)"}</span>
+                    {chosen.length > 0 ? (
+                      <button type="button" className="text-xs text-muted-foreground underline" onClick={() => setChosen([])}>
+                        Bỏ chọn
+                      </button>
+                    ) : null}
+                  </div>
+                  <Input placeholder="Tìm shop…" aria-label="Tìm shop để chi" value={shopQ} onChange={(e) => setShopQ(e.target.value)} />
+                  <ul className="max-h-48 divide-y overflow-y-auto rounded-md border">
+                    {(shopsQuery.data ?? [])
+                      .filter((r) => !shopQ.trim() || `${r.shopName} ${r.shopCode}`.toLowerCase().includes(shopQ.trim().toLowerCase()))
+                      .map((r) => (
+                        <li key={r.shopId}>
+                          <label className="flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm">
+                            <Checkbox
+                              checked={chosen.includes(r.shopId)}
+                              onCheckedChange={(v) => setChosen((cur) => (v ? [...cur, r.shopId] : cur.filter((id) => id !== r.shopId)))}
+                            />
+                            <span className="min-w-0 flex-1 truncate">{r.shopName}</span>
+                            {!r.autoEnabled ? <span className="text-xs text-muted-foreground">đang tắt tự động</span> : null}
+                          </label>
+                        </li>
+                      ))}
+                    {shopsQuery.isLoading ? <li className="px-3 py-2 text-xs text-muted-foreground">Đang tải danh sách shop…</li> : null}
+                  </ul>
+                </div>
+              ) : null}
             </form>
             <DialogFooter>
               <Button variant="outline" onClick={onClose}>

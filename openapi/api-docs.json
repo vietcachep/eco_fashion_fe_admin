@@ -10427,6 +10427,82 @@
         ]
       }
     },
+    "/api/v1/admin/payouts/auto-settings": {
+      "get": {
+        "operationId": "ShopPayoutController_autoSettings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PayoutAutoSettingResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Các shop đã duyệt kèm công tắc chi trả tự động (mặc định bật)",
+        "tags": [
+          "payouts"
+        ]
+      }
+    },
+    "/api/v1/admin/payouts/auto-settings/{shopId}": {
+      "put": {
+        "operationId": "ShopPayoutController_setAutoSetting",
+        "parameters": [
+          {
+            "name": "shopId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePayoutAutoSettingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayoutAutoSettingResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Bật/tắt chi trả TỰ ĐỘNG (cron 02:00) của một shop. Tắt không chặn kế toán chạy kỳ tay cho shop đó.",
+        "tags": [
+          "payouts"
+        ]
+      }
+    },
     "/api/v1/admin/payouts/holds": {
       "post": {
         "operationId": "ShopPayoutController_createHold",
@@ -22633,6 +22709,13 @@
           "shopId": {
             "type": "string",
             "description": "Chỉ chạy kỳ cho gian hàng này (bỏ trống = mọi shop)"
+          },
+          "shopIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Chạy kỳ cho NHIỀU gian hàng được chọn (tối đa 200). Chạy tay luôn chi được cả shop đang tắt chi trả tự động."
           }
         },
         "required": [
@@ -26410,6 +26493,48 @@
         },
         "required": [
           "question"
+        ]
+      },
+      "UpdatePayoutAutoSettingRequest": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "true = cron 02:00 tự chi cho shop này; false = chỉ chi khi kế toán chạy tay"
+          }
+        },
+        "required": [
+          "enabled"
+        ]
+      },
+      "PayoutAutoSettingResponse": {
+        "type": "object",
+        "properties": {
+          "shopId": {
+            "type": "string"
+          },
+          "shopName": {
+            "type": "string"
+          },
+          "shopCode": {
+            "type": "string"
+          },
+          "autoEnabled": {
+            "type": "boolean",
+            "description": "Cron 02:00 có tự chi cho shop này không (mặc định true)"
+          },
+          "updatedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "Lần đổi cuối (null = chưa từng đổi, đang theo mặc định)"
+          }
+        },
+        "required": [
+          "shopId",
+          "shopName",
+          "shopCode",
+          "autoEnabled",
+          "updatedAt"
         ]
       }
     }

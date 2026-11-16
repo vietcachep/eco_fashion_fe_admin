@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { HandIcon, PlayIcon } from "lucide-react";
+import { HandIcon, PlayIcon, ZapIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ApiErrorState } from "@/components/shared/api-error-state";
 import { FilterTabs } from "@/components/shared/filter-tabs";
@@ -10,6 +10,7 @@ import { isForbiddenError } from "@/lib/api-error";
 import { PERMISSIONS } from "@/lib/constants";
 import { useListState } from "@/hooks/use-list-state";
 import { PayoutDetailSheet } from "@/features/shop/components/platform/payout-detail-sheet";
+import { PayoutAutoPanel } from "@/features/shop/components/platform/payout-auto-panel";
 import { PayoutHoldsPanel } from "@/features/shop/components/platform/payout-holds-panel";
 import { PayoutsTable } from "@/features/shop/components/platform/payouts-table";
 import { PayosBalanceCard } from "@/features/shop/components/platform/payos-balance-card";
@@ -60,6 +61,8 @@ export function PayoutsScreen() {
   const [holdsOpen, setHoldsOpen] = useState(false);
   const onHeldTab = filters.status === "held";
   const showHolds = holdsOpen || onHeldTab;
+  // Panel công tắc chi trả tự động theo shop (PLAN-0046).
+  const [autoOpen, setAutoOpen] = useState(false);
 
   if (isForbiddenError(error)) return <ApiErrorState error={error} fallback={LOAD_ERROR} />;
 
@@ -75,6 +78,10 @@ export function PayoutsScreen() {
             <HandIcon className="size-4" />
             Lệnh giữ tay
           </Button>
+          <Button variant="outline" aria-pressed={autoOpen} onClick={() => setAutoOpen((v) => !v)}>
+            <ZapIcon className="size-4" />
+            Chi tự động theo shop
+          </Button>
           <PermissionGate permission={PERMISSIONS.supplierPayoutProcess}>
             <Button onClick={() => setRunOpen(true)}>
               <PlayIcon className="size-4" />
@@ -84,6 +91,7 @@ export function PayoutsScreen() {
         </div>
       </div>
 
+      {autoOpen ? <PayoutAutoPanel /> : null}
       {showHolds ? <PayoutHoldsPanel /> : null}
 
       {isError ? <ApiErrorState error={error} fallback={LOAD_ERROR} compact /> : null}

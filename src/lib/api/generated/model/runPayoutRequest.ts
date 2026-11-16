@@ -13,4 +13,6 @@ export interface RunPayoutRequest {
   periodEnd: string;
   /** Chỉ chạy kỳ cho gian hàng này (bỏ trống = mọi shop) */
   shopId?: string;
+  /** Chạy kỳ cho NHIỀU gian hàng được chọn (tối đa 200). Chạy tay luôn chi được cả shop đang tắt chi trả tự động. */
+  shopIds?: string[];
 }

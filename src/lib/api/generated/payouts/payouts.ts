@@ -24,6 +24,7 @@ import type {
   CreatePayoutHoldRequest,
   MarkPaidRequest,
   PayosBalanceResponse,
+  PayoutAutoSettingResponse,
   PayoutHoldResponse,
   ReleasePayoutHoldResponse,
   RunPayoutRequest,
@@ -31,7 +32,8 @@ import type {
   ShopPayoutControllerListMineParams,
   ShopPayoutControllerListParams,
   ShopPayoutDetailResponse,
-  ShopPayoutResponse
+  ShopPayoutResponse,
+  UpdatePayoutAutoSettingRequest
 } from '../model';
 
 import { customInstance } from '../../mutator';
@@ -231,6 +233,199 @@ export function useShopPayoutControllerRun<TData = Awaited<ReturnType<typeof sho
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getShopPayoutControllerRunQueryOptions(runPayoutRequest,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Các shop đã duyệt kèm công tắc chi trả tự động (mặc định bật)
+ */
+export const shopPayoutControllerAutoSettings = (
+
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<PayoutAutoSettingResponse[]>(
+      {url: `/api/v1/admin/payouts/auto-settings`, method: 'GET', signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopPayoutControllerAutoSettingsQueryKey = () => {
+    return [
+    `/api/v1/admin/payouts/auto-settings`
+    ] as const;
+    }
+
+
+export const getShopPayoutControllerAutoSettingsQueryOptions = <TData = Awaited<ReturnType<typeof shopPayoutControllerAutoSettings>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerAutoSettings>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopPayoutControllerAutoSettingsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopPayoutControllerAutoSettings>>> = ({ signal }) => shopPayoutControllerAutoSettings(requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerAutoSettings>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopPayoutControllerAutoSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof shopPayoutControllerAutoSettings>>>
+export type ShopPayoutControllerAutoSettingsQueryError = unknown
+
+
+export function useShopPayoutControllerAutoSettings<TData = Awaited<ReturnType<typeof shopPayoutControllerAutoSettings>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerAutoSettings>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopPayoutControllerAutoSettings>>,
+          TError,
+          Awaited<ReturnType<typeof shopPayoutControllerAutoSettings>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopPayoutControllerAutoSettings<TData = Awaited<ReturnType<typeof shopPayoutControllerAutoSettings>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerAutoSettings>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopPayoutControllerAutoSettings>>,
+          TError,
+          Awaited<ReturnType<typeof shopPayoutControllerAutoSettings>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopPayoutControllerAutoSettings<TData = Awaited<ReturnType<typeof shopPayoutControllerAutoSettings>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerAutoSettings>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Các shop đã duyệt kèm công tắc chi trả tự động (mặc định bật)
+ */
+
+export function useShopPayoutControllerAutoSettings<TData = Awaited<ReturnType<typeof shopPayoutControllerAutoSettings>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerAutoSettings>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopPayoutControllerAutoSettingsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Bật/tắt chi trả TỰ ĐỘNG (cron 02:00) của một shop. Tắt không chặn kế toán chạy kỳ tay cho shop đó.
+ */
+export const shopPayoutControllerSetAutoSetting = (
+    shopId: string,
+    updatePayoutAutoSettingRequest: UpdatePayoutAutoSettingRequest,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<PayoutAutoSettingResponse>(
+      {url: `/api/v1/admin/payouts/auto-settings/${shopId}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: updatePayoutAutoSettingRequest, signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopPayoutControllerSetAutoSettingQueryKey = (shopId: string,
+    updatePayoutAutoSettingRequest?: UpdatePayoutAutoSettingRequest,) => {
+    return [
+    'PUT', `/api/v1/admin/payouts/auto-settings/${shopId}`, updatePayoutAutoSettingRequest
+    ] as const;
+    }
+
+
+export const getShopPayoutControllerSetAutoSettingQueryOptions = <TData = Awaited<ReturnType<typeof shopPayoutControllerSetAutoSetting>>, TError = unknown>(shopId: string,
+    updatePayoutAutoSettingRequest: UpdatePayoutAutoSettingRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerSetAutoSetting>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopPayoutControllerSetAutoSettingQueryKey(shopId,updatePayoutAutoSettingRequest);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopPayoutControllerSetAutoSetting>>> = ({ signal }) => shopPayoutControllerSetAutoSetting(shopId,updatePayoutAutoSettingRequest, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: shopId !== null && shopId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerSetAutoSetting>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopPayoutControllerSetAutoSettingQueryResult = NonNullable<Awaited<ReturnType<typeof shopPayoutControllerSetAutoSetting>>>
+export type ShopPayoutControllerSetAutoSettingQueryError = unknown
+
+
+export function useShopPayoutControllerSetAutoSetting<TData = Awaited<ReturnType<typeof shopPayoutControllerSetAutoSetting>>, TError = unknown>(
+ shopId: string,
+    updatePayoutAutoSettingRequest: UpdatePayoutAutoSettingRequest, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerSetAutoSetting>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopPayoutControllerSetAutoSetting>>,
+          TError,
+          Awaited<ReturnType<typeof shopPayoutControllerSetAutoSetting>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopPayoutControllerSetAutoSetting<TData = Awaited<ReturnType<typeof shopPayoutControllerSetAutoSetting>>, TError = unknown>(
+ shopId: string,
+    updatePayoutAutoSettingRequest: UpdatePayoutAutoSettingRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerSetAutoSetting>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopPayoutControllerSetAutoSetting>>,
+          TError,
+          Awaited<ReturnType<typeof shopPayoutControllerSetAutoSetting>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopPayoutControllerSetAutoSetting<TData = Awaited<ReturnType<typeof shopPayoutControllerSetAutoSetting>>, TError = unknown>(
+ shopId: string,
+    updatePayoutAutoSettingRequest: UpdatePayoutAutoSettingRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerSetAutoSetting>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Bật/tắt chi trả TỰ ĐỘNG (cron 02:00) của một shop. Tắt không chặn kế toán chạy kỳ tay cho shop đó.
+ */
+
+export function useShopPayoutControllerSetAutoSetting<TData = Awaited<ReturnType<typeof shopPayoutControllerSetAutoSetting>>, TError = unknown>(
+ shopId: string,
+    updatePayoutAutoSettingRequest: UpdatePayoutAutoSettingRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerSetAutoSetting>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopPayoutControllerSetAutoSettingQueryOptions(shopId,updatePayoutAutoSettingRequest,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
