@@ -89,7 +89,6 @@ export const ROUTES = {
   reporting: {
     revenue: "/reporting/revenue",
     topProducts: "/reporting/top-products",
-    inventory: "/reporting/inventory",
   },
   ai: {
     documents: "/ai/documents",
@@ -117,7 +116,6 @@ export const ROUTES = {
   vendor: {
     dashboard: "/vendor",
     shop: "/vendor/shop",
-    shopMembers: "/vendor/shop/members",
     products: "/vendor/products",
     productNew: "/vendor/products/new",
     inventory: "/vendor/inventory",
@@ -339,11 +337,6 @@ export const SIDEBAR_NAV: NavGroup[] = [
             title: "Sản phẩm bán chạy",
             href: ROUTES.reporting.topProducts,
             permission: PERMISSIONS.revenueRead,
-          },
-          {
-            title: "Tồn kho",
-            href: ROUTES.reporting.inventory,
-            permission: PERMISSIONS.inventoryReportRead,
           },
         ],
       },
@@ -649,7 +642,6 @@ export const VENDOR_NAV: NavGroup[] = [
         icon: Store,
         children: [
           { title: "Hồ sơ & tài khoản ngân hàng", href: ROUTES.vendor.shop, permission: PERMISSIONS.shopProfileRead },
-          { title: "Nhân viên shop", href: ROUTES.vendor.shopMembers, permission: PERMISSIONS.shopStaffRead },
         ],
       },
       {

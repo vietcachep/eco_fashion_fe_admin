@@ -27,7 +27,6 @@ import { LiveSessionBadge } from "../sessions/live-session-badge";
 import { StudioProducts } from "./studio-products";
 import { StudioChat } from "./studio-chat";
 import { StudioCampaigns } from "./studio-campaigns";
-import { StudioModerators } from "./studio-moderators";
 import { LiveElapsed } from "./live-elapsed";
 import { LiveVideoMonitor } from "../platform/live-video-monitor";
 
@@ -369,7 +368,6 @@ export function LiveStudioScreen({ id }: { id: string }) {
           ["products", "Sản phẩm"],
           ["chat", "Bình luận"],
           ["campaigns", "Ưu đãi"],
-          ...(manage ? [["moderators", "Nhân viên điều hành"]] : []),
         ].map(([value, label]) => (
           <Button
             key={value}
@@ -393,8 +391,6 @@ export function LiveStudioScreen({ id }: { id: string }) {
             send={channel.send}
           />
         </div>
-      ) : tab === "moderators" && manage ? (
-        <StudioModerators sessionId={session.id} />
       ) : (
         <StudioCampaigns
           sessionId={session.id}

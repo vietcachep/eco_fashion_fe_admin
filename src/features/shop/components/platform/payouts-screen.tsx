@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FlaskConicalIcon, HandIcon, PlayIcon, ZapIcon } from "lucide-react";
+import { FlaskConicalIcon, PlayIcon, ZapIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ApiErrorState } from "@/components/shared/api-error-state";
 import { FilterTabs } from "@/components/shared/filter-tabs";
@@ -12,7 +12,6 @@ import { useListState } from "@/hooks/use-list-state";
 import { PayoutDetailSheet } from "@/features/shop/components/platform/payout-detail-sheet";
 import { PayoutAutoPanel } from "@/features/shop/components/platform/payout-auto-panel";
 import { PayoutTestCard } from "@/features/shop/components/platform/payout-test-card";
-import { PayoutHoldsPanel } from "@/features/shop/components/platform/payout-holds-panel";
 import { PayoutsTable } from "@/features/shop/components/platform/payouts-table";
 import { PayosBalanceCard } from "@/features/shop/components/platform/payos-balance-card";
 import { RunPayoutDialog } from "@/features/shop/components/platform/run-payout-dialog";
@@ -58,10 +57,6 @@ export function PayoutsScreen() {
   });
   const [openId, setOpenId] = useState<string | null>(null);
   const [runOpen, setRunOpen] = useState(false);
-  // Panel lệnh giữ: tự mở ở tab "Đang giữ" (cùng chủ đề), các tab khác bật tay bằng nút.
-  const [holdsOpen, setHoldsOpen] = useState(false);
-  const onHeldTab = filters.status === "held";
-  const showHolds = holdsOpen || onHeldTab;
   // Panel công tắc chi trả tự động theo shop (PLAN-0046).
   const [autoOpen, setAutoOpen] = useState(false);
   // Công cụ thử chi (chuyển tiền thật bằng tài khoản nhập tay) — chỉ người có quyền duyệt chi trả.
@@ -77,10 +72,6 @@ export function PayoutsScreen() {
         <FilterTabs tabs={PAYOUT_TABS} value={filters.status} onChange={(v) => setFilter("status", v)} />
         <div className="flex flex-wrap items-center gap-2">
           <ShopFilter value={filters.shopId} onChange={(v) => setFilter("shopId", v)} />
-          <Button variant="outline" aria-pressed={showHolds} disabled={onHeldTab} onClick={() => setHoldsOpen((v) => !v)}>
-            <HandIcon className="size-4" />
-            Lệnh giữ tay
-          </Button>
           <Button variant="outline" aria-pressed={autoOpen} onClick={() => setAutoOpen((v) => !v)}>
             <ZapIcon className="size-4" />
             Chi tự động theo shop
@@ -102,7 +93,6 @@ export function PayoutsScreen() {
 
       {testOpen ? <PayoutTestCard /> : null}
       {autoOpen ? <PayoutAutoPanel /> : null}
-      {showHolds ? <PayoutHoldsPanel /> : null}
 
       {isError ? <ApiErrorState error={error} fallback={LOAD_ERROR} compact /> : null}
       <PayoutsTable

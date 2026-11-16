@@ -20,8 +20,6 @@ import {
   shopLiveControllerEnd,
   shopLiveControllerMessages,
   shopLiveControllerModerate,
-  shopLiveControllerModerators,
-  shopLiveControllerSetModerators,
   shopLiveControllerReport,
 } from "@/lib/api/generated/shop-livestream/shop-livestream";
 import {
@@ -61,15 +59,6 @@ import type {
  * Mọi URL/body/envelope/refresh do client Orval sinh và shared mutator xử lý, không có HTTP viết tay ở feature. */
 const response = <T>(request: Promise<unknown>) => request as Promise<T>;
 export const liveApi = {
-  moderators: (id: string) =>
-    response<{
-      userIds: string[];
-      candidates: { userId: string; fullName: string }[];
-    }>(shopLiveControllerModerators(id)),
-  setModerators: (id: string, userIds: string[]) =>
-    response<{ userIds: string[] }>(
-      shopLiveControllerSetModerators(id, { userIds }),
-    ),
   viewerGrant: (id: string) =>
     response<{ admissionId: string; token: string; serverUrl: string }>(
       liveControllerViewer(id),

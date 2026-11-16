@@ -25,13 +25,6 @@ export function useLiveMonitorTransport() {
     [],
   );
 }
-export function useLiveModerators(id: string) {
-  return useQuery({
-    queryKey: [...key, "moderators", id],
-    queryFn: () => liveApi.moderators(id),
-    enabled: !!id,
-  });
-}
 export function useLiveSessions(platform: boolean, params: SessionListQuery) {
   return useQuery({
     queryKey: [...key, "list", platform, params],
@@ -111,11 +104,6 @@ export function useLiveCommands() {
     void qc.invalidateQueries({ queryKey: key });
   };
   return {
-    moderators: useMutation({
-      mutationFn: (v: { id: string; userIds: string[] }) =>
-        liveApi.setModerators(v.id, v.userIds),
-      onSuccess: invalidate,
-    }),
     save: useMutation({
       mutationFn: (input: {
         id?: string;

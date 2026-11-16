@@ -57,19 +57,6 @@ export interface DashboardResponse {
   generatedAt: string;
 }
 
-export interface LowStockRow {
-  variantId: string;
-  productId: string;
-  productName: string;
-  slug: string;
-  sku: string;
-  colorName: string;
-  sizeCode: string;
-  stock: number;
-  reserved: number;
-  available: number;
-}
-
 export interface RevenuePoint {
   period: string;
   revenue: Money;
@@ -89,12 +76,3 @@ export interface RevenueResponse {
   total: Omit<RevenuePoint, "period">;
 }
 
-export interface InventorySummary {
-  products: number;
-  variants: number;
-  unitsInStock: number;
-  unitsReserved: number;
-  stockValue: Money;
-  lowStock: number;
-  outOfStock: number;
-}

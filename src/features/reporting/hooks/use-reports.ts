@@ -5,8 +5,6 @@ import { toast } from "sonner";
 import {
   adminReportingControllerRecompute,
   useAdminReportingControllerDashboard,
-  useAdminReportingControllerInventory,
-  useAdminReportingControllerLowStock,
   useAdminReportingControllerRevenue,
   useAdminReportingControllerTop,
 } from "@/lib/api/generated/admin-reports/admin-reports";
@@ -14,8 +12,6 @@ import type { RecomputeRequest } from "@/lib/api/generated/model";
 import { apiErrorMessage } from "@/lib/api-error";
 import type {
   DashboardResponse,
-  InventorySummary,
-  LowStockRow,
   RevenueResponse,
   TopProductRow,
 } from "@/features/reporting/types/reporting";
@@ -55,22 +51,6 @@ export function useTopProducts(params: { from: string; to: string; limit: number
       placeholderData: keepPreviousData,
       staleTime: 60_000,
     },
-  });
-}
-
-export function useLowStock(params: { threshold: number; limit: number }) {
-  return useAdminReportingControllerLowStock(params, {
-    query: {
-      select: (d) => d as unknown as LowStockRow[],
-      placeholderData: keepPreviousData,
-      staleTime: 60_000,
-    },
-  });
-}
-
-export function useInventorySummary() {
-  return useAdminReportingControllerInventory({
-    query: { select: (d) => d as unknown as InventorySummary, staleTime: 60_000 },
   });
 }
 

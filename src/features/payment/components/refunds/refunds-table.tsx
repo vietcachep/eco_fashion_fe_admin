@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
-import { BanknoteIcon, ClipboardCheckIcon, EyeIcon, HandCoinsIcon, InfoIcon, Loader2Icon, RefreshCwIcon, SearchCheckIcon } from "lucide-react";
+import { BanknoteIcon, ClipboardCheckIcon, EyeIcon, InfoIcon, Loader2Icon, RefreshCwIcon, SearchCheckIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/shared/data-table";
 import { ApiErrorState } from "@/components/shared/api-error-state";
@@ -15,7 +15,6 @@ import { isForbiddenError } from "@/lib/api-error";
 import { PERMISSIONS, ROUTES } from "@/lib/constants";
 import { formatDateTime } from "@/lib/format";
 import { REFUND_KIND, REFUND_METHOD_LABEL, statusMeta } from "@/lib/labels";
-import { cn } from "@/lib/utils";
 import { ShopFilter } from "@/features/shop/components/platform/shop-filter";
 import { useListState } from "@/hooks/use-list-state";
 import { RefundPayeeCell, RefundShopCell, RefundStatusCell, isAwaitingGateway } from "@/features/payment/components/refunds/refund-cells";
@@ -38,8 +37,7 @@ const TABS = [
 
 const PAGE_SIZE = 15;
 const LOAD_ERROR = "Không tải được yêu cầu hoàn tiền.";
-// `needsManual` = "true" chỉ giữ các khoản đang chờ kế toán chuyển khoản tay (bộ lọc đồng bộ lên URL như các bộ lọc khác).
-const DEFAULTS = { status: "", shopId: "", needsManual: "" };
+const DEFAULTS = { status: "", shopId: "" };
 
 /*
  * Hoàn tiền (kế toán): sinh từ huỷ đơn đã thanh toán, đổi trả được hoàn, hoặc khách trả trùng. Hàng đợi XUYÊN mọi gian hàng, lọc shop
@@ -64,7 +62,6 @@ export function RefundsTable() {
   const { data, isLoading, isError, error } = useAdminRefunds({
     status: filters.status,
     shopId: filters.shopId,
-    needsManual: filters.needsManual === "true",
     page,
     size: PAGE_SIZE,
   });
@@ -178,12 +175,6 @@ export function RefundsTable() {
                     {check.isPending && check.variables === r.id ? <Loader2Icon className="size-3.5 animate-spin" /> : <RefreshCwIcon className="size-3.5" />}
                     Kiểm tra PayOS
                   </Button>
-                  {r.needsManual ? (
-                    <Button size="sm" className="h-8" onClick={() => setProcessing(r)}>
-                      <HandCoinsIcon className="size-3.5" />
-                      Xác nhận tay
-                    </Button>
-                  ) : null}
                 </div>
               </PermissionGate>
             );
@@ -196,10 +187,6 @@ export function RefundsTable() {
                   <Button size="sm" className="h-8" disabled={check.isPending} onClick={() => check.mutate(r.id)}>
                     {check.isPending && check.variables === r.id ? <Loader2Icon className="size-3.5 animate-spin" /> : <SearchCheckIcon className="size-3.5" />}
                     Đối soát theo lệnh PayOS
-                  </Button>
-                  <Button size="sm" variant="outline" className="h-8" onClick={() => setProcessing(r)}>
-                    <HandCoinsIcon className="size-3.5" />
-                    Chuyển tay
                   </Button>
                 </div>
               </PermissionGate>
@@ -229,16 +216,6 @@ export function RefundsTable() {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-1.5">
           <FilterTabs tabs={TABS} value={filters.status} onChange={(v) => setFilter("status", v)} />
-          <Button
-            type="button"
-            variant="outline"
-            aria-pressed={filters.needsManual === "true"}
-            className={cn("h-8 px-3", filters.needsManual === "true" && "border-amber-400 bg-amber-50 text-amber-900 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-200")}
-            onClick={() => setFilter("needsManual", filters.needsManual === "true" ? "" : "true")}
-          >
-            <HandCoinsIcon className="size-3.5" />
-            Cần xử lý tay
-          </Button>
         </div>
         <ShopFilter value={filters.shopId} onChange={(v) => setFilter("shopId", v)} />
       </div>

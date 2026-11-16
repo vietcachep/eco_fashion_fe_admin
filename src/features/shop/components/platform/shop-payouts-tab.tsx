@@ -9,7 +9,6 @@ import { PermissionGate } from "@/components/shared/permission-gate";
 import { PERMISSIONS } from "@/lib/constants";
 import { PAYOUT_TABS } from "@/features/shop/components/platform/payouts-screen";
 import { PayoutDetailSheet } from "@/features/shop/components/platform/payout-detail-sheet";
-import { PayoutHoldsPanel } from "@/features/shop/components/platform/payout-holds-panel";
 import { PayoutsTable } from "@/features/shop/components/platform/payouts-table";
 import { RunPayoutDialog } from "@/features/shop/components/platform/run-payout-dialog";
 import { useAdminPayouts } from "@/features/shop/hooks/use-admin-payouts";
@@ -18,8 +17,7 @@ const PAGE_SIZE = 10;
 const LOAD_ERROR = "Không tải được các kỳ đối soát của gian hàng.";
 
 /*
- * Tab "Đối soát" ở chi tiết shop: khối "Lệnh giữ chi trả" (giữ tay / mở giữ / lịch sử của RIÊNG shop) và các kỳ của shop này
- * (GET /admin/payouts?shopId=). Trạng thái lọc + trang giữ bằng state cục bộ — KHÔNG dùng `useListState` vì nó ghi đè
+ * Tab "Đối soát" ở chi tiết shop: các kỳ đối soát của shop này (GET /admin/payouts?shopId=). Trạng thái lọc + trang giữ bằng state cục bộ — KHÔNG dùng `useListState` vì nó ghi đè
  * query string của trang (làm mất `?tab=payouts`).
  */
 export function ShopPayoutsTab({ shopId, shopName }: { shopId: string; shopName: string }) {
@@ -31,8 +29,6 @@ export function ShopPayoutsTab({ shopId, shopName }: { shopId: string; shopName:
 
   return (
     <div className="flex flex-col gap-4">
-      <PayoutHoldsPanel shopId={shopId} shopName={shopName} />
-
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <FilterTabs
