@@ -10503,6 +10503,106 @@
         ]
       }
     },
+    "/api/v1/admin/payouts/test-transfer/config": {
+      "get": {
+        "operationId": "ShopPayoutController_testTransferConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestTransferConfigResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Trạng thái công cụ thử chi: cờ bật, trần số tiền, đã có khoá chi PayOS, số dư quỹ chi",
+        "tags": [
+          "payouts"
+        ]
+      }
+    },
+    "/api/v1/admin/payouts/test-transfer": {
+      "post": {
+        "operationId": "ShopPayoutController_testTransfer",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestTransferResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "THỬ CHI: chuyển TIỀN THẬT từ tài khoản chi PayOS tới tài khoản nhập tay (cờ payout.test_enabled + trần payout.test_max_amount; idempotent theo clientKey)",
+        "tags": [
+          "payouts"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestTransferRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/payouts/test-transfer/status": {
+      "get": {
+        "operationId": "ShopPayoutController_testTransferStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestTransferStatusResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tra trạng thái lệnh thử chi theo mã lệnh PayOS (transactionId)",
+        "tags": [
+          "payouts"
+        ]
+      }
+    },
     "/api/v1/admin/payouts/holds": {
       "post": {
         "operationId": "ShopPayoutController_createHold",
@@ -26546,6 +26646,127 @@
           "shopCode",
           "autoEnabled",
           "updatedAt"
+        ]
+      },
+      "TestTransferRequest": {
+        "type": "object",
+        "properties": {
+          "bankCode": {
+            "type": "string",
+            "example": "970422",
+            "description": "Mã BIN ngân hàng nhận (6 số)"
+          },
+          "accountNumber": {
+            "type": "string",
+            "example": "0123456789",
+            "description": "Số tài khoản nhận (6–20 chữ số)"
+          },
+          "amount": {
+            "type": "number",
+            "example": 10000,
+            "description": "Số tiền VND (nguyên, từ 1.000 tới payout.test_max_amount)"
+          },
+          "clientKey": {
+            "type": "string",
+            "description": "UUID MỖI lần bấm — khoá idempotency để bấm đúp không chuyển hai lần"
+          },
+          "note": {
+            "type": "string",
+            "description": "Nội dung chuyển khoản (tối đa 50 ký tự)"
+          }
+        },
+        "required": [
+          "bankCode",
+          "accountNumber",
+          "amount",
+          "clientKey"
+        ]
+      },
+      "TestTransferConfigResponse": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "maxAmount": {
+            "type": "number",
+            "description": "Trần số tiền mỗi lần thử (payout.test_max_amount)"
+          },
+          "configured": {
+            "type": "boolean",
+            "description": "Đã có khoá chi PayOS (EF_PAYOS_PAYOUT_*)"
+          },
+          "balance": {
+            "type": "string",
+            "nullable": true,
+            "description": "Số dư tài khoản chi PayOS (VND); null = chưa cấu hình/tra lỗi"
+          }
+        },
+        "required": [
+          "enabled",
+          "maxAmount",
+          "configured",
+          "balance"
+        ]
+      },
+      "TestTransferResponse": {
+        "type": "object",
+        "properties": {
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "submitted",
+              "failed",
+              "unknown"
+            ],
+            "description": "submitted = PayOS đã NHẬN lệnh (chưa chắc tiền đã về) · failed = PayOS từ chối chắc chắn · unknown = không rõ (tiền CÓ THỂ đã đi — kiểm tra trạng thái, đừng gửi lại)"
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "referenceId": {
+            "type": "string"
+          },
+          "transactionId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Mã lệnh PayOS — dùng để tra trạng thái"
+          }
+        },
+        "required": [
+          "outcome",
+          "ok",
+          "code",
+          "message",
+          "referenceId",
+          "transactionId"
+        ]
+      },
+      "TestTransferStatusResponse": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "succeeded",
+              "failed",
+              "processing",
+              "unknown"
+            ]
+          },
+          "detail": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "state",
+          "detail"
         ]
       }
     }

@@ -31,8 +31,13 @@ import type {
   ShopPayoutControllerListHoldsParams,
   ShopPayoutControllerListMineParams,
   ShopPayoutControllerListParams,
+  ShopPayoutControllerTestTransferStatusParams,
   ShopPayoutDetailResponse,
   ShopPayoutResponse,
+  TestTransferConfigResponse,
+  TestTransferRequest,
+  TestTransferResponse,
+  TestTransferStatusResponse,
   UpdatePayoutAutoSettingRequest
 } from '../model';
 
@@ -426,6 +431,285 @@ export function useShopPayoutControllerSetAutoSetting<TData = Awaited<ReturnType
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getShopPayoutControllerSetAutoSettingQueryOptions(shopId,updatePayoutAutoSettingRequest,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Trạng thái công cụ thử chi: cờ bật, trần số tiền, đã có khoá chi PayOS, số dư quỹ chi
+ */
+export const shopPayoutControllerTestTransferConfig = (
+
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<TestTransferConfigResponse>(
+      {url: `/api/v1/admin/payouts/test-transfer/config`, method: 'GET', signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopPayoutControllerTestTransferConfigQueryKey = () => {
+    return [
+    `/api/v1/admin/payouts/test-transfer/config`
+    ] as const;
+    }
+
+
+export const getShopPayoutControllerTestTransferConfigQueryOptions = <TData = Awaited<ReturnType<typeof shopPayoutControllerTestTransferConfig>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerTestTransferConfig>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopPayoutControllerTestTransferConfigQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopPayoutControllerTestTransferConfig>>> = ({ signal }) => shopPayoutControllerTestTransferConfig(requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerTestTransferConfig>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopPayoutControllerTestTransferConfigQueryResult = NonNullable<Awaited<ReturnType<typeof shopPayoutControllerTestTransferConfig>>>
+export type ShopPayoutControllerTestTransferConfigQueryError = unknown
+
+
+export function useShopPayoutControllerTestTransferConfig<TData = Awaited<ReturnType<typeof shopPayoutControllerTestTransferConfig>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerTestTransferConfig>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopPayoutControllerTestTransferConfig>>,
+          TError,
+          Awaited<ReturnType<typeof shopPayoutControllerTestTransferConfig>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopPayoutControllerTestTransferConfig<TData = Awaited<ReturnType<typeof shopPayoutControllerTestTransferConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerTestTransferConfig>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopPayoutControllerTestTransferConfig>>,
+          TError,
+          Awaited<ReturnType<typeof shopPayoutControllerTestTransferConfig>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopPayoutControllerTestTransferConfig<TData = Awaited<ReturnType<typeof shopPayoutControllerTestTransferConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerTestTransferConfig>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Trạng thái công cụ thử chi: cờ bật, trần số tiền, đã có khoá chi PayOS, số dư quỹ chi
+ */
+
+export function useShopPayoutControllerTestTransferConfig<TData = Awaited<ReturnType<typeof shopPayoutControllerTestTransferConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerTestTransferConfig>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopPayoutControllerTestTransferConfigQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary THỬ CHI: chuyển TIỀN THẬT từ tài khoản chi PayOS tới tài khoản nhập tay (cờ payout.test_enabled + trần payout.test_max_amount; idempotent theo clientKey)
+ */
+export const shopPayoutControllerTestTransfer = (
+    testTransferRequest: TestTransferRequest,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<TestTransferResponse>(
+      {url: `/api/v1/admin/payouts/test-transfer`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: testTransferRequest, signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopPayoutControllerTestTransferQueryKey = (testTransferRequest?: TestTransferRequest,) => {
+    return [
+    'POST', `/api/v1/admin/payouts/test-transfer`, testTransferRequest
+    ] as const;
+    }
+
+
+export const getShopPayoutControllerTestTransferQueryOptions = <TData = Awaited<ReturnType<typeof shopPayoutControllerTestTransfer>>, TError = unknown>(testTransferRequest: TestTransferRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerTestTransfer>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopPayoutControllerTestTransferQueryKey(testTransferRequest);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopPayoutControllerTestTransfer>>> = ({ signal }) => shopPayoutControllerTestTransfer(testTransferRequest, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerTestTransfer>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopPayoutControllerTestTransferQueryResult = NonNullable<Awaited<ReturnType<typeof shopPayoutControllerTestTransfer>>>
+export type ShopPayoutControllerTestTransferQueryError = unknown
+
+
+export function useShopPayoutControllerTestTransfer<TData = Awaited<ReturnType<typeof shopPayoutControllerTestTransfer>>, TError = unknown>(
+ testTransferRequest: TestTransferRequest, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerTestTransfer>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopPayoutControllerTestTransfer>>,
+          TError,
+          Awaited<ReturnType<typeof shopPayoutControllerTestTransfer>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopPayoutControllerTestTransfer<TData = Awaited<ReturnType<typeof shopPayoutControllerTestTransfer>>, TError = unknown>(
+ testTransferRequest: TestTransferRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerTestTransfer>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopPayoutControllerTestTransfer>>,
+          TError,
+          Awaited<ReturnType<typeof shopPayoutControllerTestTransfer>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopPayoutControllerTestTransfer<TData = Awaited<ReturnType<typeof shopPayoutControllerTestTransfer>>, TError = unknown>(
+ testTransferRequest: TestTransferRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerTestTransfer>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary THỬ CHI: chuyển TIỀN THẬT từ tài khoản chi PayOS tới tài khoản nhập tay (cờ payout.test_enabled + trần payout.test_max_amount; idempotent theo clientKey)
+ */
+
+export function useShopPayoutControllerTestTransfer<TData = Awaited<ReturnType<typeof shopPayoutControllerTestTransfer>>, TError = unknown>(
+ testTransferRequest: TestTransferRequest, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerTestTransfer>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopPayoutControllerTestTransferQueryOptions(testTransferRequest,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Tra trạng thái lệnh thử chi theo mã lệnh PayOS (transactionId)
+ */
+export const shopPayoutControllerTestTransferStatus = (
+    params: ShopPayoutControllerTestTransferStatusParams,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<TestTransferStatusResponse>(
+      {url: `/api/v1/admin/payouts/test-transfer/status`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getShopPayoutControllerTestTransferStatusQueryKey = (params?: ShopPayoutControllerTestTransferStatusParams,) => {
+    return [
+    `/api/v1/admin/payouts/test-transfer/status`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getShopPayoutControllerTestTransferStatusQueryOptions = <TData = Awaited<ReturnType<typeof shopPayoutControllerTestTransferStatus>>, TError = unknown>(params: ShopPayoutControllerTestTransferStatusParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerTestTransferStatus>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getShopPayoutControllerTestTransferStatusQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof shopPayoutControllerTestTransferStatus>>> = ({ signal }) => shopPayoutControllerTestTransferStatus(params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerTestTransferStatus>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ShopPayoutControllerTestTransferStatusQueryResult = NonNullable<Awaited<ReturnType<typeof shopPayoutControllerTestTransferStatus>>>
+export type ShopPayoutControllerTestTransferStatusQueryError = unknown
+
+
+export function useShopPayoutControllerTestTransferStatus<TData = Awaited<ReturnType<typeof shopPayoutControllerTestTransferStatus>>, TError = unknown>(
+ params: ShopPayoutControllerTestTransferStatusParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerTestTransferStatus>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopPayoutControllerTestTransferStatus>>,
+          TError,
+          Awaited<ReturnType<typeof shopPayoutControllerTestTransferStatus>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopPayoutControllerTestTransferStatus<TData = Awaited<ReturnType<typeof shopPayoutControllerTestTransferStatus>>, TError = unknown>(
+ params: ShopPayoutControllerTestTransferStatusParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerTestTransferStatus>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shopPayoutControllerTestTransferStatus>>,
+          TError,
+          Awaited<ReturnType<typeof shopPayoutControllerTestTransferStatus>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useShopPayoutControllerTestTransferStatus<TData = Awaited<ReturnType<typeof shopPayoutControllerTestTransferStatus>>, TError = unknown>(
+ params: ShopPayoutControllerTestTransferStatusParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerTestTransferStatus>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Tra trạng thái lệnh thử chi theo mã lệnh PayOS (transactionId)
+ */
+
+export function useShopPayoutControllerTestTransferStatus<TData = Awaited<ReturnType<typeof shopPayoutControllerTestTransferStatus>>, TError = unknown>(
+ params: ShopPayoutControllerTestTransferStatusParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof shopPayoutControllerTestTransferStatus>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getShopPayoutControllerTestTransferStatusQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
