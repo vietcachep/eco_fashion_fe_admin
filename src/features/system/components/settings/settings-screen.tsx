@@ -90,7 +90,16 @@ function SettingRowEditor({ row, canEdit }: { row: SettingRow; canEdit: boolean 
   const save = () => {
     let value: unknown = text;
     if (kind === "boolean") value = bool;
-    else if (kind === "number") value = Number(text);
+    else if (kind === "number") {
+      // Ô trống hoặc chữ ⇒ báo ngay: Number("") = 0 sẽ lưu nhầm 0, Number("abc") = NaN bị gửi thành null và backend báo khó hiểu "phải là number".
+      const n = Number(text);
+      if (text.trim() === "" || !Number.isFinite(n)) {
+        setJsonError("Nhập một số hợp lệ");
+        return;
+      }
+      setJsonError(null);
+      value = n;
+    }
     else if (kind === "json") {
       try {
         value = JSON.parse(text);
